@@ -30,6 +30,17 @@ void ULaserComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	const UWorld* const World =  GetWorld();
+	const AActor* Owner = GetOwner();
+	if (IsValid(World) && IsValid(Owner))
+	{
+		const FVector OwnerPosition = Owner->GetTransform().GetLocation();
+		const FVector Offset = FVector(100, 100, 0);
+		DrawDebugLine(World, OwnerPosition, OwnerPosition + Offset, FColor::Emerald);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("World or Owner is invalid"));
+	}
 }
 

@@ -7,6 +7,7 @@
 #include "LaserComponent.generated.h"
 
 
+/* A simple facade class for drawing a laser from point to point in the world. Just not to worry about the backend later*/
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LESTASTART_API ULaserComponent : public UActorComponent
 {
