@@ -10,7 +10,7 @@ ULaserComponent::ULaserComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
+	Thickness = 10.f;
 	// ...
 }
 
@@ -37,11 +37,17 @@ void ULaserComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 		const FVector OwnerPosition = Owner->GetTransform().GetLocation();
 		const FVector BeginOffset = FVector(0, 000, 50);
 		const FVector EndOffset = BeginOffset + FVector(500, 0, 0);
-		DrawDebugLine(World, OwnerPosition + BeginOffset, OwnerPosition + EndOffset, FColor::Emerald);
+		DrawDebugLine(World, OwnerPosition + BeginOffset, OwnerPosition + EndOffset, Color,
+			true, -1, 0, Thickness);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("World or Owner is invalid"));
 	}
+}
+
+void ULaserComponent::SetColor(const FColor& NewColor)
+{
+	Color = NewColor;
 }
 

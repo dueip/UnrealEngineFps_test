@@ -27,7 +27,7 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetBeginPosition(const FVector& NewBeginPosition);
+	virtual void SetOrigin(const FVector& NewBeginPosition);
 	UFUNCTION(BlueprintCallable)
 	virtual void SetEndPosition(const FVector& NewEndPosition);
 	UFUNCTION(BlueprintCallable)
@@ -44,4 +44,6 @@ protected:
 	FVector EndPosition;
 	UPROPERTY(EditAnywhere)
 	FColor Color;
+	UPROPERTY(EditAnywhere)
+	float Thickness;
 };
