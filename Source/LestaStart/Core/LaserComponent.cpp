@@ -3,6 +3,8 @@
 
 #include "LaserComponent.h"
 
+#include "Evaluation/IMovieSceneEvaluationHook.h"
+
 
 // Sets default values for this component's properties
 ULaserComponent::ULaserComponent()
@@ -46,8 +48,24 @@ void ULaserComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	}
 }
 
+void ULaserComponent::SetOrigin(const FVector& NewOrigin)
+{
+	BeginPosition = NewOrigin;
+}
+
+void ULaserComponent::SetEndPoint(const FVector& NewEndPoint)
+{
+	EndPosition = NewEndPoint;
+}
+
 void ULaserComponent::SetColor(const FColor& NewColor)
 {
 	Color = NewColor;
+}
+
+void ULaserComponent::Move(const FVector& MoveVector)
+{
+	BeginPosition += MoveVector;
+	EndPosition += MoveVector;
 }
 

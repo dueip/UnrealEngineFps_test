@@ -27,9 +27,9 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetOrigin(const FVector& NewBeginPosition);
+	virtual void SetOrigin(const FVector& NewOrigin);
 	UFUNCTION(BlueprintCallable)
-	virtual void SetEndPosition(const FVector& NewEndPosition);
+	virtual void SetEndPoint(const FVector& NewEndPoint);
 	UFUNCTION(BlueprintCallable)
 	virtual void SetColor(const FColor& NewColor);
 	/* Moves both Begin and End positions by MoveVector*/
