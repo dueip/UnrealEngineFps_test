@@ -22,6 +22,7 @@ void ALestaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	{
 		EIC->BindAction(MoveInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnMoveInput);
 		EIC->BindAction(LookInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnLookInput);
+		EIC->BindAction(ShootInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnShootInput);
 	}
 	else
 	{
@@ -50,4 +51,9 @@ void ALestaCharacter::OnLookInput(const FInputActionInstance& InputActionInstanc
 	const FVector2D Input2D = InputActionInstance.GetValue().Get<FVector2D>();
 	AddControllerYawInput(Input2D.X);
 	AddControllerPitchInput(Input2D.Y);
+}
+
+void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstance)
+{
+	AddControllerYawInput(500);
 }
