@@ -25,4 +25,23 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void SetBeginPosition(const FVector& NewBeginPosition);
+	UFUNCTION(BlueprintCallable)
+	virtual void SetEndPosition(const FVector& NewEndPosition);
+	UFUNCTION(BlueprintCallable)
+	virtual void SetColor(const FColor& NewColor);
+	/* Moves both Begin and End positions by MoveVector*/
+	UFUNCTION(BlueprintCallable)
+	virtual void Move(const FVector& MoveVector);
+
+
+protected:
+	UPROPERTY(EditDefaultsOnly)
+	FVector BeginPosition;
+	UPROPERTY(EditDefaultsOnly)
+	FVector EndPosition;
+	UPROPERTY(EditAnywhere)
+	FColor Color;
 };

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputAction.h"
+#include "LaserComponent.h"
 #include "LestaCharacter.generated.h"
 
 class UCameraComponent;
@@ -36,7 +37,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> ShootInputAction;
-
+	
 	virtual void OnMoveInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnLookInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnShootInput(const FInputActionInstance& InputActionInstance);

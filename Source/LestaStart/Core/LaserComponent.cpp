@@ -35,8 +35,9 @@ void ULaserComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	if (IsValid(World) && IsValid(Owner))
 	{
 		const FVector OwnerPosition = Owner->GetTransform().GetLocation();
-		const FVector Offset = FVector(100, 100, 0);
-		DrawDebugLine(World, OwnerPosition, OwnerPosition + Offset, FColor::Emerald);
+		const FVector BeginOffset = FVector(0, 000, 50);
+		const FVector EndOffset = BeginOffset + FVector(500, 0, 0);
+		DrawDebugLine(World, OwnerPosition + BeginOffset, OwnerPosition + EndOffset, FColor::Emerald);
 	}
 	else
 	{
