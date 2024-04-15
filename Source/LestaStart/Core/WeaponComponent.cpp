@@ -34,3 +34,8 @@ void UWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// ...
 }
 
+void UWeaponComponent::Shoot()
+{
+	
+}
+

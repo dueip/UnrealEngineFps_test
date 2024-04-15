@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WeaponComponent.h"
+#include "LaserComponent.h"
 #include "LaserWeaponComponent.generated.h"
 
 
@@ -24,4 +25,9 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
+
+	virtual void Shoot() override;
+protected:
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<ULaserComponent> Laser;
 };
