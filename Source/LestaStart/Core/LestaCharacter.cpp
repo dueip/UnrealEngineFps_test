@@ -12,6 +12,7 @@ ALestaCharacter::ALestaCharacter()
 	CameraComponent->bUsePawnControlRotation = true; // Camera rotation is synchronized with Player Controller rotation
 	CameraComponent->SetupAttachment(GetMesh());
 
+	
 	const TObjectPtr<ULaserComponent> LaserComponent = CreateDefaultSubobject<ULaserComponent>(TEXT("Laser Test"));
 	LaserComponent->SetColor(FColor::White);
 	
