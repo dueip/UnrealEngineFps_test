@@ -31,7 +31,7 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                           FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-6	Shoot();
+	Shoot();
 	// ...
 }
 
