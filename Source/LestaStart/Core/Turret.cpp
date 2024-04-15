@@ -9,6 +9,12 @@ ATurret::ATurret()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	// Since the laser can also be given through the blueprints
+	if (!IsValid(LaserWeapon))
+	{
+		// Probably a bad choice?
+		
+	}
 }
 
 // Called when the game starts or when spawned

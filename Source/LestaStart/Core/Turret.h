@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "LaserWeaponComponent.h"
 #include "Turret.generated.h"
 
 UCLASS()
@@ -20,6 +21,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	UPROPERTY(EditAnywhere, Category="Weapon")
+	TObjectPtr<ULaserWeaponComponent> LaserWeapon;
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 };
