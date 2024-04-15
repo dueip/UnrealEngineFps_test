@@ -8,7 +8,7 @@
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LESTASTART_API UWeaponComponent : public UActorComponent
+class LESTASTART_API UWeaponComponent : public USceneComponent
 {
 	GENERATED_BODY()
 

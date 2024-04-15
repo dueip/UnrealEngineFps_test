@@ -11,7 +11,8 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 	Laser = CreateDefaultSubobject<ULaserComponent>(TEXT("Laser"));
-	
+	Laser->SetOrigin(ThisClass::GetComponentTransform().GetLocation());
+	Laser->SetColor(FColor::Emerald);
 	// ...
 }
 
@@ -32,11 +33,14 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	Shoot();
+	Laser->SetOrigin(ThisClass::GetSocketLocation(GetAttachSocketName()));
+	Laser->SetEndPoint(ThisClass::GetSocketLocation(GetAttachSocketName()) + FVector(100, 0, 0));
+	
 	// ...
 }
 
 void ULaserWeaponComponent::Shoot()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Laser fired!"));	
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Laser fired!"));	
 }
 
