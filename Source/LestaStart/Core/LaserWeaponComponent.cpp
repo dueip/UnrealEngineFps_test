@@ -21,9 +21,6 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 void ULaserWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
-	
 }
 
 
@@ -33,10 +30,10 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	Shoot();
-	Laser->SetOrigin(ThisClass::GetSocketLocation(GetAttachSocketName()));
-	Laser->SetEndPoint(ThisClass::GetSocketLocation(GetAttachSocketName()) + FVector(100, 0, 0));
-	
-	// ...
+	const FVector SocketOrigin = ThisClass::GetSocketLocation(GetAttachSocketName()); 
+	Laser->SetOrigin(SocketOrigin);
+	Laser->SetEndPoint(SocketOrigin + FVector(100, 0, 0));
+	Laser->SetColor(FColor::MakeRandomColor());
 }
 
 void ULaserWeaponComponent::Shoot()
