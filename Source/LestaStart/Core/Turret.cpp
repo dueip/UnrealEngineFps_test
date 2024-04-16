@@ -3,6 +3,7 @@
 
 #include "Turret.h"
 
+#include "IMessageTracer.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -33,10 +34,17 @@ void ATurret::ChangeStateTo(const Modes Mode)
 	CurrentMode = Mode;
 }
 
+float ATurret::GetDistanceToPawn(FHitResult& InHitResult, const APawn* Pawn)
+{
+	
+
+
+	return 0;
+}
+
 bool ATurret::CheckIfPawnIsInTheFOV(const APawn* Pawn)
 {
 	FHitResult Hit;
-
 	const FVector TurretLocation = GetActorLocation();
 	const FVector TraceEnd = Pawn->GetActorLocation();
 	bool bBlockHit = GetWorld()->LineTraceSingleByChannel(Hit, TurretLocation, TraceEnd, ECC_Pawn);
@@ -49,11 +57,12 @@ void ATurret::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	const float RotationSpeed = 500.f;
 	switch (CurrentMode)
 	{
 	case Modes::Scouting:
 		{
-			FRotator DeltaRotator = FRotator(0, UE_PI / 2, 0) * DeltaTime * 10.f; 
+			FRotator DeltaRotator = FRotator(0, UE_PI / 2, 0) * DeltaTime * RotationSpeed; 
 			AddActorWorldRotation(DeltaRotator);
 			
 			if (Pawn)
@@ -68,13 +77,24 @@ void ATurret::Tick(float DeltaTime)
 	case Modes::Activated:
 		if (!TimerHandle.IsValid())
 		{
+			
 			GetWorldTimerManager().SetTimer(TimerHandle, this, &ThisClass::	ChangeStateToAttack, 1.f);
 		}
 		break;
 	case Modes::Attacking:
 		{
-			FRotator DeltaRotator = FRotator(0, UE_PI / 2, 0) * DeltaTime * 500.f; 
-			AddActorWorldRotation(DeltaRotator);
+			FVector DirectionVector = GetActorLocation() - Pawn->GetActorLocation();
+			DirectionVector.Normalize();
+			float Pitch = FMath::Atan2(DirectionVector.Z, FMath::Sqrt(FMath::Square(DirectionVector.X) + FMath::Square(DirectionVector.Y)));
+			float Yaw = FMath::Atan2(DirectionVector.Y, DirectionVector.X);
+			Pitch = FMath::RadiansToDegrees(Pitch);
+			Yaw = FMath::RadiansToDegrees(Yaw);
+			const FRotator EndRotation(Pitch, Yaw + 180, 0);
+			
+			FRotator CurrentRotation = GetActorRotation();
+			FRotator NewRotation = FMath::RInterpTo(CurrentRotation, EndRotation,
+				GetWorld()->GetDeltaSeconds(), RotationSpeed * DeltaTime);
+			SetActorRotation(NewRotation);
 			if (Pawn && !CheckIfPawnIsInTheFOV(Pawn))
 			{
 				ChangeStateTo(Modes::Scouting);

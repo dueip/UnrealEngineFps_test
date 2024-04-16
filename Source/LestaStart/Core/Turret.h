@@ -38,6 +38,7 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable)
 	void ChangeStateTo(const Modes Mode);
+	float GetDistanceToPawn(FHitResult& InHitResult, const APawn* Pawn);
 	UFUNCTION(BlueprintCallable)
 	bool CheckIfPawnIsInTheFOV(const APawn* Pawn);
 
