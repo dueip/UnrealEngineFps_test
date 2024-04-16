@@ -33,27 +33,32 @@ void ATurret::ChangeStateTo(const Modes Mode)
 	CurrentMode = Mode;
 }
 
+bool ATurret::CheckIfPawnIsInTheFOV(const APawn* Pawn)
+{
+	FHitResult Hit;
+
+	const FVector TurretLocation = GetActorLocation();
+	const FVector TraceEnd = Pawn->GetActorLocation();
+	bool bBlockHit = GetWorld()->LineTraceSingleByChannel(Hit, TurretLocation, TraceEnd, ECC_Pawn);
+	const float DistanceFromTheTurret = FVector::Distance(TurretLocation, TraceEnd);
+	return Hit.bBlockingHit && DistanceFromTheTurret <= ViewRadius;
+}
+
 // Called every frame
 void ATurret::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	switch (CurrentMode)
 	{
 	case Modes::Scouting:
 		{
 			FRotator DeltaRotator = FRotator(0, UE_PI / 2, 0) * DeltaTime * 10.f; 
 			AddActorWorldRotation(DeltaRotator);
-			const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+			
 			if (Pawn)
 			{
-				FHitResult Hit;
-
-				const FVector TurretLocation = GetActorLocation();
-				const FVector TraceEnd = Pawn->GetActorLocation();
-				bool bBlockHit = GetWorld()->LineTraceSingleByChannel(Hit, TurretLocation, TraceEnd, ECC_Pawn);
-				const float DistanceFromTheTurret = FVector::Distance(TurretLocation, TraceEnd);
-				
-				if (Hit.bBlockingHit && DistanceFromTheTurret <= ViewRadius)
+				if (CheckIfPawnIsInTheFOV(Pawn))
 				{
 					ChangeStateTo(Modes::Activated);
 				}
@@ -70,7 +75,10 @@ void ATurret::Tick(float DeltaTime)
 		{
 			FRotator DeltaRotator = FRotator(0, UE_PI / 2, 0) * DeltaTime * 500.f; 
 			AddActorWorldRotation(DeltaRotator);
-			//CurrentMode = Modes::Activated;
+			if (Pawn && !CheckIfPawnIsInTheFOV(Pawn))
+			{
+				ChangeStateTo(Modes::Scouting);
+			}
 		}
 	}
 		

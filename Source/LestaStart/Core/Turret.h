@@ -24,6 +24,8 @@ class LESTASTART_API ATurret : public AActor
 	GENERATED_BODY()
 
 public:
+	//DECLARE_DELEGATE_RetVal(FCheckIfPawnIsInTheFOV);
+	
 	UPROPERTY(EditDefaultsOnly, Category="Mode")
 	Modes BeginningMode;	
 	// Sets default values for this actor's properties
@@ -36,7 +38,9 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable)
 	void ChangeStateTo(const Modes Mode);
-	
+	UFUNCTION(BlueprintCallable)
+	bool CheckIfPawnIsInTheFOV(const APawn* Pawn);
+
 	UPROPERTY(EditAnywhere, Category="Vision")
 	float ViewRadius;
 
@@ -51,6 +55,6 @@ public:
 private:
 	FTimerHandle TimerHandle;
 
-	void ChangeStateToAttack() { UE_LOG(LogTemp,Warning, TEXT("Changed to attack?")); ChangeStateTo(Modes::Attacking);} ;
+	void ChangeStateToAttack() {  ChangeStateTo(Modes::Attacking); TimerHandle.Invalidate(); } ;
 	Modes CurrentMode;
 };
