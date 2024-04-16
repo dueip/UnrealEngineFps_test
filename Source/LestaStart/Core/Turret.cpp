@@ -52,7 +52,7 @@ void ATurret::Tick(float DeltaTime)
 				const FVector TraceEnd = Pawn->GetActorLocation();
 				bool bBlockHit = GetWorld()->LineTraceSingleByChannel(Hit, TurretLocation, TraceEnd, ECC_Pawn);
 				const float DistanceFromTheTurret = FVector::Distance(TurretLocation, TraceEnd);
-				UE_LOG(LogTemp, Warning, TEXT("ViewRadius %f, Hit.Distance %f"), ViewRadius, DistanceFromTheTurret);	
+				
 				if (Hit.bBlockingHit && DistanceFromTheTurret <= ViewRadius)
 				{
 					ChangeStateTo(Modes::Activated);
