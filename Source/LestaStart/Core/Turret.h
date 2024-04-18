@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "LaserWeaponComponent.h"
+#include "HealthComponent.h"
 #include "Turret.generated.h"
+
 
 UENUM()
 enum class Modes
@@ -65,4 +67,9 @@ private:
 
 	void ChangeStateToAttack() {  ChangeStateTo(Modes::Attacking); TimerHandle.Invalidate(); } ;
 	Modes CurrentMode;
+	UPROPERTY(EditDefaultsOnly, Category="Health")
+	TObjectPtr<UHealthComponent> Health;
+
+	UFUNCTION(Blueprintable)
+	void OnHealthChanged(float NewHealth);
 };

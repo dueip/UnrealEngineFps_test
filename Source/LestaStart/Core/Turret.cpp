@@ -16,6 +16,12 @@ ATurret::ATurret()
 	ViewRadius = 500.f;
 	FOV = 2 * UE_PI;
 	ScoutingRotationSpeed = 500.f;
+	if (!Health)
+	{
+		Health = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
+		Health->SetHealth(100.f);
+	}
+	Health->HealthChangedDelegate.BindUFunction(this, FName("OnHealthChanged"));
 }
 
 // Called when the game starts or when spawned
@@ -80,6 +86,7 @@ FRotator ATurret::InterpolateToPawnsLocation(const APawn* Pawn, const float Rota
 // Called every frame
 void ATurret::Tick(float DeltaTime)
 {
+	Health->SetHealth(Health->GetHealth() + 1);
 	Super::Tick(DeltaTime);
 	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	 
@@ -103,7 +110,7 @@ void ATurret::Tick(float DeltaTime)
 		if (!TimerHandle.IsValid())
 		{
 			
-			GetWorldTimerManager().SetTimer(TimerHandle, this, &ThisClass::	ChangeStateToAttack, 1.f);
+			GetWorldTimerManager().SetTimer(TimerHandle, this, &ThisClass::ChangeStateToAttack, 1.f);
 		}
 		break;
 	case Modes::Attacking:
@@ -118,5 +125,10 @@ void ATurret::Tick(float DeltaTime)
 		}
 	}
 		
+}
+
+void ATurret::OnHealthChanged(float NewHealth)
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s's new health is: %f"), GetName().GetCharArray().GetData(), NewHealth);
 }
 
