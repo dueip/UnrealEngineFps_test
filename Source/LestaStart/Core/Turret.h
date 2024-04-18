@@ -38,6 +38,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	
+	
 	UFUNCTION(BlueprintCallable)
 	void ChangeStateTo(const Modes Mode);
 	
@@ -62,11 +64,23 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-private:
-	FTimerHandle TimerHandle;
+	UFUNCTION()
+	virtual void HandleDamageTaken(AActor* DamagedActor, float Damage,
+		const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+protected:
+	FTimerHandle AnimationTimerHandle;
 
-	void ChangeStateToAttack() {  ChangeStateTo(Modes::Attacking); TimerHandle.Invalidate(); } ;
+	void ChangeStateToAttack() {  ChangeStateTo(Modes::Attacking); AnimationTimerHandle.Invalidate(); } ;
+	void destr()
+	{
+		Destroy();
+	}
+
 	Modes CurrentMode;
+
+	UPROPERTY(EditAnywhere, Category="Health")
+	float MaxHP;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Health")
 	TObjectPtr<UHealthComponent> Health;
 

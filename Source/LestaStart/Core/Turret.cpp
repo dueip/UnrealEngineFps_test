@@ -4,7 +4,11 @@
 #include "Turret.h"
 
 #include "IMessageTracer.h"
+#include "ScreenPass.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/DamageEvents.h"
+
+
 
 
 // Sets default values
@@ -16,10 +20,14 @@ ATurret::ATurret()
 	ViewRadius = 500.f;
 	FOV = 2 * UE_PI;
 	ScoutingRotationSpeed = 500.f;
+	MaxHP = 0;
+
+	OnTakeAnyDamage.AddDynamic(this, &ATurret::HandleDamageTaken);
+	
 	if (!Health)
 	{
 		Health = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
-		Health->SetHealth(100.f);
+		Health->SetHealth(MaxHP);
 	}
 	Health->HealthChangedDelegate.BindUFunction(this, FName("OnHealthChanged"));
 }
@@ -27,6 +35,7 @@ ATurret::ATurret()
 // Called when the game starts or when spawned
 void ATurret::BeginPlay()
 {
+	Health->SetHealth(MaxHP);
 	Super::BeginPlay();
 	// Set the mode to the current
 	CurrentMode = BeginningMode;
@@ -83,10 +92,17 @@ FRotator ATurret::InterpolateToPawnsLocation(const APawn* Pawn, const float Rota
 	                                        GetWorld()->GetDeltaSeconds(), RotationSpeed);
 }
 
+
+
+
 // Called every frame
 void ATurret::Tick(float DeltaTime)
 {
-	Health->SetHealth(Health->GetHealth() + 1);
+	FPointDamageEvent PointDamage;
+	PointDamage.Damage = 10.f;
+	
+	TakeDamage(10.f, PointDamage , nullptr, nullptr);
+
 	Super::Tick(DeltaTime);
 	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	 
@@ -107,10 +123,9 @@ void ATurret::Tick(float DeltaTime)
 			break;
 		}
 	case Modes::Activated:
-		if (!TimerHandle.IsValid())
+		if (!AnimationTimerHandle.IsValid())
 		{
-			
-			GetWorldTimerManager().SetTimer(TimerHandle, this, &ThisClass::ChangeStateToAttack, 1.f);
+			GetWorldTimerManager().SetTimer(AnimationTimerHandle, this, &ThisClass::ChangeStateToAttack, 1.f);
 		}
 		break;
 	case Modes::Attacking:
@@ -125,6 +140,20 @@ void ATurret::Tick(float DeltaTime)
 		}
 	}
 		
+}
+
+
+void ATurret::HandleDamageTaken(AActor* DamagedActor, float Damage,
+	const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+	
+	Health->SetHealth(Health->GetHealth() - Damage);
+	if (Health->GetHealth() <= 0.f)
+	{
+		SetActorScale3D(GetActorScale3D() / 2);
+		Destroy();
+	}
+	
 }
 
 void ATurret::OnHealthChanged(float NewHealth)

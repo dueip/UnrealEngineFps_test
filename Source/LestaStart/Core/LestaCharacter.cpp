@@ -13,6 +13,8 @@ ALestaCharacter::ALestaCharacter()
 	CameraComponent->SetupAttachment(GetMesh());
 }
 
+
+
 void ALestaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
