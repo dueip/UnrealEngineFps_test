@@ -38,9 +38,14 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable)
 	void ChangeStateTo(const Modes Mode);
+	
 	float GetDistanceToPawn(FHitResult& InHitResult, const APawn* Pawn);
+
 	UFUNCTION(BlueprintCallable)
-	bool CheckIfPawnIsInTheFOV(const APawn* Pawn);
+	bool CheckIfPawnIsInTheFOV(const APawn* Pawn) const;
+
+	UFUNCTION(BlueprintCallable)
+	FRotator InterpolateToPawnsLocation(const APawn* Pawn, float RotationSpeed) const;
 
 	UPROPERTY(EditAnywhere, Category="Vision")
 	float ViewRadius;
@@ -49,7 +54,9 @@ public:
 	// Should somehow display that as degrees?
 	float FOV;
 	
-	
+	UPROPERTY(EditAnywhere, Category="Movement")
+	float ScoutingRotationSpeed;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

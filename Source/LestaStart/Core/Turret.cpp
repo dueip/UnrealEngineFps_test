@@ -15,6 +15,7 @@ ATurret::ATurret()
 	BeginningMode = Modes::None;
 	ViewRadius = 500.f;
 	FOV = 2 * UE_PI;
+	ScoutingRotationSpeed = 500.f;
 }
 
 // Called when the game starts or when spawned
@@ -42,7 +43,7 @@ float ATurret::GetDistanceToPawn(FHitResult& InHitResult, const APawn* Pawn)
 	return 0;
 }
 
-bool ATurret::CheckIfPawnIsInTheFOV(const APawn* Pawn)
+bool ATurret::CheckIfPawnIsInTheFOV(const APawn* Pawn) const
 {
 	FHitResult Hit;
 	const FVector TurretLocation = GetActorLocation();
@@ -52,17 +53,41 @@ bool ATurret::CheckIfPawnIsInTheFOV(const APawn* Pawn)
 	return Hit.bBlockingHit && DistanceFromTheTurret <= ViewRadius;
 }
 
+FRotator ATurret::InterpolateToPawnsLocation(const APawn* Pawn, const float RotationSpeed) const
+{
+	// Расстояние между Турелью и Павном 
+	FVector DirectionVector = GetActorLocation() - Pawn->GetActorLocation();
+	DirectionVector.Normalize();
+	
+	float Pitch = FMath::Atan2(DirectionVector.Z,
+		FMath::Sqrt(FMath::Square(DirectionVector.X) + FMath::Square(DirectionVector.Y)));
+	float Yaw = FMath::Atan2(DirectionVector.Y, DirectionVector.X);
+
+	//FRotator работает с градусами (очень странно?)
+	Pitch = FMath::RadiansToDegrees(Pitch);
+	Yaw = FMath::RadiansToDegrees(Yaw);
+
+	// Добавляем 180 градусов к Yaw чтобы просто повернуть на 180 градусов, потому что иначе турель смотрит ровно в
+	// другую сторону
+	const FRotator EndRotation(Pitch, Yaw + 180, 0);
+			
+	const FRotator CurrentRotation = GetActorRotation();
+	// Интерполируем чтобы был красивый поворот, а не просто телепорт 
+	return FMath::RInterpTo(CurrentRotation, EndRotation,
+	                                        GetWorld()->GetDeltaSeconds(), RotationSpeed);
+}
+
 // Called every frame
 void ATurret::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-	const float RotationSpeed = 500.f;
+	 
 	switch (CurrentMode)
 	{
 	case Modes::Scouting:
 		{
-			FRotator DeltaRotator = FRotator(0, UE_PI / 2, 0) * DeltaTime * RotationSpeed; 
+			FRotator DeltaRotator = FRotator(0, UE_PI / 2, 0) * DeltaTime * ScoutingRotationSpeed; 
 			AddActorWorldRotation(DeltaRotator);
 			
 			if (Pawn)
@@ -83,17 +108,8 @@ void ATurret::Tick(float DeltaTime)
 		break;
 	case Modes::Attacking:
 		{
-			FVector DirectionVector = GetActorLocation() - Pawn->GetActorLocation();
-			DirectionVector.Normalize();
-			float Pitch = FMath::Atan2(DirectionVector.Z, FMath::Sqrt(FMath::Square(DirectionVector.X) + FMath::Square(DirectionVector.Y)));
-			float Yaw = FMath::Atan2(DirectionVector.Y, DirectionVector.X);
-			Pitch = FMath::RadiansToDegrees(Pitch);
-			Yaw = FMath::RadiansToDegrees(Yaw);
-			const FRotator EndRotation(Pitch, Yaw + 180, 0);
-			
-			FRotator CurrentRotation = GetActorRotation();
-			FRotator NewRotation = FMath::RInterpTo(CurrentRotation, EndRotation,
-				GetWorld()->GetDeltaSeconds(), RotationSpeed * DeltaTime);
+			const float InterpolationSpeed = ScoutingRotationSpeed * DeltaTime;
+			const FRotator NewRotation = InterpolateToPawnsLocation(Pawn, InterpolationSpeed);
 			SetActorRotation(NewRotation);
 			if (Pawn && !CheckIfPawnIsInTheFOV(Pawn))
 			{
