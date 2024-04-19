@@ -30,4 +30,16 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<ULaserComponent> Laser;
+
+	FTimerHandle BlinkAnimationTimer;
+
+	UPROPERTY()
+	FColor BaseColor;
+	UPROPERTY(EditAnywhere, Category="Animation")
+	float BlinkingInterval;
+	UFUNCTION()
+	void BlinckingAnimationCallback();
 };
+
+	
+

@@ -61,6 +61,11 @@ void ULaserComponent::SetColor(const FColor& NewColor)
 	Color = NewColor;
 }
 
+FColor ULaserComponent::GetColor() const
+{
+	return Color;
+}
+
 void ULaserComponent::Move(const FVector& MoveVector)
 {
 	BeginPosition += MoveVector;

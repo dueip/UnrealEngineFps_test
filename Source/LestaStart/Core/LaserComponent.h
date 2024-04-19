@@ -32,6 +32,8 @@ public:
 	virtual void SetEndPoint(const FVector& NewEndPoint);
 	UFUNCTION(BlueprintCallable)
 	virtual void SetColor(const FColor& NewColor);
+	UFUNCTION(BlueprintGetter)
+	FColor GetColor() const;
 	/* Moves both Begin and End positions by MoveVector*/
 	UFUNCTION(BlueprintCallable)
 	virtual void Move(const FVector& MoveVector);
