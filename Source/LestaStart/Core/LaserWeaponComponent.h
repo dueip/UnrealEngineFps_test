@@ -20,6 +20,7 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	void CalculateAnimationDurationAndSetTimer();
 
 public:
 	// Called every frame
@@ -36,7 +37,12 @@ protected:
 	UPROPERTY()
 	FColor BaseColor;
 	UPROPERTY(EditAnywhere, Category="Animation")
-	float BlinkingInterval;
+	FColor BlinkColor;
+	UPROPERTY(EditAnywhere, Category="Animation")
+	float BlinkDuration;
+	UPROPERTY(EditAnywhere, Category="Animation")
+	float AnimationDuration;
+	
 	UFUNCTION()
 	void BlinckingAnimationCallback();
 };

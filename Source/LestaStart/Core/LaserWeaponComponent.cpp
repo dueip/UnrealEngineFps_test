@@ -13,7 +13,8 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 	Laser = CreateDefaultSubobject<ULaserComponent>(TEXT("Laser"));
 	Laser->SetOrigin(ThisClass::GetComponentTransform().GetLocation());
 	
-	BlinkingInterval = 1.5f;
+	BlinkDuration = 0.05f;
+	AnimationDuration = 0.1f;
 	// ...
 }
 
@@ -22,26 +23,53 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 void ULaserWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	Laser->PrimaryComponentTick.SetTickFunctionEnable(false);
 	BaseColor = Laser->GetColor();
+
+	
+	// Safe checks:
+	if(AnimationDuration < BlinkDuration)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Animation duration should not be lesser than the blink duration"));
+	}
 }
 
+
+void ULaserWeaponComponent::CalculateAnimationDurationAndSetTimer()
+{
+	float TimerDuration = 0.f;
+	if (Laser->GetColor() != BaseColor)
+	{
+		TimerDuration = BlinkDuration;
+	}
+	else
+	{
+		TimerDuration = AnimationDuration - BlinkDuration;
+	}
+	GetWorld()->GetTimerManager().SetTimer(BlinkAnimationTimer, this,
+	                                       &ThisClass::BlinckingAnimationCallback, TimerDuration, false);
+}
 
 // Called every frame
 void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                           FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	Shoot();
+	
+	//Shoot();
+
+
 	// It's fine to use GetSocketLocation in here since it will return the component's transform anyways
 	// See: https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/GetSocketLocation/
+
 	const FVector SocketOrigin = ThisClass::GetSocketLocation(GetAttachSocketName()); 
 	Laser->SetOrigin(SocketOrigin);
 	Laser->SetEndPoint(SocketOrigin + FVector(100, 0, 0));
-	//Laser->SetColor(FColor::MakeRandomColor());
+	
 	if (IsValid(GetWorld()) && !BlinkAnimationTimer.IsValid())
 	{
-		GetWorld()->GetTimerManager().SetTimer(BlinkAnimationTimer, this,
-			&ThisClass::BlinckingAnimationCallback, BlinkingInterval, true);
+		CalculateAnimationDurationAndSetTimer();
 	}
 }
 
@@ -49,12 +77,12 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void ULaserWeaponComponent::Shoot()
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Laser fired!"));	
+	Laser->PrimaryComponentTick.SetTickFunctionEnable(true);
 }
 
 void ULaserWeaponComponent::BlinckingAnimationCallback()
 {
-	Laser->SetColor(Laser->GetColor() == BaseColor ? FColor::White : BaseColor);
+	Laser->SetColor(Laser->GetColor() == BaseColor ? BlinkColor : BaseColor);
 	BlinkAnimationTimer.Invalidate();
 }
 
