@@ -22,6 +22,9 @@ ATurret::ATurret()
 	ScoutingRotationSpeed = 500.f;
 	MaxHP = 0;
 
+	TimeBetweenShots = 1.f;
+
+	
 	OnTakeAnyDamage.AddDynamic(this, &ATurret::HandleDamageTaken);
 	
 	if (!Health)
@@ -93,15 +96,13 @@ FRotator ATurret::InterpolateToPawnsLocation(const APawn* Pawn, const float Rota
 }
 
 
-
-
 // Called every frame
 void ATurret::Tick(float DeltaTime)
 {
 	FPointDamageEvent PointDamage;
 	PointDamage.Damage = 10.f;
 	
-	TakeDamage(10.f, PointDamage , nullptr, nullptr);
+	//TakeDamage(10.f, PointDamage , nullptr, nullptr);
 
 	Super::Tick(DeltaTime);
 	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
@@ -133,10 +134,6 @@ void ATurret::Tick(float DeltaTime)
 			const float InterpolationSpeed = ScoutingRotationSpeed * DeltaTime;
 			const FRotator NewRotation = InterpolateToPawnsLocation(Pawn, InterpolationSpeed);
 			SetActorRotation(NewRotation);
-			if (Pawn && !CheckIfPawnIsInTheFOV(Pawn))
-			{
-				ChangeStateTo(Modes::Scouting);
-			}
 		}
 	}
 		

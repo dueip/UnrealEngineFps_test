@@ -8,6 +8,8 @@
 #include "LaserWeaponComponent.generated.h"
 
 
+DECLARE_DELEGATE(FShootDelegate)
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LESTASTART_API ULaserWeaponComponent : public UWeaponComponent
 {
@@ -42,6 +44,8 @@ protected:
 	float BlinkDuration;
 	UPROPERTY(EditAnywhere, Category="Animation")
 	float AnimationDuration;
+
+	FShootDelegate ShootDelegate;
 	
 	UFUNCTION()
 	void BlinckingAnimationCallback();

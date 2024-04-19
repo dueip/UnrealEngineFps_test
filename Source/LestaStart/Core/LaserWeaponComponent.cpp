@@ -3,6 +3,8 @@
 
 #include "LaserWeaponComponent.h"
 
+#include "WeaponHoldableInterface.h"
+
 
 // Sets default values for this component's properties
 ULaserWeaponComponent::ULaserWeaponComponent()
@@ -23,12 +25,16 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 void ULaserWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	Laser->PrimaryComponentTick.SetTickFunctionEnable(false);
+	Laser->SetComponentTickEnabled(false);
 	BaseColor = Laser->GetColor();
 
+	IWeaponHoldableInterface* Outer = dynamic_cast<IWeaponHoldableInterface*>(GetOuter());
+	if (Outer && Outer->CanHoldWeapon())
+	{
+		Outer->SetWeapon(this);
+	}
 	
-	// Safe checks:
+	// Safety checks:
 	if(AnimationDuration < BlinkDuration)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Animation duration should not be lesser than the blink duration"));
@@ -77,7 +83,8 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void ULaserWeaponComponent::Shoot()
 {
-	Laser->PrimaryComponentTick.SetTickFunctionEnable(true);
+	Laser->SetComponentTickEnabled(true);
+	//ShootDelegate.ExecuteIfBound();
 }
 
 void ULaserWeaponComponent::BlinckingAnimationCallback()

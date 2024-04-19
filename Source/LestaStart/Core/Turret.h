@@ -61,6 +61,10 @@ public:
 	UPROPERTY(EditAnywhere, Category="Movement")
 	float ScoutingRotationSpeed;
 
+	UFUNCTION()
+	virtual void OnShoot() {};
+	UFUNCTION()
+	virtual void OnStopShooting() {};
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -68,7 +72,11 @@ public:
 	virtual void HandleDamageTaken(AActor* DamagedActor, float Damage,
 		const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 protected:
+	/*
+		Timers
+	*/
 	FTimerHandle AnimationTimerHandle;
+	FTimerHandle TimerBetweenShotsHandle;
 
 	void ChangeStateToAttack() {  ChangeStateTo(Modes::Attacking); AnimationTimerHandle.Invalidate(); } ;
 	void destr()
@@ -84,6 +92,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Health")
 	TObjectPtr<UHealthComponent> Health;
 
+	UPROPERTY(EditAnywhere, Category="Attack")
+	float TimeBetweenShots;	
+	
 	UFUNCTION(Blueprintable)
 	void OnHealthChanged(float NewHealth);
 };
