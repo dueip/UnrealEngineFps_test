@@ -3,43 +3,37 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WeaponComponent.h"
-#include "LaserComponent.h"
-#include "LaserWeaponComponent.generated.h"
+#include "Components/ActorComponent.h"
+#include "HealthComponent.generated.h"
 
+
+DECLARE_DELEGATE_RetVal_OneParam(float, FHealthChangedDelegate, float)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LESTASTART_API ULaserWeaponComponent : public UWeaponComponent
+class LESTASTART_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this component's properties
-	ULaserWeaponComponent();
+	UHealthComponent();
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
+	
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
-	virtual void Shoot() override;
-protected:
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<ULaserComponent> Laser;
-
-	FTimerHandle BlinkAnimationTimer;
-
-	UPROPERTY()
-	FColor BaseColor;
-	UPROPERTY(EditAnywhere, Category="Animation")
-	float BlinkingInterval;
-	UFUNCTION()
-	void BlinckingAnimationCallback();
-};
-
+	UFUNCTION(BlueprintSetter)
+	void SetHealth(float NewHP);
+	UFUNCTION(BlueprintGetter)
+	float GetHealth() const { return HealthPoints;};
 	
-
+	FHealthChangedDelegate HealthChangedDelegate;
+private:
+	UPROPERTY(EditAnywhere, Category="Health")
+	float HealthPoints; 
+};
