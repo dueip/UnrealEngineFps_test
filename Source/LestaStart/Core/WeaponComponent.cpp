@@ -39,3 +39,7 @@ void UWeaponComponent::Shoot()
 	
 }
 
+void UWeaponComponent::StopShooting()
+{
+}
+

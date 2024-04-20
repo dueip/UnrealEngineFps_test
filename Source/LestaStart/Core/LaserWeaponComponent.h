@@ -31,6 +31,8 @@ public:
 
 	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
 
+	virtual void StopShooting() override;
+	
 	virtual void Shoot() override;
 protected:
 	UPROPERTY(EditDefaultsOnly)

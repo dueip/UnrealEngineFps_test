@@ -27,5 +27,5 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void Shoot();
-	
+	virtual void StopShooting();
 };

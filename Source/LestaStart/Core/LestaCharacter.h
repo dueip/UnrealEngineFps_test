@@ -23,6 +23,7 @@ class LESTASTART_API ALestaCharacter : public ACharacter, public IWeaponHoldable
 
 public:
 	ALestaCharacter();
+	void OnShootingEnded();
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	virtual bool CanHoldWeapon() const override;

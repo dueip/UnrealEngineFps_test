@@ -13,6 +13,13 @@ ALestaCharacter::ALestaCharacter()
 	CameraComponent->SetupAttachment(GetMesh());
 }
 
+void ALestaCharacter::OnShootingEnded()
+{
+	if (WeaponComponent)
+	{
+		WeaponComponent->StopShooting();
+	}
+}
 
 
 void ALestaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -25,6 +32,8 @@ void ALestaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EIC->BindAction(MoveInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnMoveInput);
 		EIC->BindAction(LookInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnLookInput);
 		EIC->BindAction(ShootInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnShootInput);
+		EIC->BindAction(ShootInputAction, ETriggerEvent::Canceled, this, &ThisClass::OnShootingEnded);
+		EIC->BindAction(ShootInputAction, ETriggerEvent::Completed, this, &ThisClass::OnShootingEnded);
 	}
 	else
 	{
