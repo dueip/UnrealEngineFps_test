@@ -76,8 +76,8 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	const FRotator SocketRotation = GetSocketRotation(GetAttachSocketName());
 	Laser->SetOrigin(SocketOrigin);
 	Laser->SetEndPoint(SocketOrigin + FVector(
-		100 * cos(FMath::DegreesToRadians(SocketRotation.Yaw)),
-		100 * sin(FMath::DegreesToRadians(SocketRotation.Yaw)), 0));
+		LaserLength * cos(FMath::DegreesToRadians(SocketRotation.Yaw)),
+		LaserLength * sin(FMath::DegreesToRadians(SocketRotation.Yaw)), 0));
 	
 	if (IsValid(GetWorld()) && !BlinkAnimationTimer.IsValid())
 	{

@@ -48,7 +48,10 @@ protected:
 	float AnimationDuration;
 
 	FShootDelegate ShootDelegate;
-	
+
+	UPROPERTY(EditAnywhere, Category="Damage")
+	double LaserLength;
+
 	UFUNCTION()
 	void BlinckingAnimationCallback();
 };
