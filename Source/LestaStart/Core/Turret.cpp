@@ -106,7 +106,11 @@ void ATurret::Tick(float DeltaTime)
 
 	Super::Tick(DeltaTime);
 	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-	 
+
+	FColor DebugCircleColor(255, 0, 0, 125);
+	DrawDebugCircle(GetWorld(), GetActorLocation(), ViewRadius, 50, DebugCircleColor, false,
+		0, 0, 10, FVector(1, 0, 0), FVector(0, 1, 0), false);	
+	
 	switch (CurrentMode)
 	{
 	case Modes::Scouting:
