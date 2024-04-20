@@ -12,25 +12,31 @@ ALaserTurret::ALaserTurret()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
 }
 
 // Called when the game starts or when spawned
 void ALaserTurret::BeginPlay()
 {
 	Super::BeginPlay();
+	WeaponComponent->StopShooting();
 }
 
 void ALaserTurret::OnShoot()
 {
 	if (IsValid(WeaponComponent))
 	{
-		WeaponComponent->DestroyComponent();
+		WeaponComponent->Shoot();
 	}
 }
 
 void ALaserTurret::OnStopShooting()
 {
-	
+	if (IsValid(WeaponComponent))
+	{
+		WeaponComponent->StopShooting();
+	}
+	TimerBetweenShotsHandle.Invalidate();
 }
 
 

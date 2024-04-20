@@ -5,6 +5,7 @@
 
 #include "IMessageTracer.h"
 #include "ScreenPass.h"
+#include "Components/TextRenderComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
 
@@ -33,6 +34,9 @@ ATurret::ATurret()
 		Health->SetHealth(MaxHP);
 	}
 	Health->HealthChangedDelegate.BindUFunction(this, FName("OnHealthChanged"));
+	
+	healthbar->Text = FText::FromString("Helloworld");
+	healthbar->bAlwaysRenderAsText = false;
 }
 
 // Called when the game starts or when spawned
@@ -99,6 +103,8 @@ FRotator ATurret::InterpolateToPawnsLocation(const APawn* Pawn, const float Rota
 // Called every frame
 void ATurret::Tick(float DeltaTime)
 {
+	
+	
 	FPointDamageEvent PointDamage;
 	PointDamage.Damage = 10.f;
 	
@@ -147,7 +153,7 @@ void ATurret::Tick(float DeltaTime)
 	case Modes::Attacking:
 		{
 			const float InterpolationSpeed = ScoutingRotationSpeed * DeltaTime;
-			const FRotator NewRotation = InterpolateToPawnsLocation(Pawn, InterpolationSpeed);
+			const FRotator NewRotation = InterpolateToPawnsLocation(Pawn, InterpolationSpeed / 10.f);
 			SetActorRotation(NewRotation);
 		}
 	}
@@ -158,7 +164,10 @@ void ATurret::Tick(float DeltaTime)
 void ATurret::HandleDamageTaken(AActor* DamagedActor, float Damage,
 	const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
-	
+	if (DamageCauser == this)
+	{
+		return;
+	}
 	Health->SetHealth(Health->GetHealth() - Damage);
 	if (Health->GetHealth() <= 0.f)
 	{
@@ -170,6 +179,7 @@ void ATurret::HandleDamageTaken(AActor* DamagedActor, float Damage,
 
 void ATurret::OnHealthChanged(float NewHealth)
 {
+	
 	UE_LOG(LogTemp, Warning, TEXT("%s's new health is: %f"), GetName().GetCharArray().GetData(), NewHealth);
 }
 

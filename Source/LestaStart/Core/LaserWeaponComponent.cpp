@@ -113,6 +113,7 @@ void ULaserWeaponComponent::StopShooting()
 
 void ULaserWeaponComponent::Shoot()
 {
+	Super::Shoot();
 	Laser->SetComponentTickEnabled(true);
 	//ShootDelegate.ExecuteIfBound();
 }

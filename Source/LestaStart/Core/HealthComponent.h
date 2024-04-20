@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Components/TextRenderComponent.h"
 #include "HealthComponent.generated.h"
 
 
@@ -33,7 +34,8 @@ public:
 	float GetHealth() const { return HealthPoints;};
 	
 	FHealthChangedDelegate HealthChangedDelegate;
-private:
+protected:
+	
 	UPROPERTY(EditAnywhere, Category="Health")
 	float HealthPoints; 
 };
