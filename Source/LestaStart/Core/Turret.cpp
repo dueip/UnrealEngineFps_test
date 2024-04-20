@@ -87,7 +87,7 @@ FRotator ATurret::InterpolateToPawnsLocation(const APawn* Pawn, const float Rota
 
 	// Добавляем 180 градусов к Yaw чтобы просто повернуть на 180 градусов, потому что иначе турель смотрит ровно в
 	// другую сторону
-	const FRotator EndRotation(Pitch, Yaw + 180, 0);
+	const FRotator EndRotation(Pitch, Yaw + 180, GetActorRotation().Roll);
 			
 	const FRotator CurrentRotation = GetActorRotation();
 	// Интерполируем чтобы был красивый поворот, а не просто телепорт 
@@ -106,10 +106,21 @@ void ATurret::Tick(float DeltaTime)
 
 	Super::Tick(DeltaTime);
 	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-
+	
 	FColor DebugCircleColor(255, 0, 0, 125);
-	DrawDebugCircle(GetWorld(), GetActorLocation(), ViewRadius, 50, DebugCircleColor, false,
-		0, 0, 10, FVector(1, 0, 0), FVector(0, 1, 0), false);	
+	DrawDebugCircle(
+		GetWorld(),
+		GetActorLocation(),
+		ViewRadius,
+		32,
+		DebugCircleColor,
+		false,
+		0,
+		0,
+		10,
+		FVector(1, 0, 0),
+		FVector(0, 1, 0),
+		false);	
 	
 	switch (CurrentMode)
 	{
