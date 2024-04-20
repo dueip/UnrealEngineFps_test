@@ -7,13 +7,14 @@
 #include "InputAction.h"
 #include "LaserComponent.h"
 #include "WeaponComponent.h"
+#include "WeaponHoldableInterface.h"
 #include "LestaCharacter.generated.h"
 
 class UCameraComponent;
 
 /** Base Character class for the Lesta Start project. */
 UCLASS()
-class LESTASTART_API ALestaCharacter : public ACharacter
+class LESTASTART_API ALestaCharacter : public ACharacter, public IWeaponHoldableInterface
 {
 	GENERATED_BODY()
 
@@ -24,7 +25,9 @@ public:
 	ALestaCharacter();
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
-	 
+	virtual bool CanHoldWeapon() const override;
+	virtual bool SetWeapon(TObjectPtr<UWeaponComponent> Weapon) override;
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCameraComponent> CameraComponent;

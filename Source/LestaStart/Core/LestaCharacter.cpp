@@ -7,7 +7,7 @@
 ALestaCharacter::ALestaCharacter()
 {
 	NetUpdateFrequency = 10.f;
-
+	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("MainCamera"));
 	CameraComponent->bUsePawnControlRotation = true; // Camera rotation is synchronized with Player Controller rotation
 	CameraComponent->SetupAttachment(GetMesh());
@@ -34,6 +34,17 @@ void ALestaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	}
 }
 
+bool ALestaCharacter::CanHoldWeapon() const
+{
+	return true;
+}
+
+bool ALestaCharacter::SetWeapon(TObjectPtr<UWeaponComponent> Weapon)
+{
+	WeaponComponent = Weapon;
+	return (WeaponComponent != nullptr);
+}
+
 void ALestaCharacter::OnMoveInput(const FInputActionInstance& InputActionInstance)
 {
 	// Controller rotation Yaw determines which direction Character is facing
@@ -57,5 +68,8 @@ void ALestaCharacter::OnLookInput(const FInputActionInstance& InputActionInstanc
 
 void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstance)
 {
-	AddControllerYawInput(500);
+	if (WeaponComponent)
+	{
+		WeaponComponent->Shoot();
+	}
 }
