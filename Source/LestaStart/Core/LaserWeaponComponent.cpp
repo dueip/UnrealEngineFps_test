@@ -2,7 +2,7 @@
 
 
 #include "LaserWeaponComponent.h"
-
+#include "Engine/DamageEvents.h"
 #include "WeaponHoldableInterface.h"
 
 
@@ -74,13 +74,29 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 //	GetSocketWorldLocationAndRotation(GetAttachSocketName(), SocketWorldPosition, SocketWorldRotation);
 	const FVector SocketOrigin = GetSocketLocation(GetAttachSocketName());
 	const FRotator SocketRotation = GetSocketRotation(GetAttachSocketName());
-	Laser->SetOrigin(SocketOrigin);
-	Laser->SetEndPoint(SocketOrigin + FVector(
+	const FVector EndPoint = SocketOrigin + FVector(
 		LaserLength * cos(FMath::DegreesToRadians(SocketRotation.Yaw)),
-		LaserLength * sin(FMath::DegreesToRadians(SocketRotation.Yaw)), 0));
+		LaserLength * sin(FMath::DegreesToRadians(SocketRotation.Yaw)), 0);
+	Laser->SetOrigin(SocketOrigin);
+	
+	Laser->SetEndPoint(EndPoint);
+
+	
 	
 	if (IsValid(GetWorld()) && !BlinkAnimationTimer.IsValid())
 	{
+		FHitResult Hit;
+		bool bWasThereAHit = GetWorld()->LineTraceSingleByChannel(Hit, SocketOrigin, EndPoint, ECC_Pawn);
+		FPointDamageEvent PointDamage;
+		PointDamage.Damage = DamageAmount;
+		PointDamage.HitInfo = Hit;
+		// Мы вполне можем получить нуллптр тут и нам не надо волноваться об этом:
+		// Это просто значит то, что у нас не было оружие присоединено к Актору
+		AActor* ActorThatDealtDamage = dynamic_cast<AActor*>(GetOuter());
+		if (bWasThereAHit && !Hit.bBlockingHit)
+		{
+			Hit.GetActor()->TakeDamage(DamageAmount, PointDamage, nullptr, ActorThatDealtDamage);
+		}
 		CalculateAnimationDurationAndSetTimer();
 	}
 }

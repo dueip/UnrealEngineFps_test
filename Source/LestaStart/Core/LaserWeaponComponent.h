@@ -51,6 +51,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category="Damage")
 	double LaserLength;
+	UPROPERTY(EditAnywhere, Category="Damage")
+	float DamageAmount;
 
 	UFUNCTION()
 	void BlinckingAnimationCallback();
