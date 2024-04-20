@@ -24,7 +24,7 @@ void ALaserTurret::OnShoot()
 {
 	if (IsValid(WeaponComponent))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Helloworld"));
+		WeaponComponent->DestroyComponent();
 	}
 }
 

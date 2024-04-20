@@ -29,6 +29,8 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
+	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
+
 	virtual void Shoot() override;
 protected:
 	UPROPERTY(EditDefaultsOnly)

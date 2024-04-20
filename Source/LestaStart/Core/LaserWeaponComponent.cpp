@@ -69,9 +69,15 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// It's fine to use GetSocketLocation in here since it will return the component's transform anyways
 	// See: https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/GetSocketLocation/
 
-	const FVector SocketOrigin = ThisClass::GetSocketLocation(GetAttachSocketName()); 
+//	FVector SocketWorldPosition;
+//	FRotator SocketWorldRotation;
+//	GetSocketWorldLocationAndRotation(GetAttachSocketName(), SocketWorldPosition, SocketWorldRotation);
+	const FVector SocketOrigin = GetSocketLocation(GetAttachSocketName());
+	const FRotator SocketRotation = GetSocketRotation(GetAttachSocketName());
 	Laser->SetOrigin(SocketOrigin);
-	Laser->SetEndPoint(SocketOrigin + FVector(100, 0, 0));
+	Laser->SetEndPoint(SocketOrigin + FVector(
+		100 * cos(FMath::DegreesToRadians(SocketRotation.Yaw)),
+		100 * sin(FMath::DegreesToRadians(SocketRotation.Yaw)), 0));
 	
 	if (IsValid(GetWorld()) && !BlinkAnimationTimer.IsValid())
 	{
@@ -79,6 +85,11 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	}
 }
 
+void ULaserWeaponComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
+{
+	Super::OnComponentDestroyed(bDestroyingHierarchy);
+	Laser->DestroyComponent(bDestroyingHierarchy);
+}
 
 
 void ULaserWeaponComponent::Shoot()
