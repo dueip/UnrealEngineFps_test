@@ -25,7 +25,7 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 void ULaserWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	Laser->SetComponentTickEnabled(false);
+	Laser->Deactivate();
 	BaseColor = Laser->GetColor();
 
 	IWeaponHoldableInterface* Outer = dynamic_cast<IWeaponHoldableInterface*>(GetOuter());
@@ -63,7 +63,10 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
-
+	if (!Laser->IsActive())
+	{
+		return;
+	}
 
 	// It's fine to use GetSocketLocation in here since it will return the component's transform anyways
 	// See: https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/GetSocketLocation/
@@ -75,7 +78,6 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		LaserLength * sin(FMath::DegreesToRadians(SocketRotation.Yaw)),
 		LaserLength * sin(FMath::DegreesToRadians(SocketRotation.Pitch)));
 	Laser->SetOrigin(SocketOrigin);
-	
 	Laser->SetEndPoint(EndPoint);
 
 	
@@ -107,14 +109,15 @@ void ULaserWeaponComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 void ULaserWeaponComponent::StopShooting()
 {
 	Super::StopShooting();
-	Laser->SetComponentTickEnabled(false);
+	Laser->Deactivate();
 }
 
 
 void ULaserWeaponComponent::Shoot()
 {
 	Super::Shoot();
-	Laser->SetComponentTickEnabled(true);
+	Laser->Activate();
+	//Laser->SetComponentTickEnabled(true);
 	//ShootDelegate.ExecuteIfBound();
 }
 
