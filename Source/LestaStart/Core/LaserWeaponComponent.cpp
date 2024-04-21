@@ -2,6 +2,8 @@
 
 
 #include "LaserWeaponComponent.h"
+
+#include "HealthComponent.h"
 #include "Engine/DamageEvents.h"
 #include "WeaponHoldableInterface.h"
 
@@ -72,9 +74,9 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// See: https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/GetSocketLocation/
 
 	const FVector SocketOrigin = GetSocketLocation(GetAttachSocketName());
-	const FVector EndPoint = DesiredEndPoint;
+	FVector EndPoint = DesiredEndPoint;
 	Laser->SetOrigin(SocketOrigin);
-	Laser->SetEndPoint(EndPoint);
+	
 	
 	
 	if (IsValid(GetWorld()) && !BlinkAnimationTimer.IsValid())
@@ -89,10 +91,18 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		AActor* ActorThatDealtDamage = dynamic_cast<AActor*>(GetOuter());
 		if (bWasThereAHit && Hit.bBlockingHit)
 		{
-			Hit.GetActor()->TakeDamage(DamageAmount, PointDamage, nullptr, ActorThatDealtDamage);
+			// Если есть компонент с ХП, то значит мы можем нанести урон
+			// Потом можно перенести в интерфейс
+			if (Hit.GetActor()->FindComponentByClass<UHealthComponent>())
+			{
+				Hit.GetActor()->TakeDamage(DamageAmount, PointDamage, nullptr, ActorThatDealtDamage);
+			}
+			// TODO: Actually make this work
+			EndPoint = Hit.Location;
 		}
 		CalculateAnimationDurationAndSetTimer();
 	}
+	Laser->SetEndPoint(EndPoint);
 }
 
 void ULaserWeaponComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
