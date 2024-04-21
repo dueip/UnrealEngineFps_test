@@ -73,9 +73,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION()
-	virtual void HandleDamageTaken(AActor* DamagedActor, float Damage,
-		const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 protected:
 	/*
 		Timers

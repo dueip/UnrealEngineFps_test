@@ -82,16 +82,14 @@ void UGrenadeWeaponComponent::DoDamage(const TArray<FHitResult>& Hits) const
 		{
 			FRadialDamageEvent DamageEvent;
 			DamageEvent.Origin = GetComponentLocation();
-			// Если есть какое-то препятсиве, то просто пропускаем
-			if (IsBlockedByOtherElement(DamageEvent.Origin, Hit.Location,
-				ECC_Pawn, Hit.GetActor()))
-			{
-				continue;
-			}
+			
 			
 			AActor* DamageCauser = dynamic_cast<AActor*>(GetOuter());
-			Hit.GetActor()->TakeDamage(CalculateCurrentDamageBasedOffCurrentCharge(),
-				DamageEvent, nullptr, DamageCauser);
+			if (IsValid(Hit.GetActor()))
+			{
+				Hit.GetActor()->TakeDamage(CalculateCurrentDamageBasedOffCurrentCharge(),
+					DamageEvent, nullptr, DamageCauser);
+			} 
 		} 
 	}
 }

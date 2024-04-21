@@ -27,7 +27,7 @@ FString UHPRenderComponent::MakeActualStringFromTemplate(const float NewHP) cons
 void UHPRenderComponent::OnHealthChanged(float NewHP)
 {
 	
-	SetText(FText::FromString(MakeActualStringFromTemplate(NewHP)));
+	SetText(FText::FromString(MakeActualStringFromTemplate(static_cast<int>(NewHP))));
 }
 
 
