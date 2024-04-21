@@ -28,16 +28,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> RestartInputAction;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	UInputMappingContext* InputMapping;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
-	int32 InputMappingPriority;
+	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 
 public:
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputMappingContext* InputMapping;
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	int32 InputMappingPriority;
 	void AfterPossesed();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

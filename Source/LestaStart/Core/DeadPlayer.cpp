@@ -5,6 +5,7 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -37,15 +38,15 @@ void ADeadPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ADeadPlayer::AfterPossesed()
 {
+
 	
-	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetController()))
+	if (ULocalPlayer* LocalPlayer = GetGameInstance()->GetLocalPlayerByIndex(0))
 	{
 		if (auto* InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 		{
 			InputSystem->AddMappingContext(InputMapping, InputMappingPriority);
 		}
 	}
-	
 	GetController()->InputComponent->ClearBindingValues();
 	SetupPlayerInputComponent(GetController()->InputComponent);
 }
@@ -79,7 +80,7 @@ void ADeadPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void ADeadPlayer::OnRestartInput()
 {
-	Restart();
+	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetMapName()), true);
 }
 
 void ADeadPlayer::OnLookInput(const FInputActionInstance& InputActionInstance)

@@ -2,6 +2,7 @@
 
 #include "LestaCharacter.h"
 #include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "LestaPlayerController.h"
 #include "Camera/CameraComponent.h"
 
