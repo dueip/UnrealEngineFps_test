@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Turret.h"
 #include "../WeaponHoldableInterface.h"
-#include "../WeaponComponent.h"
+#include "../WeaponInterface.h"
 #include "LaserTurret.generated.h"
 
 UCLASS()
@@ -18,7 +18,7 @@ public:
 	// Sets default values for this actor's properties
 	ALaserTurret();
 	virtual bool CanHoldWeapon() const override { return true; }
-	virtual bool SetWeapon(TObjectPtr<UWeaponComponent> Weapon) override { WeaponComponent = Weapon; return true; }
+	virtual bool SetWeapon(IWeaponInterface* Weapon) override { WeaponComponent = Weapon; return true; }
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -28,8 +28,7 @@ protected:
 	virtual void OnStopShooting() override;
 
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Weapon")
-	TObjectPtr<UWeaponComponent> WeaponComponent;
+	IWeaponInterface* WeaponComponent;
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 };

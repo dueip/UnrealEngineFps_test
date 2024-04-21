@@ -27,7 +27,7 @@ void ALaserTurret::BeginPlay()
 void ALaserTurret::OnShoot()
 {
 	
-	if (IsValid(WeaponComponent))
+	if (WeaponComponent)
 	{
 		WeaponComponent->Shoot();
 	}
@@ -35,7 +35,7 @@ void ALaserTurret::OnShoot()
 
 void ALaserTurret::OnStopShooting()
 {
-	if (IsValid(WeaponComponent))
+	if (WeaponComponent)
 	{
 		WeaponComponent->StopShooting();
 	}

@@ -108,17 +108,13 @@ void ULaserWeaponComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 
 void ULaserWeaponComponent::StopShooting()
 {
-	Super::StopShooting();
 	Laser->Deactivate();
 }
 
 
 void ULaserWeaponComponent::Shoot()
 {
-	Super::Shoot();
 	Laser->Activate();
-	//Laser->SetComponentTickEnabled(true);
-	//ShootDelegate.ExecuteIfBound();
 }
 
 void ULaserWeaponComponent::BlinckingAnimationCallback()

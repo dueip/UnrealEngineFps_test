@@ -49,7 +49,7 @@ bool ALestaCharacter::CanHoldWeapon() const
 	return true;
 }
 
-bool ALestaCharacter::SetWeapon(TObjectPtr<UWeaponComponent> Weapon)
+bool ALestaCharacter::SetWeapon(IWeaponInterface* Weapon)
 {
 	WeaponComponent = Weapon;
 	return (WeaponComponent != nullptr);

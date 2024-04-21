@@ -12,7 +12,6 @@ UHPRenderComponent::UHPRenderComponent()
 	// off to improve performance if you don't need them.
 	SetText( FText::FromString(MakeActualStringFromTemplate(0)));
 	
-	// ...
 }
 
 FString UHPRenderComponent::MakeActualStringFromTemplate(const float NewHP) const
@@ -36,7 +35,7 @@ void UHPRenderComponent::OnHealthChanged(float NewHP)
 void UHPRenderComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	//Text = FText::FromString(DisplayTitle.ToString() + ": 0");
+
 	// It's fine to assume here that we have an HP component inside of the actor
 	// Because who would ever use HPRendererComponent if there is no HP?
 	const AActor* const OuterActor = dynamic_cast<AActor*>(GetOuter());

@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "InputAction.h"
 #include "LaserComponent.h"
-#include "WeaponComponent.h"
+#include "WeaponInterface.h"
 #include "WeaponHoldableInterface.h"
 #include "LestaCharacter.generated.h"
 
@@ -27,7 +27,7 @@ public:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	virtual bool CanHoldWeapon() const override;
-	virtual bool SetWeapon(TObjectPtr<UWeaponComponent> Weapon) override;
+	virtual bool SetWeapon(IWeaponInterface* Weapon) override;
 
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -44,8 +44,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> ShootInputAction;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapons")
-	TObjectPtr<UWeaponComponent> WeaponComponent;
+	IWeaponInterface* WeaponComponent;
 	
 	virtual void OnMoveInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnLookInput(const FInputActionInstance& InputActionInstance);

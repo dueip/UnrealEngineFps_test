@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WeaponComponent.h"
+#include "WeaponInterface.h"
 #include "LaserComponent.h"
 #include "LaserWeaponComponent.generated.h"
 
@@ -11,7 +11,7 @@
 DECLARE_DELEGATE(FShootDelegate)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LESTASTART_API ULaserWeaponComponent : public UWeaponComponent
+class LESTASTART_API ULaserWeaponComponent : public USceneComponent, public IWeaponInterface
 {
 	GENERATED_BODY()
 
