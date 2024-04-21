@@ -22,4 +22,5 @@ public:
 	virtual void Shoot() PURE_VIRTUAL();
 	virtual void StopShooting() PURE_VIRTUAL();
 	virtual bool IsCurrentlyShooting() { return false; };
+	virtual bool IsAtFullCapacity() { return false; }
 };

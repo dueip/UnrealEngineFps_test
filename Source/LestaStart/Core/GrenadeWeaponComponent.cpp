@@ -103,6 +103,11 @@ void UGrenadeWeaponComponent::StopShooting()
 	CurrentCharge = 0.f;
 }
 
+bool UGrenadeWeaponComponent::IsAtFullCapacity()
+{
+	return (CurrentCharge >= MaximumCharge);
+}
+
 
 float UGrenadeWeaponComponent::CalculateCurrentChargeBasedOffMaxCharge() const
 {
@@ -145,7 +150,7 @@ void UGrenadeWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType
 		GetSocketLocation(GetAttachSocketName()),
 		MaximumRadius,
 		32,
-		FColor::Red,
+		FColor::Red ,
 		false,
 		0,
 		0,

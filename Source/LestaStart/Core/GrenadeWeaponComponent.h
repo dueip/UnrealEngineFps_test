@@ -23,6 +23,7 @@ protected:
 
 	virtual void Shoot() override;
 	virtual void StopShooting() override;
+	virtual bool IsAtFullCapacity() override;
 
 	TArray<FHitResult> SweepSphere(const ECollisionChannel TraceChannel) const;
 	float CalculateCurrentDamageBasedOffCurrentCharge() const;
@@ -43,6 +44,8 @@ public:
 	UPROPERTY(EditAnywhere, Category="Damage")
 	bool bShouldIgnoreOuter;
 
+
+	
 	UFUNCTION(BlueprintCallable)
 	float CalculateCurrentChargeBasedOffMaxCharge() const;
 	UFUNCTION(BlueprintCallable)
