@@ -7,10 +7,9 @@
 #include "ScreenPass.h"
 #include "Components/TextRenderComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "HPRenderComponent.h"
 #include "Engine/DamageEvents.h"
 
-
+	
 
 
 // Sets default values

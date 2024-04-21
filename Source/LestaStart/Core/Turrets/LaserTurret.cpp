@@ -1,10 +1,12 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
+
 #include "LaserTurret.h"
 
 #include "NavigationSystemTypes.h"
 #include "Kismet/GameplayStatics.h"
+
 
 
 // Sets default values

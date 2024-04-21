@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "LaserWeaponComponent.h"
-#include "HealthComponent.h"
+#include "../LaserWeaponComponent.h"
+#include "../HealthComponent.h"
 #include "Turret.generated.h"
 
 
