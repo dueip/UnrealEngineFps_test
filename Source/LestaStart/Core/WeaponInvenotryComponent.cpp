@@ -29,14 +29,15 @@ IWeaponInterface* UWeaponInvenotryComponent::GetWeaponAt(const int32 Index)
 	return Weapons[Index];
 }
 
-const IWeaponInterface* UWeaponInvenotryComponent::GetWeaponAt(const int32 Index) const
-{
-	return GetWeaponAt(Index);
-}
 
 void UWeaponInvenotryComponent::PushWeapon(IWeaponInterface* Weapon)
 {
-	Weapons.Push(Weapon);
+	Weapons.Add(Weapon);
+}
+
+int32 UWeaponInvenotryComponent::GetInventorySize() const
+{
+	return Weapons.Num();
 }
 
 

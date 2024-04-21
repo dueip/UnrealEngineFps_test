@@ -34,6 +34,8 @@ public:
 	virtual void StopShooting() override;
 	
 	virtual void Shoot() override;
+
+	virtual bool IsCurrentlyShooting() override;
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<ULaserComponent> Laser;

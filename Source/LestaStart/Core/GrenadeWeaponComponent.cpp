@@ -151,3 +151,8 @@ void UGrenadeWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	);
 }
 
+bool UGrenadeWeaponComponent::IsCurrentlyShooting()
+{
+	return bIsGainingCharge;
+}
+

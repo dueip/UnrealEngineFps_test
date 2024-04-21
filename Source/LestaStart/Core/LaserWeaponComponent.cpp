@@ -117,6 +117,11 @@ void ULaserWeaponComponent::Shoot()
 	Laser->Activate();
 }
 
+bool ULaserWeaponComponent::IsCurrentlyShooting()
+{
+	return Laser->IsActive();
+}
+
 void ULaserWeaponComponent::BlinckingAnimationCallback()
 {
 	Laser->SetColor(Laser->GetColor() == BaseColor ? BlinkColor : BaseColor);

@@ -7,18 +7,66 @@
 ALestaCharacter::ALestaCharacter()
 {
 	NetUpdateFrequency = 10.f;
+	CurrentlyActiveWeaponIndex = 0;
+	bShouldCycleThroughInventory = true;
+	WeaponInventory = CreateDefaultSubobject<UWeaponInvenotryComponent>(TEXT("Weapon Inventory"));
 	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("MainCamera"));
 	CameraComponent->bUsePawnControlRotation = true; // Camera rotation is synchronized with Player Controller rotation
 	CameraComponent->SetupAttachment(GetMesh());
 }
 
+int32 ALestaCharacter::CycleWeaponsIndex(int32 Index) const
+{
+	if (bShouldCycleThroughInventory)
+	{
+		Index = std::abs(Index % WeaponInventory->GetInventorySize());
+		
+	}
+	else
+	{
+		if (Index >= WeaponInventory->GetInventorySize())
+		{
+			Index = WeaponInventory->GetInventorySize() - 1;
+		}
+		else if (Index <= 0)
+		{
+			Index = 0;
+		}
+	}
+	return std::abs(Index);
+}
+
 void ALestaCharacter::OnShootingEnded()
 {
-	if (WeaponComponent)
+	IWeaponInterface* const CurrentlyActiveWeapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
+	if (CurrentlyActiveWeapon)
 	{
-		WeaponComponent->StopShooting();
+		CurrentlyActiveWeapon->StopShooting();
 	}
+}
+
+void ALestaCharacter::OnChooseFirstWeapon()
+{
+	if (IsShooting()) return;
+	OnShootingEnded();
+	CurrentlyActiveWeaponIndex = 0;
+}
+
+void ALestaCharacter::OnChooseSecondWeapon()
+{
+	if (IsShooting()) return;
+	OnShootingEnded();
+	CurrentlyActiveWeaponIndex = 1;
+}
+
+void ALestaCharacter::OnSwitchWeapons(const FInputActionValue& InputActionValue)
+{
+	if (IsShooting()) return;
+	OnShootingEnded();
+	// Returns either -1 or 1
+	CurrentlyActiveWeaponIndex += static_cast<int>(InputActionValue.GetMagnitude());
+	CurrentlyActiveWeaponIndex = CycleWeaponsIndex(CurrentlyActiveWeaponIndex);
 }
 
 
@@ -34,14 +82,23 @@ void ALestaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EIC->BindAction(ShootInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnShootInput);
 		EIC->BindAction(ShootInputAction, ETriggerEvent::Canceled, this, &ThisClass::OnShootingEnded);
 		EIC->BindAction(ShootInputAction, ETriggerEvent::Completed, this, &ThisClass::OnShootingEnded);
+		EIC->BindAction(ChooseFirstWeaponInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnChooseFirstWeapon);
+		EIC->BindAction(ChooseSecondWeaponInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnChooseSecondWeapon);
+		EIC->BindAction(SwitchWeaponsInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnSwitchWeapons);
 		
 	}
 	else
 	{
 		// Print error message into log
 		// You can read more here: https://dev.epicgames.com/documentation/en-us/unreal-engine/logging-in-unreal-engine
-		UE_LOG(LogInput, Error, TEXT("Unexpected input component class: %s"), *GetFullNameSafe(PlayerInputComponent))
+			UE_LOG(LogInput, Error, TEXT("Unexpected input component class: %s"), *GetFullNameSafe(PlayerInputComponent))
 	}
+}
+
+bool ALestaCharacter::IsShooting() const
+{
+	
+	return WeaponInventory->GetWeaponAt(CycleWeaponsIndex(CurrentlyActiveWeaponIndex))->IsCurrentlyShooting();
 }
 
 bool ALestaCharacter::CanHoldWeapon() const
@@ -51,8 +108,8 @@ bool ALestaCharacter::CanHoldWeapon() const
 
 bool ALestaCharacter::SetWeapon(IWeaponInterface* Weapon)
 {
-	WeaponComponent = Weapon;
-	return (WeaponComponent != nullptr);
+	WeaponInventory->PushWeapon(Weapon);
+	return (Weapon != nullptr);
 }
 
 void ALestaCharacter::OnMoveInput(const FInputActionInstance& InputActionInstance)
@@ -78,8 +135,9 @@ void ALestaCharacter::OnLookInput(const FInputActionInstance& InputActionInstanc
 
 void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstance)
 {
-	if (WeaponComponent)
+	IWeaponInterface* const CurrentlyActiveWeapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
+	if (CurrentlyActiveWeapon)
 	{
-		WeaponComponent->Shoot();
+		CurrentlyActiveWeapon->Shoot();
 	}
 }

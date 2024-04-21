@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "InputAction.h"
 #include "LaserComponent.h"
+#include "WeaponInvenotryComponent.h"
 #include "WeaponInterface.h"
 #include "WeaponHoldableInterface.h"
 #include "LestaCharacter.generated.h"
@@ -23,9 +24,13 @@ class LESTASTART_API ALestaCharacter : public ACharacter, public IWeaponHoldable
 
 public:
 	ALestaCharacter();
+	int32 CycleWeaponsIndex(int32 Index) const;
 	void OnShootingEnded();
+	void OnChooseFirstWeapon();
+	void OnChooseSecondWeapon();
+	void OnSwitchWeapons(const FInputActionValue& InputActionValue);
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-
+	bool IsShooting() const;
 	virtual bool CanHoldWeapon() const override;
 	virtual bool SetWeapon(IWeaponInterface* Weapon) override;
 
@@ -33,6 +38,14 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCameraComponent> CameraComponent;
 
+	UPROPERTY(EditDefaultsOnly, Category="Inventory")
+	TObjectPtr<UWeaponInvenotryComponent> WeaponInventory;
+
+	UPROPERTY(EditDefaultsOnly, Category="Inventory")
+	int32 CurrentlyActiveWeaponIndex;
+
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	bool bShouldCycleThroughInventory;
 	/** Input action assigned to movement. */
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> MoveInputAction;
@@ -44,8 +57,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> ShootInputAction;
 
-	IWeaponInterface* WeaponComponent;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> ChooseFirstWeaponInputAction;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> ChooseSecondWeaponInputAction;
+
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	TObjectPtr<UInputAction> SwitchWeaponsInputAction;
+	
 	virtual void OnMoveInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnLookInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnShootInput(const FInputActionInstance& InputActionInstance);

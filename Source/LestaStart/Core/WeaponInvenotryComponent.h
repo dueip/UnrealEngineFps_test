@@ -22,15 +22,13 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UFUNCTION(BlueprintCallable)
 	IWeaponInterface* GetWeaponAt(const int32 Index);
 	
-	UFUNCTION(BlueprintCallable)
-	const IWeaponInterface* GetWeaponAt(const int32 Index) const; 
 	
-	UFUNCTION(BlueprintCallable)
 	void PushWeapon(IWeaponInterface* Weapon);
-	
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetInventorySize() const;
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
