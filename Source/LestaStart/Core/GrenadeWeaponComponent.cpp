@@ -96,8 +96,11 @@ void UGrenadeWeaponComponent::DoDamage(const TArray<FHitResult>& Hits) const
 
 void UGrenadeWeaponComponent::StopShooting()
 {
-	const TArray<FHitResult> Hits = SweepSphere(ECC_Pawn);
-	DoDamage(Hits);
+	if (bIsGainingCharge)
+	{
+		const TArray<FHitResult> Hits = SweepSphere(ECC_Pawn);
+		DoDamage(Hits);
+	}
 	
  	bIsGainingCharge = false;
 	CurrentCharge = 0.f;

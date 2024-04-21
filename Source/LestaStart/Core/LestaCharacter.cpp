@@ -78,13 +78,15 @@ void ALestaCharacter::OnChooseFirstWeapon()
 	if (IsShooting()) return;
 	OnShootingEnded();
 	CurrentlyActiveWeaponIndex = 0;
+	OnShootingEnded();
 }
-
+	
 void ALestaCharacter::OnChooseSecondWeapon()
 {
 	if (IsShooting()) return;
 	OnShootingEnded();
 	CurrentlyActiveWeaponIndex = 1;
+	OnShootingEnded();
 }
 
 void ALestaCharacter::OnSwitchWeapons(const FInputActionValue& InputActionValue)
