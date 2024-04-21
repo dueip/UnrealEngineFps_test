@@ -24,6 +24,7 @@ void ALaserTurret::BeginPlay()
 
 void ALaserTurret::OnShoot()
 {
+	
 	if (IsValid(WeaponComponent))
 	{
 		WeaponComponent->Shoot();
@@ -47,13 +48,9 @@ void ALaserTurret::Tick(float DeltaTime)
 	const APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	if (CurrentMode == Modes::Attacking)
 	{
-		if (!TimerBetweenShotsHandle.IsValid())
-		{
-			GetWorldTimerManager().SetTimer(TimerBetweenShotsHandle, this,
-				&ThisClass::OnShoot, TimeBetweenShots);
-		}
+		OnShoot();
 		
-		else if (PlayerPawn && !CheckIfPawnIsInTheFOV(PlayerPawn))
+		if (PlayerPawn && !CheckIfPawnIsInTheFOV(PlayerPawn))
 		{
 			OnStopShooting();
 			ChangeStateTo(Modes::Scouting);
