@@ -180,6 +180,6 @@ void ATurret::HandleDamageTaken(AActor* DamagedActor, float Damage,
 void ATurret::OnHealthChanged(float NewHealth)
 {
 	
-	UE_LOG(LogTemp, Warning, TEXT("%s's new health is: %f"), GetName().GetCharArray().GetData(), NewHealth);
+	//UE_LOG(LogTemp, Warning, TEXT("%s's new health is: %f"), GetName().GetCharArray().GetData(), NewHealth);
 }
 
