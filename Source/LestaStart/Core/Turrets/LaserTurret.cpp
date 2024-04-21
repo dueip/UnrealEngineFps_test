@@ -54,6 +54,10 @@ void ALaserTurret::Tick(float DeltaTime)
 	if (CurrentMode == Modes::Attacking)
 	{
 		OnShoot();
+		if (ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>())
+		{
+			LaserWeapon->DesiredEndPoint = LaserWeapon->CalculateDefaultEndPoint();
+		}
 		
 		if (PlayerPawn && !CheckIfPawnIsInTheFOV(PlayerPawn))
 		{

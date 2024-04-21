@@ -3,6 +3,7 @@
 #include "LestaCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "LaserWeaponComponent.h"
 #include "LestaPlayerController.h"
 #include "Camera/CameraComponent.h"
 
@@ -19,6 +20,23 @@ ALestaCharacter::ALestaCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("MainCamera"));
 	CameraComponent->bUsePawnControlRotation = true; // Camera rotation is synchronized with Player Controller rotation
 	CameraComponent->SetupAttachment(GetMesh());
+}
+
+void ALestaCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>())
+	{
+		// Assuming LaserWeapon and CameraComponent are valid and accessible
+		FVector CameraCenter = CameraComponent->GetComponentLocation();
+		FVector CameraForward = CameraComponent->GetForwardVector();
+
+		// Calculate the endpoint by extending the camera's forward direction by the laser's length
+		FVector DesiredEndPoint = CameraCenter + (CameraForward * LaserWeapon->GetLaserLength());
+		// Now set the DesiredEndPoint of the LaserWeapon
+		LaserWeapon->DesiredEndPoint = DesiredEndPoint;
+	}
 }
 
 void ALestaCharacter::BeginPlay()

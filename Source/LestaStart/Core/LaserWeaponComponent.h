@@ -36,6 +36,17 @@ public:
 	virtual void Shoot() override;
 
 	virtual bool IsCurrentlyShooting() override;
+
+	UFUNCTION(BlueprintGetter)
+	double GetLaserLength() const;
+
+	UFUNCTION(BlueprintGetter)
+	float GetLaserThickness() const;
+	
+	FVector CalculateDefaultEndPoint();
+
+	FVector DesiredEndPoint;
+	
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<ULaserComponent> Laser;
@@ -58,6 +69,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Damage")
 	float DamageAmount;
 
+	
+	
 	UFUNCTION()
 	void BlinckingAnimationCallback();
 };

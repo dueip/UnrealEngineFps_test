@@ -72,20 +72,15 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// See: https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/GetSocketLocation/
 
 	const FVector SocketOrigin = GetSocketLocation(GetAttachSocketName());
-	const FRotator SocketRotation = GetSocketRotation(GetAttachSocketName());
-	const FVector EndPoint = SocketOrigin + FVector(
-		LaserLength * cos(FMath::DegreesToRadians(SocketRotation.Yaw)),
-		LaserLength * sin(FMath::DegreesToRadians(SocketRotation.Yaw)),
-		LaserLength * sin(FMath::DegreesToRadians(SocketRotation.Pitch)));
+	const FVector EndPoint = DesiredEndPoint;
 	Laser->SetOrigin(SocketOrigin);
 	Laser->SetEndPoint(EndPoint);
-
 	
 	
 	if (IsValid(GetWorld()) && !BlinkAnimationTimer.IsValid())
 	{
 		FHitResult Hit;
-		bool bWasThereAHit = GetWorld()->LineTraceSingleByChannel(Hit, SocketOrigin, EndPoint, ECC_Pawn);
+		bool bWasThereAHit = GetWorld()->LineTraceSingleByChannel(Hit, SocketOrigin, DesiredEndPoint, ECC_Pawn);
 		FPointDamageEvent PointDamage;
 		PointDamage.Damage = DamageAmount;
 		PointDamage.HitInfo = Hit;
@@ -120,6 +115,30 @@ void ULaserWeaponComponent::Shoot()
 bool ULaserWeaponComponent::IsCurrentlyShooting()
 {
 	return Laser->IsActive();
+}
+
+double ULaserWeaponComponent::GetLaserLength() const
+{
+	return LaserLength;
+}
+
+float ULaserWeaponComponent::GetLaserThickness() const
+{
+	return Laser->GetThickness();
+}
+
+FVector ULaserWeaponComponent::CalculateDefaultEndPoint()
+{
+	const FVector SocketOrigin = GetSocketLocation(GetAttachSocketName());
+	const FRotator SocketRotation = GetSocketRotation(GetAttachSocketName());
+
+	
+
+	FVector EndPoint = SocketOrigin + FVector(
+		LaserLength * cos(FMath::DegreesToRadians(SocketRotation.Yaw)),
+		LaserLength * sin(FMath::DegreesToRadians(SocketRotation.Yaw)),
+		LaserLength * sin(FMath::DegreesToRadians(SocketRotation.Pitch)));
+	return EndPoint;
 }
 
 void ULaserWeaponComponent::BlinckingAnimationCallback()

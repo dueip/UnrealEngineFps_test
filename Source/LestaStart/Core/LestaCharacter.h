@@ -26,6 +26,7 @@ class LESTASTART_API ALestaCharacter : public ACharacter, public IWeaponHoldable
 
 public:
 	ALestaCharacter();
+	void Tick(float DeltaSeconds) override;
 	void BeginPlay() override;
 	void OnDead();
 	int32 CycleWeaponsIndex(int32 Index) const;

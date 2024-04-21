@@ -66,6 +66,11 @@ FColor ULaserComponent::GetColor() const
 	return Color;
 }
 
+float ULaserComponent::GetThickness() const
+{
+	return Thickness;
+}
+
 void ULaserComponent::Move(const FVector& MoveVector)
 {
 	BeginPosition += MoveVector;
