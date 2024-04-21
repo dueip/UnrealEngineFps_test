@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "InputAction.h"
 #include "LaserComponent.h"
+#include "DeadPlayer.h"
 #include "WeaponInvenotryComponent.h"
 #include "WeaponInterface.h"
 #include "WeaponHoldableInterface.h"
@@ -26,11 +27,9 @@ class LESTASTART_API ALestaCharacter : public ACharacter, public IWeaponHoldable
 public:
 	ALestaCharacter();
 	void BeginPlay() override;
+	void OnDead();
 	int32 CycleWeaponsIndex(int32 Index) const;
-	void OnShootingEnded();
-	void OnChooseFirstWeapon();
-	void OnChooseSecondWeapon();
-	void OnSwitchWeapons(const FInputActionValue& InputActionValue);
+
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	bool IsShooting() const;
 	virtual bool CanHoldWeapon() const override;
@@ -76,8 +75,18 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Stats")
 	float MaxHP;
+
+	UPROPERTY(EditDefaultsOnly, Category="Death")
+	TSubclassOf<ADeadPlayer> DeadPlayerToSpawn;
 	
 	virtual void OnMoveInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnLookInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnShootInput(const FInputActionInstance& InputActionInstance);
+	void OnShootingEnded();
+	void OnChooseFirstWeapon();
+	void OnChooseSecondWeapon();
+	void OnSwitchWeapons(const FInputActionValue& InputActionValue);
+
+private:
+	bool bIsDead = false;
 };

@@ -22,6 +22,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> InputMapping;
 
+	
 	/** Priority of InputMapping. */
 	UPROPERTY(EditDefaultsOnly, Category = "Input", meta = (ClampMin = 0))
 	int32 InputMappingPriority = 0;

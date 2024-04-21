@@ -2,6 +2,7 @@
 
 #include "LestaCharacter.h"
 #include "EnhancedInputComponent.h"
+#include "LestaPlayerController.h"
 #include "Camera/CameraComponent.h"
 
 ALestaCharacter::ALestaCharacter()
@@ -24,6 +25,21 @@ void ALestaCharacter::BeginPlay()
 	Super::BeginPlay();
 	// Устанавливает кол-во хп в рантайме потому что В таком случае установится то, что показывается в блюпринтах
 	HealthComponent->SetHealth(MaxHP);
+}
+
+void ALestaCharacter::OnDead()
+{
+	if (DeadPlayerToSpawn)
+	{
+		ADeadPlayer* DeadPlayer = GetWorld()->SpawnActor<ADeadPlayer>(DeadPlayerToSpawn,
+			GetActorLocation(), GetActorRotation());
+		GetController()->Possess(DeadPlayer);
+		DeadPlayer->AfterPossesed();
+		//DeadPlayer->SetupPlayerInputComponent(GetController()->InputComponent);
+		
+		Destroy();
+	}
+	bIsDead = true;
 }
 
 int32 ALestaCharacter::CycleWeaponsIndex(int32 Index) const
@@ -83,7 +99,7 @@ void ALestaCharacter::OnSwitchWeapons(const FInputActionValue& InputActionValue)
 void ALestaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	
 	UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 	if (EIC) // should validate component because developers can change input component class through Project Settings
 	{
@@ -95,7 +111,6 @@ void ALestaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EIC->BindAction(ChooseFirstWeaponInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnChooseFirstWeapon);
 		EIC->BindAction(ChooseSecondWeaponInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnChooseSecondWeapon);
 		EIC->BindAction(SwitchWeaponsInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnSwitchWeapons);
-		
 	}
 	else
 	{
@@ -128,7 +143,7 @@ float ALestaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageAmount);
 	if (HealthComponent->GetHealth() < 0.f)
 	{
-		Destroy();
+		OnDead();
 	}
 	return DamageAmount;
 }
