@@ -29,7 +29,9 @@ public:
 	//DECLARE_DELEGATE_RetVal(FCheckIfPawnIsInTheFOV);
 	
 	UPROPERTY(EditDefaultsOnly, Category="Mode")
-	Modes BeginningMode;	
+	Modes BeginningMode;
+	UPROPERTY(EditAnywhere, Category="Animation")
+	float RotationSpeedWhenAttacking;
 	// Sets default values for this actor's properties
 	ATurret();
 

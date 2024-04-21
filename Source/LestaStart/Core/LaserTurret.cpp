@@ -53,7 +53,7 @@ void ALaserTurret::Tick(float DeltaTime)
 				&ThisClass::OnShoot, TimeBetweenShots);
 		}
 		
-		if (PlayerPawn && !CheckIfPawnIsInTheFOV(PlayerPawn))
+		else if (PlayerPawn && !CheckIfPawnIsInTheFOV(PlayerPawn))
 		{
 			OnStopShooting();
 			ChangeStateTo(Modes::Scouting);

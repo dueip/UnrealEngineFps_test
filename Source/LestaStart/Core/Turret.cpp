@@ -136,7 +136,6 @@ void ATurret::Tick(float DeltaTime)
 		{
 			FRotator DeltaRotator = FRotator(0, UE_PI / 2, 0) * DeltaTime * ScoutingRotationSpeed; 
 			AddActorWorldRotation(DeltaRotator);
-			
 			if (Pawn)
 			{
 				if (CheckIfPawnIsInTheFOV(Pawn))
@@ -154,8 +153,7 @@ void ATurret::Tick(float DeltaTime)
 		break;
 	case Modes::Attacking:
 		{
-			const float InterpolationSpeed = ScoutingRotationSpeed * DeltaTime;
-			const FRotator NewRotation = InterpolateToPawnsLocation(Pawn, InterpolationSpeed / 10.f);
+			const FRotator NewRotation = InterpolateToPawnsLocation(Pawn, RotationSpeedWhenAttacking * DeltaTime);
 			SetActorRotation(NewRotation);
 		}
 	}
