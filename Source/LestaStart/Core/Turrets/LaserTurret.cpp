@@ -21,7 +21,10 @@ ALaserTurret::ALaserTurret()
 void ALaserTurret::BeginPlay()
 {
 	Super::BeginPlay();
-	WeaponComponent->StopShooting();
+	if (WeaponComponent)
+	{
+		WeaponComponent->StopShooting();
+	}
 }
 
 void ALaserTurret::OnShoot()

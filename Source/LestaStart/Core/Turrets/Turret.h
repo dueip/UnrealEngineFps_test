@@ -40,7 +40,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+		AController* EventInstigator, AActor* DamageCauser) override;
 	
 	UFUNCTION(BlueprintCallable)
 	void ChangeStateTo(const Modes Mode);
@@ -53,6 +54,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FRotator InterpolateToPawnsLocation(const APawn* Pawn, float RotationSpeed) const;
+	void DrawFOV();
 
 	UPROPERTY(EditAnywhere, Category="Vision")
 	float ViewRadius;

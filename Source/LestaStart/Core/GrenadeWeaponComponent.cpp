@@ -1,0 +1,155 @@
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "GrenadeWeaponComponent.h"
+
+#include "WeaponHoldableInterface.h"
+#include "Chaos/SpatialAccelerationCollection.h"
+#include "Engine/DamageEvents.h"
+
+
+// Sets default values for this component's properties
+UGrenadeWeaponComponent::UGrenadeWeaponComponent()
+{
+	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
+	// off to improve performance if you don't need them.
+	PrimaryComponentTick.bCanEverTick = true;
+	MaximumCharge = 100.f;
+	ChargeGainPerSecond = 10.f;
+	MaximumRadius = 400.f;
+	MaximumDamage = 100.f;
+	MinimumDamage = 1.f;
+	bShouldIgnoreOuter = true;
+	
+	// ...
+}
+
+
+// Called when the game starts
+void UGrenadeWeaponComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	IWeaponHoldableInterface* Outer = dynamic_cast<IWeaponHoldableInterface*>(GetOuter());
+	if (Outer && Outer->CanHoldWeapon())
+	{
+		Outer->SetWeapon(this);
+	}
+	
+}
+
+void UGrenadeWeaponComponent::Shoot()
+{
+	bIsGainingCharge = true;
+}
+
+TArray<FHitResult> UGrenadeWeaponComponent::SweepSphere(const ECollisionChannel TraceChannel) const
+{
+	FCollisionShape CollisionSphere = FCollisionShape::MakeSphere(CalculateRadiusBasedOffCurrentCharge());
+	TArray<FHitResult> Hits;
+	GetWorld()->SweepMultiByChannel(
+		Hits,
+		GetComponentLocation() + FVector(0.f, 0.f, -CalculateRadiusBasedOffCurrentCharge()),
+		GetComponentLocation() + FVector(0.f, 0.f, CalculateRadiusBasedOffCurrentCharge()),
+		GetComponentQuat(),
+		TraceChannel,
+		CollisionSphere
+	);
+	return Hits;
+}
+
+float UGrenadeWeaponComponent::CalculateCurrentDamageBasedOffCurrentCharge() const
+{
+	float Damage = MaximumDamage * CalculateCurrentChargeBasedOffMaxCharge();
+	return (Damage > MinimumDamage ? Damage : MinimumDamage);
+}
+
+bool UGrenadeWeaponComponent::IsBlockedByOtherElement(const FVector& StartPoint, const FVector& EndPoint,
+	ECollisionChannel CollisionChannel, const AActor* const HitActor) const
+{
+
+	FHitResult TraceHit;
+	GetWorld()->LineTraceSingleByChannel(TraceHit, StartPoint, EndPoint, CollisionChannel);
+
+	return TraceHit.bBlockingHit && TraceHit.GetActor() != HitActor;
+}
+
+void UGrenadeWeaponComponent::DoDamage(const TArray<FHitResult>& Hits) const
+{
+	for (const FHitResult& Hit : Hits)
+	{
+		if (Hit.bBlockingHit && (Hit.GetActor() != GetOuter() || !bShouldIgnoreOuter))
+		{
+			FRadialDamageEvent DamageEvent;
+			DamageEvent.Origin = GetComponentLocation();
+			// Если есть какое-то препятсиве, то просто пропускаем
+			if (IsBlockedByOtherElement(DamageEvent.Origin, Hit.Location,
+				ECC_Pawn, Hit.GetActor()))
+			{
+				continue;
+			}
+			
+			AActor* DamageCauser = dynamic_cast<AActor*>(GetOuter());
+			Hit.GetActor()->TakeDamage(CalculateCurrentDamageBasedOffCurrentCharge(),
+				DamageEvent, nullptr, DamageCauser);
+		} 
+	}
+}
+
+void UGrenadeWeaponComponent::StopShooting()
+{
+	const TArray<FHitResult> Hits = SweepSphere(ECC_Pawn);
+	DoDamage(Hits);
+	
+ 	bIsGainingCharge = false;
+	CurrentCharge = 0.f;
+}
+
+
+float UGrenadeWeaponComponent::CalculateCurrentChargeBasedOffMaxCharge() const
+{
+	/*
+	 *	MaximumCharge - 1
+	 *	CurrentCharge = x
+	 *	MaximumCharge / CurrentCharge = 1/x
+	 *	CurrentCharge / MaximumCharge = x
+	*/
+	return CurrentCharge / MaximumCharge;
+}
+
+float UGrenadeWeaponComponent::CalculateRadiusBasedOffCurrentCharge() const
+{
+	/*
+	 * MaximumRaidus - 1
+	 * x - CalculateCurrentChargeBasedOffMaxCharge
+	 * MaximumRadius * CalculateCurrentChargeBasedOffMaxCharge = x
+	*/
+	return MaximumRadius * CalculateCurrentChargeBasedOffMaxCharge();
+}
+
+// Called every frame
+void UGrenadeWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+                                            FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (!bIsGainingCharge)
+	{
+		return;
+	}
+	if (CurrentCharge <= MaximumCharge)
+	{
+		CurrentCharge += ChargeGainPerSecond * DeltaTime;
+	}
+	DrawDebugSphere(
+		GetWorld(),
+		GetSocketLocation(GetAttachSocketName()),
+		CalculateRadiusBasedOffCurrentCharge(),
+		32,
+		FColor::Green,
+		false,
+		0,
+		0,
+		0
+	);
+}
+

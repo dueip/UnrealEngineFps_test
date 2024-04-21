@@ -25,9 +25,6 @@ ATurret::ATurret()
 	MaxHP = 0;
 
 	TimeBetweenShots = 1.f;
-
-	
-	OnTakeAnyDamage.AddDynamic(this, &ATurret::HandleDamageTaken);
 	
 	if (!Health)
 	{
@@ -79,7 +76,7 @@ bool ATurret::CheckIfPawnIsInTheFOV(const APawn* Pawn) const
 	const FVector TraceEnd = Pawn->GetActorLocation();
 	bool bBlockHit = GetWorld()->LineTraceSingleByChannel(Hit, TurretLocation, TraceEnd, ECC_Pawn);
 	const float DistanceFromTheTurret = FVector::Distance(TurretLocation, TraceEnd);
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *Pawn->GetOuter()->GetName());
+
 	return CheckIfHitWasTheSameActor(Pawn, Hit) && Hit.bBlockingHit && DistanceFromTheTurret <= ViewRadius;
 }
 
@@ -108,19 +105,8 @@ FRotator ATurret::InterpolateToPawnsLocation(const APawn* Pawn, const float Rota
 }
 
 
-// Called every frame
-void ATurret::Tick(float DeltaTime)
+void ATurret::DrawFOV()
 {
-	
-	
-	FPointDamageEvent PointDamage;
-	PointDamage.Damage = 10.f;
-	
-	//TakeDamage(10.f, PointDamage , nullptr, nullptr);
-
-	Super::Tick(DeltaTime);
-	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-	
 	FColor DebugCircleColor(255, 0, 0, 125);
 	DrawDebugCircle(
 		GetWorld(),
@@ -134,7 +120,17 @@ void ATurret::Tick(float DeltaTime)
 		10,
 		FVector(1, 0, 0),
 		FVector(0, 1, 0),
-		false);	
+		false);
+}
+
+// Called every frame
+void ATurret::Tick(float DeltaTime)
+{
+	
+	Super::Tick(DeltaTime);
+	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	
+	DrawFOV();	
 	
 	switch (CurrentMode)
 	{
@@ -167,21 +163,25 @@ void ATurret::Tick(float DeltaTime)
 }
 
 
-void ATurret::HandleDamageTaken(AActor* DamagedActor, float Damage,
-	const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+float ATurret::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
 {
+	
 	if (DamageCauser == this)
 	{
-		return;
+		return 0.f;
 	}
-	Health->SetHealth(Health->GetHealth() - Damage);
+
+	
+	Health->SetHealth(Health->GetHealth() - DamageAmount);
 	if (Health->GetHealth() <= 0.f)
 	{
 		SetActorScale3D(GetActorScale3D() / 2);
 		Destroy();
 	}
-	
+	return DamageAmount;
 }
+
 
 void ATurret::OnHealthChanged(float NewHealth)
 {

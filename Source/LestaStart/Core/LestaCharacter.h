@@ -45,7 +45,7 @@ protected:
 	TObjectPtr<UInputAction> ShootInputAction;
 
 	IWeaponInterface* WeaponComponent;
-	
+
 	virtual void OnMoveInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnLookInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnShootInput(const FInputActionInstance& InputActionInstance);
