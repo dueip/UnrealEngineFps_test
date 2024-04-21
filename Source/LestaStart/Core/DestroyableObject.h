@@ -31,6 +31,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Health")
 	UHealthComponent* HealthComponent;
 
-	UPROPERTY(EditDefaultsOnly, Category="Health")
+	UPROPERTY(EditAnywhere, Category="Health")
 	float MaxHp;
 };
