@@ -45,12 +45,12 @@ void UGrenadeWeaponComponent::Shoot()
 
 TArray<FHitResult> UGrenadeWeaponComponent::SweepSphere(const ECollisionChannel TraceChannel) const
 {
-	FCollisionShape CollisionSphere = FCollisionShape::MakeSphere(CalculateRadiusBasedOffCurrentCharge());
+	FCollisionShape CollisionSphere = FCollisionShape::MakeSphere(MaximumRadius);
 	TArray<FHitResult> Hits;
 	GetWorld()->SweepMultiByChannel(
 		Hits,
-		GetComponentLocation() + FVector(0.f, 0.f, -CalculateRadiusBasedOffCurrentCharge()),
-		GetComponentLocation() + FVector(0.f, 0.f, CalculateRadiusBasedOffCurrentCharge()),
+		GetComponentLocation() + FVector(0.f, 0.f, -MaximumRadius),
+		GetComponentLocation() + FVector(0.f, 0.f, MaximumRadius),
 		GetComponentQuat(),
 		TraceChannel,
 		CollisionSphere
@@ -138,6 +138,20 @@ void UGrenadeWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	{
 		CurrentCharge += ChargeGainPerSecond * DeltaTime;
 	}
+
+	// Draw Outer Sphere
+	DrawDebugSphere(
+		GetWorld(),
+		GetSocketLocation(GetAttachSocketName()),
+		MaximumRadius,
+		32,
+		FColor::Red,
+		false,
+		0,
+		0,
+		0
+	);
+	// Draw Inner Sphere
 	DrawDebugSphere(
 		GetWorld(),
 		GetSocketLocation(GetAttachSocketName()),
