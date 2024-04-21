@@ -7,18 +7,28 @@
 // Sets default values for this component's properties
 UHPRenderComponent::UHPRenderComponent()
 {
+	PlaceholderForHP = FText::FromString("{HP}");
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-	SetText( FText::FromString(DisplayTitle.ToString() + ":"));
+	SetText( FText::FromString(MakeActualStringFromTemplate(0)));
 	
 	// ...
 }
 
+FString UHPRenderComponent::MakeActualStringFromTemplate(const float NewHP) const
+{
+	FText CopyTemplate = TextTemplate;
+	FString Title = CopyTemplate.ToString().Replace(
+		GetData(PlaceholderForHP.ToString()),
+		GetData(FText::AsNumber(NewHP).ToString()),
+		ESearchCase::CaseSensitive);
+	return Title;
+}
+
 void UHPRenderComponent::OnHealthChanged(float NewHP)
 {
-	FString Title = DisplayTitle.ToString() + ": " + FString::FormatAsNumber(NewHP);
-	SetText(FText::FromString(Title));
+	
+	SetText(FText::FromString(MakeActualStringFromTemplate(NewHP)));
 }
 
 
@@ -41,7 +51,6 @@ void UHPRenderComponent::BeginPlay()
 		}
 	}
 	// ...
-	
 }
 
 

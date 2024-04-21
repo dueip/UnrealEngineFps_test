@@ -16,6 +16,9 @@ class LESTASTART_API UHPRenderComponent : public UTextRenderComponent
 public:
 	// Sets default values for this component's properties
 	UHPRenderComponent();
+	
+	UFUNCTION(BlueprintCallable)
+	FString MakeActualStringFromTemplate(const float NewHP) const ; 
 
 protected:
 	UFUNCTION()
@@ -24,7 +27,9 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, Category="Appereance")
-	FName DisplayTitle;
+	FText PlaceholderForHP;
+	UPROPERTY(EditAnywhere, Category="Appereance")
+	FText TextTemplate;
 	
 public:
 	// Called every frame
