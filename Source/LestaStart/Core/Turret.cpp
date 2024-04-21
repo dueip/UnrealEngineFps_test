@@ -22,6 +22,7 @@ ATurret::ATurret()
 	ViewRadius = 500.f;
 	FOV = 2 * UE_PI;
 	ScoutingRotationSpeed = 500.f;
+	RotationSpeedWhenAttacking = ScoutingRotationSpeed * 1.5f;
 	MaxHP = 0;
 
 	TimeBetweenShots = 1.f;
