@@ -46,6 +46,7 @@ public:
 	void ChangeStateTo(const Modes Mode);
 	
 	float GetDistanceToPawn(FHitResult& InHitResult, const APawn* Pawn);
+	static bool CheckIfHitWasTheSameActor(const APawn* Pawn, const FHitResult& Hit);
 
 	UFUNCTION(BlueprintCallable)
 	bool CheckIfPawnIsInTheFOV(const APawn* Pawn) const;

@@ -67,6 +67,11 @@ float ATurret::GetDistanceToPawn(FHitResult& InHitResult, const APawn* Pawn)
 	return 0;
 }
 
+bool ATurret::CheckIfHitWasTheSameActor(const APawn* Pawn, const FHitResult& Hit)
+{
+	return Pawn == Hit.GetActor();
+}
+
 bool ATurret::CheckIfPawnIsInTheFOV(const APawn* Pawn) const
 {
 	FHitResult Hit;
@@ -74,7 +79,8 @@ bool ATurret::CheckIfPawnIsInTheFOV(const APawn* Pawn) const
 	const FVector TraceEnd = Pawn->GetActorLocation();
 	bool bBlockHit = GetWorld()->LineTraceSingleByChannel(Hit, TurretLocation, TraceEnd, ECC_Pawn);
 	const float DistanceFromTheTurret = FVector::Distance(TurretLocation, TraceEnd);
-	return Hit.bBlockingHit && DistanceFromTheTurret <= ViewRadius;
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *Pawn->GetOuter()->GetName());
+	return CheckIfHitWasTheSameActor(Pawn, Hit) && Hit.bBlockingHit && DistanceFromTheTurret <= ViewRadius;
 }
 
 FRotator ATurret::InterpolateToPawnsLocation(const APawn* Pawn, const float RotationSpeed) const
