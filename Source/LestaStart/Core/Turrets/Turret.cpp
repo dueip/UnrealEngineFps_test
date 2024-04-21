@@ -155,8 +155,11 @@ void ATurret::Tick(float DeltaTime)
 		break;
 	case Modes::Attacking:
 		{
-			const FRotator NewRotation = InterpolateToPawnsLocation(Pawn, RotationSpeedWhenAttacking * DeltaTime);
-			SetActorRotation(NewRotation);
+			if (Pawn)
+			{
+				const FRotator NewRotation = InterpolateToPawnsLocation(Pawn, RotationSpeedWhenAttacking * DeltaTime);
+				SetActorRotation(NewRotation);
+			}
 		}
 	}
 		

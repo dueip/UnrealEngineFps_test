@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HealthComponent.h"
 #include "GameFramework/Character.h"
 #include "InputAction.h"
 #include "LaserComponent.h"
@@ -24,6 +25,7 @@ class LESTASTART_API ALestaCharacter : public ACharacter, public IWeaponHoldable
 
 public:
 	ALestaCharacter();
+	void BeginPlay() override;
 	int32 CycleWeaponsIndex(int32 Index) const;
 	void OnShootingEnded();
 	void OnChooseFirstWeapon();
@@ -33,7 +35,10 @@ public:
 	bool IsShooting() const;
 	virtual bool CanHoldWeapon() const override;
 	virtual bool SetWeapon(IWeaponInterface* Weapon) override;
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+		AController* EventInstigator, AActor* DamageCauser) override;
 
+	
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCameraComponent> CameraComponent;
@@ -65,6 +70,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> SwitchWeaponsInputAction;
+
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	TObjectPtr<UHealthComponent> HealthComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category="Stats")
+	float MaxHP;
 	
 	virtual void OnMoveInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnLookInput(const FInputActionInstance& InputActionInstance);

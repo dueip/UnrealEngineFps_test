@@ -9,11 +9,21 @@ ALestaCharacter::ALestaCharacter()
 	NetUpdateFrequency = 10.f;
 	CurrentlyActiveWeaponIndex = 0;
 	bShouldCycleThroughInventory = true;
+
 	WeaponInventory = CreateDefaultSubobject<UWeaponInvenotryComponent>(TEXT("Weapon Inventory"));
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
+	MaxHP = 100.f;
 	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("MainCamera"));
 	CameraComponent->bUsePawnControlRotation = true; // Camera rotation is synchronized with Player Controller rotation
 	CameraComponent->SetupAttachment(GetMesh());
+}
+
+void ALestaCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	// Устанавливает кол-во хп в рантайме потому что В таком случае установится то, что показывается в блюпринтах
+	HealthComponent->SetHealth(MaxHP);
 }
 
 int32 ALestaCharacter::CycleWeaponsIndex(int32 Index) const
@@ -110,6 +120,17 @@ bool ALestaCharacter::SetWeapon(IWeaponInterface* Weapon)
 {
 	WeaponInventory->PushWeapon(Weapon);
 	return (Weapon != nullptr);
+}
+
+float ALestaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageAmount);
+	if (HealthComponent->GetHealth() < 0.f)
+	{
+		Destroy();
+	}
+	return DamageAmount;
 }
 
 void ALestaCharacter::OnMoveInput(const FInputActionInstance& InputActionInstance)
