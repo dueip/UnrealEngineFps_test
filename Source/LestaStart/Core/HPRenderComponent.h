@@ -4,22 +4,28 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
-#include "TextRendererComponent.generated.h"
+#include "Components/TextRenderComponent.h"
+#include "HPRenderComponent.generated.h"
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class LESTASTART_API UTextRendererComponent : public USceneComponent
+class LESTASTART_API UHPRenderComponent : public UTextRenderComponent
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this component's properties
-	UTextRendererComponent();
+	UHPRenderComponent();
 
 protected:
+	UFUNCTION()
+	void OnHealthChanged(float NewHP);
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, Category="Appereance")
+	FName DisplayTitle;
+	
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,

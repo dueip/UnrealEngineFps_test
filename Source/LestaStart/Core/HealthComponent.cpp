@@ -36,7 +36,7 @@ void UHealthComponent::SetHealth(float NewHP)
 {
 	if (HealthChangedDelegate.IsBound())
 	{
-		HealthChangedDelegate.Execute(NewHP);
+		HealthChangedDelegate.Broadcast(NewHP);
 	}
 	HealthPoints = NewHP;
 	

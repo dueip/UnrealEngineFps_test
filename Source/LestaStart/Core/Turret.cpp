@@ -7,6 +7,7 @@
 #include "ScreenPass.h"
 #include "Components/TextRenderComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "HPRenderComponent.h"
 #include "Engine/DamageEvents.h"
 
 
@@ -33,18 +34,19 @@ ATurret::ATurret()
 		Health = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 		Health->SetHealth(MaxHP);
 	}
-	Health->HealthChangedDelegate.BindUFunction(this, FName("OnHealthChanged"));
+	Health->HealthChangedDelegate.AddUFunction(this, FName("OnHealthChanged"));
+
 	
-	healthbar->Text = FText::FromString("Helloworld");
-	healthbar->bAlwaysRenderAsText = false;
+	//healthbar->Text = FText::FromString("Helloworld");
+	//healthbar->bAlwaysRenderAsText = false;
 }
 
 // Called when the game starts or when spawned
 void ATurret::BeginPlay()
 {
-	Health->SetHealth(MaxHP);
 	Super::BeginPlay();
 	// Set the mode to the current
+	Health->SetHealth(MaxHP);
 	CurrentMode = BeginningMode;
 	if (CurrentMode == Modes::None)
 	{

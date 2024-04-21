@@ -8,7 +8,7 @@
 #include "HealthComponent.generated.h"
 
 
-DECLARE_DELEGATE_RetVal_OneParam(float, FHealthChangedDelegate, float)
+DECLARE_MULTICAST_DELEGATE_OneParam(FHealthChangedDelegate, float);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class LESTASTART_API UHealthComponent : public UActorComponent
