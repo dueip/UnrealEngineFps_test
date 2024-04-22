@@ -26,6 +26,9 @@ public:
 
 	virtual bool IsDrained() { return true; }
 	virtual void Reload() {};
+	virtual float GetReloadTime() { return 0.f; }
+	virtual int32 GetMaxDrainage() { return 0;}
+	virtual float GetCurrentDrainage() { return 0.f;}
 	
 	// Мне не очень нравится это делать, но через сабкомпонент получится довольно плохо.
 	virtual FName GetDisplayName() const { return ""; } 

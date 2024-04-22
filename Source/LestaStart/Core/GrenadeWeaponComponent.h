@@ -25,6 +25,11 @@ protected:
 	virtual void StopShooting() override;
 	virtual bool IsAtFullCapacity() override;
 
+	virtual bool IsDrained() override;
+	virtual void Reload() override;
+	virtual float GetReloadTime() override;
+	virtual float GetCurrentDrainage() override;
+	virtual int32 GetMaxDrainage() override;
 
 	virtual FName GetDisplayName() const override;
 	TArray<FHitResult> SweepSphere(const ECollisionChannel TraceChannel) const;
@@ -45,9 +50,12 @@ public:
 	float MinimumDamage;
 	UPROPERTY(EditAnywhere, Category="Damage")
 	bool bShouldIgnoreOuter;
+	UPROPERTY(EditAnywhere, Category="Ammo")
+	int32 MaxAmmo;
+	UPROPERTY(EditAnywhere, Category="Ammo")
+	float ReloadTime;
 
 
-	
 	UFUNCTION(BlueprintCallable)
 	float CalculateCurrentChargeBasedOffMaxCharge() const;
 	UFUNCTION(BlueprintCallable)
@@ -59,4 +67,5 @@ public:
 private:
 	float CurrentCharge = 0;
 	bool bIsGainingCharge = false;
+	int32 CurrentAmmoNumber;
 };

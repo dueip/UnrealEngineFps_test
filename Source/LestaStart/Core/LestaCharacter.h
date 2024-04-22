@@ -48,7 +48,17 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	FString GetWeaponName() const;
+
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	float GetElapsedTimeSinceStartedReloading() const;
 	
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	float GetCurrentWeaponReloadTime() const;
+
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	int32 MaxWeaponAmmo() const;
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	float CurrentWeaponAmmo() const;
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCameraComponent> CameraComponent;
@@ -82,22 +92,31 @@ protected:
 	TObjectPtr<UInputAction> SwitchWeaponsInputAction;
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
+	TObjectPtr<UInputAction> ReloadInputAction;
+
+	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UHealthComponent> HealthComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category="Stats")
 	float MaxHP;
-
+	
+	
 	UPROPERTY(EditDefaultsOnly, Category="Death")
 	TSubclassOf<ADeadPlayer> DeadPlayerToSpawn;
 	
+
 	virtual void OnMoveInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnLookInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnShootInput(const FInputActionInstance& InputActionInstance);
-	void OnShootingEnded();
-	void OnChooseFirstWeapon();
-	void OnChooseSecondWeapon();
-	void OnSwitchWeapons(const FInputActionValue& InputActionValue);
-
+	virtual void OnSwitchWeapons(const FInputActionValue& InputActionValue);
+	virtual void OnShootingEnded();
+	virtual void OnChooseFirstWeapon();
+	virtual void OnChooseSecondWeapon();
+	bool IsReloading() const;
+	UFUNCTION()
+	void ReloadWeapon();
+	virtual void OnReload();
 private:
 	bool bIsDead = false;
+	FTimerHandle ReloadTimerHandle;
 };

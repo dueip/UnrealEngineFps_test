@@ -6,6 +6,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "LaserWeaponComponent.h"
 #include "LestaPlayerController.h"
+#include "AssetTypeActions/AssetDefinition_SoundBase.h"
 #include "Camera/CameraComponent.h"
 
 ALestaCharacter::ALestaCharacter()
@@ -104,6 +105,7 @@ void ALestaCharacter::OnShootingEnded()
 
 void ALestaCharacter::OnChooseFirstWeapon()
 {
+	if (IsReloading()) return;
 	if (IsShooting()) return;
 	OnShootingEnded();
 	CurrentlyActiveWeaponIndex = 0;
@@ -112,14 +114,47 @@ void ALestaCharacter::OnChooseFirstWeapon()
 	
 void ALestaCharacter::OnChooseSecondWeapon()
 {
+	if (IsReloading()) return;
 	if (IsShooting()) return;
 	OnShootingEnded();
 	CurrentlyActiveWeaponIndex = 1;
 	OnShootingEnded();
 }
 
+bool ALestaCharacter::IsReloading() const
+{
+	return GetWorldTimerManager().IsTimerActive(ReloadTimerHandle);
+}
+
+void ALestaCharacter::ReloadWeapon()
+{
+	IWeaponInterface* Weapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
+	Weapon->Reload();
+}
+
+
+void ALestaCharacter::OnReload()
+{
+	IWeaponInterface* Weapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
+	if (Weapon)
+	{
+		if (!IsReloading())
+		{
+			GetWorldTimerManager().SetTimer
+			(
+				ReloadTimerHandle,
+				this,
+				&ThisClass::ReloadWeapon,
+				Weapon->GetReloadTime()
+			);
+
+		}
+	}
+}
+
 void ALestaCharacter::OnSwitchWeapons(const FInputActionValue& InputActionValue)
 {
+	if (IsReloading()) return;
 	if (IsShooting()) return;
 	OnShootingEnded();
 	// Returns either -1 or 1
@@ -143,6 +178,7 @@ void ALestaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EIC->BindAction(ChooseFirstWeaponInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnChooseFirstWeapon);
 		EIC->BindAction(ChooseSecondWeaponInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnChooseSecondWeapon);
 		EIC->BindAction(SwitchWeaponsInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnSwitchWeapons);
+		EIC->BindAction(ReloadInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnReload);
 	}
 	else
 	{
@@ -190,6 +226,32 @@ FString ALestaCharacter::GetWeaponName() const
 	return WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex)->GetDisplayName().ToString();
 }
 
+float ALestaCharacter::GetElapsedTimeSinceStartedReloading() const
+{
+	if (IsReloading())
+	{
+		return GetWorldTimerManager().GetTimerElapsed(ReloadTimerHandle);
+	}
+	return 0.f;
+	
+}
+
+float ALestaCharacter::GetCurrentWeaponReloadTime() const
+{
+	return WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex)->GetReloadTime();
+}
+
+int32 ALestaCharacter::MaxWeaponAmmo() const
+{
+	return WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex)->GetMaxDrainage();
+}
+
+float ALestaCharacter::CurrentWeaponAmmo() const
+{
+	float CurrentDrainage = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex)->GetCurrentDrainage();
+	return CurrentDrainage <= 0.f ? 0 : CurrentDrainage;
+}
+
 void ALestaCharacter::OnMoveInput(const FInputActionInstance& InputActionInstance)
 {
 	// Controller rotation Yaw determines which direction Character is facing
@@ -217,8 +279,11 @@ void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstan
 	IWeaponInterface* const CurrentlyActiveWeapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
 	if (CurrentlyActiveWeapon)
 	{
+		if (IsReloading()) { CurrentlyActiveWeapon->StopShooting(); return;}
 		// Можем стрелялть только если оружие нам разрешает (т.е. в большинстве случаев у него есть патроны)
 		if (!CurrentlyActiveWeapon->IsDrained())
 			CurrentlyActiveWeapon->Shoot();
+		else
+			CurrentlyActiveWeapon->StopShooting();
 	}
 }

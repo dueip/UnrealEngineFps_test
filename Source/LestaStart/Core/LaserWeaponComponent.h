@@ -25,6 +25,10 @@ protected:
 	void CalculateAnimationDurationAndSetTimer();
 
 public:
+	virtual float GetReloadTime() override;
+
+	virtual int32 GetMaxDrainage() override;
+	virtual float GetCurrentDrainage() override;
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
@@ -47,6 +51,10 @@ public:
 	
 	FVector CalculateDefaultEndPoint();
 
+	virtual bool IsDrained() override;
+
+	virtual void Reload() override;
+	
 	FVector DesiredEndPoint;
 	
 protected:
@@ -59,22 +67,37 @@ protected:
 	FColor BaseColor;
 	UPROPERTY(EditAnywhere, Category="Animation")
 	FColor BlinkColor;
+	
 	UPROPERTY(EditAnywhere, Category="Animation")
 	float BlinkDuration;
+	
 	UPROPERTY(EditAnywhere, Category="Animation")
 	float AnimationDuration;
 
-	FShootDelegate ShootDelegate;
+	UPROPERTY(EditAnywhere, Category="Ammo")
+	int32 MaxDurability;
 
+	UPROPERTY(EditAnywhere, Category="Ammo")
+	int32 DurabilityLossInOneSecond;
+
+	UPROPERTY(EditAnywhere, Category="Ammo")
+	float ReloadTime;
+	
 	UPROPERTY(EditAnywhere, Category="Damage")
 	double LaserLength;
 	UPROPERTY(EditAnywhere, Category="Damage")
 	float DamageAmount;
+	
+	
+	FShootDelegate ShootDelegate;
 
 	
 	
+private:
 	UFUNCTION()
 	void BlinckingAnimationCallback();
+
+	float CurrentDurability;
 };
 
 	

@@ -20,7 +20,8 @@ UGrenadeWeaponComponent::UGrenadeWeaponComponent()
 	MaximumDamage = 100.f;
 	MinimumDamage = 1.f;
 	bShouldIgnoreOuter = true;
-
+	MaxAmmo = 3;
+	ReloadTime = 1.f;
 	
 }
 
@@ -29,7 +30,7 @@ UGrenadeWeaponComponent::UGrenadeWeaponComponent()
 void UGrenadeWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	Reload();
 	IWeaponHoldableInterface* Outer = dynamic_cast<IWeaponHoldableInterface*>(GetOuter());
 	if (Outer && Outer->CanHoldWeapon())
 	{
@@ -100,6 +101,7 @@ void UGrenadeWeaponComponent::StopShooting()
 	{
 		const TArray<FHitResult> Hits = SweepSphere(ECC_Pawn);
 		DoDamage(Hits);
+		CurrentAmmoNumber -= 1;
 	}
 	
  	bIsGainingCharge = false;
@@ -109,6 +111,31 @@ void UGrenadeWeaponComponent::StopShooting()
 bool UGrenadeWeaponComponent::IsAtFullCapacity()
 {
 	return (CurrentCharge >= MaximumCharge);
+}
+
+bool UGrenadeWeaponComponent::IsDrained()
+{
+	return CurrentAmmoNumber <= 0;
+}
+
+void UGrenadeWeaponComponent::Reload()
+{
+	CurrentAmmoNumber = MaxAmmo;
+}
+
+float UGrenadeWeaponComponent::GetReloadTime()
+{
+	return ReloadTime;
+}
+
+float UGrenadeWeaponComponent::GetCurrentDrainage()
+{
+	return static_cast<float>(CurrentAmmoNumber);
+}
+
+int32 UGrenadeWeaponComponent::GetMaxDrainage()
+{
+	return MaxAmmo;
 }
 
 FName UGrenadeWeaponComponent::GetDisplayName() const

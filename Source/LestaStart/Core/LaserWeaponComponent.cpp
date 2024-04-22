@@ -22,6 +22,10 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 	LaserLength = 1000.f;
 	DamageAmount = 10.f;
 
+	MaxDurability = 10;
+	DurabilityLossInOneSecond = 3;
+	ReloadTime = 0.5f;
+
 	// ...
 }
 
@@ -32,7 +36,8 @@ void ULaserWeaponComponent::BeginPlay()
 	Super::BeginPlay();
 	Laser->Deactivate();
 	BaseColor = Laser->GetColor();
-
+	Reload();
+	
 	IWeaponHoldableInterface* Outer = dynamic_cast<IWeaponHoldableInterface*>(GetOuter());
 	if (Outer && Outer->CanHoldWeapon())
 	{
@@ -60,6 +65,22 @@ void ULaserWeaponComponent::CalculateAnimationDurationAndSetTimer()
 	}
 	GetWorld()->GetTimerManager().SetTimer(BlinkAnimationTimer, this,
 	                                       &ThisClass::BlinckingAnimationCallback, TimerDuration, false);
+}
+
+float ULaserWeaponComponent::GetReloadTime()
+{
+	return ReloadTime;
+}
+
+int32 ULaserWeaponComponent::GetMaxDrainage()
+{
+	return MaxDurability;
+}
+
+
+float ULaserWeaponComponent::GetCurrentDrainage()
+{
+	return CurrentDurability;
 }
 
 // Called every frame
@@ -106,6 +127,8 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		CalculateAnimationDurationAndSetTimer();
 	}
 	Laser->SetEndPoint(EndPoint);
+
+	CurrentDurability -= DurabilityLossInOneSecond * DeltaTime;
 }
 
 void ULaserWeaponComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
@@ -157,6 +180,16 @@ FVector ULaserWeaponComponent::CalculateDefaultEndPoint()
 		LaserLength * sin(FMath::DegreesToRadians(SocketRotation.Yaw)),
 		LaserLength * sin(FMath::DegreesToRadians(SocketRotation.Pitch)));
 	return EndPoint;
+}
+
+bool ULaserWeaponComponent::IsDrained()
+{
+	return CurrentDurability <= 0;
+}
+
+void ULaserWeaponComponent::Reload()
+{
+	CurrentDurability = MaxDurability;
 }
 
 void ULaserWeaponComponent::BlinckingAnimationCallback()
