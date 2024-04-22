@@ -4,8 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Turret.h"
-#include "LestaStart/Core/GrenadeWeaponComponent.h"
-#include "LestaStart/Core/WeaponHoldableInterface.h"
+#include "LestaStart/Core/Weapons/WeaponHoldableInterface.h"
 #include "GrenadeTurret.generated.h"
 
 UCLASS()

@@ -3,15 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HealthComponent.h"
 #include "GameFramework/Character.h"
 #include "InputAction.h"
-#include "LaserComponent.h"
 #include "DeadPlayer.h"
 #include "HudSettings.h"
-#include "WeaponInvenotryComponent.h"
-#include "WeaponInterface.h"
-#include "WeaponHoldableInterface.h"
+#include "LestaStart/Core/HealthComponent.h"
+#include "LestaStart/Core/Weapons/WeaponHoldableInterface.h"
+#include "LestaStart/Core/Weapons/WeaponInvenotryComponent.h"
 #include "LestaCharacter.generated.h"
 
 class UCameraComponent;

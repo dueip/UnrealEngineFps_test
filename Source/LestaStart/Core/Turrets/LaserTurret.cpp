@@ -6,9 +6,10 @@
 
 #include "NavigationSystemTypes.h"
 #include "Kismet/GameplayStatics.h"
+#include "LestaStart/Core/Weapons/LaserWeaponComponent.h"
 
 
-
+class ULaserWeaponComponent;
 // Sets default values
 ALaserTurret::ALaserTurret()
 {

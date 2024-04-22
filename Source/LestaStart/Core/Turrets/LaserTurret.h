@@ -5,8 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Turret.h"
-#include "../WeaponHoldableInterface.h"
-#include "../WeaponInterface.h"
+#include "LestaStart/Core/Weapons/WeaponHoldableInterface.h"
 #include "LaserTurret.generated.h"
 
 UCLASS()

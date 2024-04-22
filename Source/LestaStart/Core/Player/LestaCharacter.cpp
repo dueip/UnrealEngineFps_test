@@ -4,10 +4,13 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "LaserWeaponComponent.h"
 #include "LestaPlayerController.h"
 #include "AssetTypeActions/AssetDefinition_SoundBase.h"
 #include "Camera/CameraComponent.h"
+#include "LestaStart/Core/HealthComponent.h"
+#include "LestaStart/Core/Weapons/LaserWeaponComponent.h"
+#include "LestaStart/Core/Weapons/WeaponInterface.h"
+#include "LestaStart/Core/Weapons/WeaponInvenotryComponent.h"
 
 ALestaCharacter::ALestaCharacter()
 {

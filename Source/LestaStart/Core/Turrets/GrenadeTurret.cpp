@@ -3,6 +3,8 @@
 
 #include "GrenadeTurret.h"
 
+#include "LestaStart/Core/Weapons/WeaponInterface.h"
+
 
 // Sets default values
 AGrenadeTurret::AGrenadeTurret()

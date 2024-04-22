@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WeaponInterface.h"
-#include "LaserComponent.h"
+#include "LestaStart/Core/Renderers/LaserComponent.h"
 #include "LaserWeaponComponent.generated.h"
 
 

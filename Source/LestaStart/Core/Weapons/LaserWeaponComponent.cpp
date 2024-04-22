@@ -3,9 +3,10 @@
 
 #include "LaserWeaponComponent.h"
 
-#include "HealthComponent.h"
 #include "Engine/DamageEvents.h"
 #include "WeaponHoldableInterface.h"
+#include "LestaStart/Core/HealthComponent.h"
+#include "LestaStart/Core/Renderers/LaserComponent.h"
 
 
 // Sets default values for this component's properties

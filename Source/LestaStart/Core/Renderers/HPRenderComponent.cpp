@@ -2,8 +2,10 @@
 
 
 #include "HPRenderComponent.h"
-#include "HealthComponent.h"
 
+#include "LestaStart/Core/HealthComponent.h"
+
+class UHealthComponent;
 // Sets default values for this component's properties
 UHPRenderComponent::UHPRenderComponent()
 {
