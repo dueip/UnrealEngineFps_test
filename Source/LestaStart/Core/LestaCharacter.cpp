@@ -217,6 +217,8 @@ void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstan
 	IWeaponInterface* const CurrentlyActiveWeapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
 	if (CurrentlyActiveWeapon)
 	{
-		CurrentlyActiveWeapon->Shoot();
+		// Можем стрелялть только если оружие нам разрешает (т.е. в большинстве случаев у него есть патроны)
+		if (!CurrentlyActiveWeapon->IsDrained())
+			CurrentlyActiveWeapon->Shoot();
 	}
 }
