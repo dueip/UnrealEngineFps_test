@@ -23,4 +23,6 @@ public:
 	virtual void StopShooting() PURE_VIRTUAL();
 	virtual bool IsCurrentlyShooting() { return false; };
 	virtual bool IsAtFullCapacity() { return false; }
+	// Мне не очень нравится это делать, но через сабкомпонент получится довольно плохо.
+	virtual FName GetDisplayName() const { return ""; } 
 };

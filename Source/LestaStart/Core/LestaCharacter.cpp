@@ -1,6 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "LestaCharacter.h"
+
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "LaserWeaponComponent.h"
@@ -44,6 +45,8 @@ void ALestaCharacter::BeginPlay()
 	Super::BeginPlay();
 	// Устанавливает кол-во хп в рантайме потому что В таком случае установится то, что показывается в блюпринтах
 	HealthComponent->SetHealth(MaxHP);
+	CreateHUD();
+	
 }
 
 void ALestaCharacter::OnDead()
@@ -56,7 +59,9 @@ void ALestaCharacter::OnDead()
 		DeadPlayer->AfterPossesed();
 		//DeadPlayer->SetupPlayerInputComponent(GetController()->InputComponent);
 		
-		Destroy();
+		SetActorHiddenInGame(true);
+		SetActorTickEnabled(false);
+		SetActorEnableCollision(false);
 	}
 	bIsDead = true;
 }
@@ -82,6 +87,11 @@ int32 ALestaCharacter::CycleWeaponsIndex(int32 Index) const
 	return std::abs(Index);
 }
 
+void ALestaCharacter::CreateHUD_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Please implement"));
+}
+
 void ALestaCharacter::OnShootingEnded()
 {
 	IWeaponInterface* const CurrentlyActiveWeapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
@@ -89,6 +99,7 @@ void ALestaCharacter::OnShootingEnded()
 	{
 		CurrentlyActiveWeapon->StopShooting();
 	}
+	
 }
 
 void ALestaCharacter::OnChooseFirstWeapon()
@@ -169,6 +180,16 @@ float ALestaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 	return DamageAmount;
 }
 
+int32 ALestaCharacter::GetHealth() const
+{
+	return (HealthComponent->GetHealth() < 0.f ? 0 : HealthComponent->GetHealth()) ;
+}
+
+FString ALestaCharacter::GetWeaponName() const
+{
+	return WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex)->GetDisplayName().ToString();
+}
+
 void ALestaCharacter::OnMoveInput(const FInputActionInstance& InputActionInstance)
 {
 	// Controller rotation Yaw determines which direction Character is facing
@@ -188,6 +209,7 @@ void ALestaCharacter::OnLookInput(const FInputActionInstance& InputActionInstanc
 	const FVector2D Input2D = InputActionInstance.GetValue().Get<FVector2D>();
 	AddControllerYawInput(Input2D.X);
 	AddControllerPitchInput(Input2D.Y);
+	
 }
 
 void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstance)

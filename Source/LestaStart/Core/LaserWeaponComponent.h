@@ -37,6 +37,8 @@ public:
 
 	virtual bool IsCurrentlyShooting() override;
 
+	virtual FName GetDisplayName() const override;
+	
 	UFUNCTION(BlueprintGetter)
 	double GetLaserLength() const;
 

@@ -25,6 +25,8 @@ protected:
 	virtual void StopShooting() override;
 	virtual bool IsAtFullCapacity() override;
 
+
+	virtual FName GetDisplayName() const override;
 	TArray<FHitResult> SweepSphere(const ECollisionChannel TraceChannel) const;
 	float CalculateCurrentDamageBasedOffCurrentCharge() const;
 	bool IsBlockedByOtherElement(const FVector& StartPoint, const FVector& EndPoint,

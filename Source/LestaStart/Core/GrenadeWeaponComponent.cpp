@@ -20,8 +20,8 @@ UGrenadeWeaponComponent::UGrenadeWeaponComponent()
 	MaximumDamage = 100.f;
 	MinimumDamage = 1.f;
 	bShouldIgnoreOuter = true;
+
 	
-	// ...
 }
 
 
@@ -109,6 +109,11 @@ void UGrenadeWeaponComponent::StopShooting()
 bool UGrenadeWeaponComponent::IsAtFullCapacity()
 {
 	return (CurrentCharge >= MaximumCharge);
+}
+
+FName UGrenadeWeaponComponent::GetDisplayName() const
+{
+	return "Grenade";
 }
 
 

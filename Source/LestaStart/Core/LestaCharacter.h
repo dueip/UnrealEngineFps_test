@@ -8,6 +8,7 @@
 #include "InputAction.h"
 #include "LaserComponent.h"
 #include "DeadPlayer.h"
+#include "HudSettings.h"
 #include "WeaponInvenotryComponent.h"
 #include "WeaponInterface.h"
 #include "WeaponHoldableInterface.h"
@@ -31,6 +32,10 @@ public:
 	void OnDead();
 	int32 CycleWeaponsIndex(int32 Index) const;
 
+
+	UFUNCTION(BlueprintNativeEvent)
+	void CreateHUD();
+	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	bool IsShooting() const;
 	virtual bool CanHoldWeapon() const override;
@@ -38,6 +43,11 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION(BlueprintGetter)
+	int32 GetHealth() const;
+	
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	FString GetWeaponName() const;
 	
 protected:
 	UPROPERTY(VisibleAnywhere)

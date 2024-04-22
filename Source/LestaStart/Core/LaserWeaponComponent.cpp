@@ -19,6 +19,9 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 	
 	BlinkDuration = 0.05f;
 	AnimationDuration = 0.1f;
+	LaserLength = 1000.f;
+	DamageAmount = 10.f;
+
 	// ...
 }
 
@@ -125,6 +128,11 @@ void ULaserWeaponComponent::Shoot()
 bool ULaserWeaponComponent::IsCurrentlyShooting()
 {
 	return Laser->IsActive();
+}
+
+FName ULaserWeaponComponent::GetDisplayName() const
+{
+	return "Laser";
 }
 
 double ULaserWeaponComponent::GetLaserLength() const
