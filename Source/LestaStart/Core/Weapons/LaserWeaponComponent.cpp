@@ -21,7 +21,7 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 	BlinkDuration = 0.05f;
 	AnimationDuration = 0.1f;
 	LaserLength = 1000.f;
-	DamageAmount = 10.f;
+	DamageAmount = 1.f;
 
 	MaxDurability = 10;
 	DurabilityLossInOneSecond = 3;
@@ -103,9 +103,6 @@ std::optional<FVector> ULaserWeaponComponent::DoHit(const FVector& SocketOrigin,
 		{
 			Hit.GetActor()->TakeDamage(DamageAmount, PointDamage, nullptr, ActorThatDealtDamage);
 		}
-		// TODO: Actually make this work
-
-		DrawDebugSphere(GetWorld(), Hit.Location, 10, 32, FColor::Purple, false, 0);
 		return Hit.Location;
 	}
 	return std::nullopt;
