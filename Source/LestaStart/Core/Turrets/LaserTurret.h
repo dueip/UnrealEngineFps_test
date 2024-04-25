@@ -30,7 +30,6 @@ public:
 	IWeaponInterface* WeaponComponent;
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
 private:
 UFUNCTION()
 	void ReloadWeapon() const;

@@ -55,6 +55,7 @@ void ALestaCharacter::BeginPlay()
 
 void ALestaCharacter::OnDead()
 {
+	OnShootingEnded();	
 	if (DeadPlayerToSpawn)
 	{
 		ADeadPlayer* DeadPlayer = GetWorld()->SpawnActor<ADeadPlayer>(DeadPlayerToSpawn,
@@ -62,11 +63,11 @@ void ALestaCharacter::OnDead()
 		GetController()->Possess(DeadPlayer);
 		DeadPlayer->AfterPossesed();
 		//DeadPlayer->SetupPlayerInputComponent(GetController()->InputComponent);
-		
-		SetActorHiddenInGame(true);
-		SetActorTickEnabled(false);
-		SetActorEnableCollision(false);
 	}
+	
+	SetActorHiddenInGame(true);
+	SetActorTickEnabled(false);
+	SetActorEnableCollision(false);
 	bIsDead = true;
 }
 
