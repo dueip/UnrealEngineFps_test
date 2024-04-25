@@ -85,7 +85,7 @@ float ULaserWeaponComponent::GetCurrentDrainage()
 	return CurrentDurability;
 }
 
-void ULaserWeaponComponent::DoHit(const FVector& SocketOrigin, const FVector& EndPoint, ECollisionChannel CollisionChannel) const
+std::optional<FVector> ULaserWeaponComponent::DoHit(const FVector& SocketOrigin, const FVector& EndPoint, ECollisionChannel CollisionChannel) const
 {
 	FHitResult Hit;
 	bool bWasThereAHit = GetWorld()->LineTraceSingleByChannel(Hit, SocketOrigin, DesiredEndPoint, CollisionChannel);
@@ -105,9 +105,10 @@ void ULaserWeaponComponent::DoHit(const FVector& SocketOrigin, const FVector& En
 		}
 		// TODO: Actually make this work
 
-		DrawDebugSphere(GetWorld(), Hit.Location, 10, 32, FColor::Purple);
-		//EndPoint = Hit.Location;
+		DrawDebugSphere(GetWorld(), Hit.Location, 10, 32, FColor::Purple, false, 0);
+		return Hit.Location;
 	}
+	return std::nullopt;
 }
 
 // Called every frame
@@ -130,9 +131,11 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	
 	
 	
+	const std::optional<FVector> HitPointAfterCollision = DoHit(SocketOrigin, EndPoint, HitCollisionChannel);
+	EndPoint = HitPointAfterCollision.value_or(EndPoint);
+	
 	if (IsValid(GetWorld()) && !BlinkAnimationTimer.IsValid())
 	{
-		DoHit(SocketOrigin, EndPoint, HitCollisionChannel);
 		CalculateAnimationDurationAndSetTimer();
 	}
 	Laser->SetEndPoint(EndPoint);

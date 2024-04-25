@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "WeaponInterface.h"
 #include "LestaStart/Core/Renderers/LaserComponent.h"
+#include "optional"
 #include "LaserWeaponComponent.generated.h"
 
 
@@ -29,7 +30,8 @@ public:
 
 	virtual int32 GetMaxDrainage() override;
 	virtual float GetCurrentDrainage() override;
-	void DoHit(const FVector& SocketOrigin, const FVector& EndPoint, ECollisionChannel CollisionChannel) const;
+	// Returns a Hit Location if there was a hit.
+	std::optional<FVector> DoHit(const FVector& SocketOrigin, const FVector& EndPoint, ECollisionChannel CollisionChannel) const;
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
