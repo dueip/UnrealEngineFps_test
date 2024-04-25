@@ -31,9 +31,23 @@ void ALaserTurret::BeginPlay()
 void ALaserTurret::OnShoot()
 {
 	
-	if (WeaponComponent)
+	if (WeaponComponent && !WeaponComponent->IsDrained())
 	{
 		WeaponComponent->Shoot();
+	}
+	else if (WeaponComponent->IsDrained())
+	{
+		OnStopShooting();
+		if (GetWorldTimerManager().IsTimerActive(ReloadTimerHandle))
+		{
+			return;
+		}
+		GetWorldTimerManager().SetTimer(
+			ReloadTimerHandle,
+			this,
+			&ALaserTurret::ReloadWeapon,
+			WeaponComponent->GetReloadTime()
+		);
 	}
 }
 
@@ -65,6 +79,14 @@ void ALaserTurret::Tick(float DeltaTime)
 			OnStopShooting();
 			ChangeStateTo(Modes::Scouting);
 		}
+	}
+}
+
+void ALaserTurret::ReloadWeapon() const
+{
+	if (WeaponComponent)
+	{
+		WeaponComponent->Reload();
 	}
 }
 

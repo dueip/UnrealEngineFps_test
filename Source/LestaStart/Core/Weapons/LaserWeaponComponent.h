@@ -29,6 +29,7 @@ public:
 
 	virtual int32 GetMaxDrainage() override;
 	virtual float GetCurrentDrainage() override;
+	void DoHit(const FVector& SocketOrigin, const FVector& EndPoint, ECollisionChannel CollisionChannel) const;
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
@@ -49,7 +50,7 @@ public:
 	UFUNCTION(BlueprintGetter)
 	float GetLaserThickness() const;
 	
-	FVector CalculateDefaultEndPoint();
+	FVector CalculateDefaultEndPoint() const;
 
 	virtual bool IsDrained() override;
 
@@ -87,7 +88,9 @@ protected:
 	double LaserLength;
 	UPROPERTY(EditAnywhere, Category="Damage")
 	float DamageAmount;
-	
+
+	UPROPERTY(EditAnywhere, Category="Damage")
+	TEnumAsByte<ECollisionChannel> HitCollisionChannel;
 	
 	FShootDelegate ShootDelegate;
 

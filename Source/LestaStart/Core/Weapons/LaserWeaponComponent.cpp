@@ -26,7 +26,8 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 	MaxDurability = 10;
 	DurabilityLossInOneSecond = 3;
 	ReloadTime = 0.5f;
-
+	
+	HitCollisionChannel = ECC_Pawn;
 	// ...
 }
 
@@ -84,6 +85,31 @@ float ULaserWeaponComponent::GetCurrentDrainage()
 	return CurrentDurability;
 }
 
+void ULaserWeaponComponent::DoHit(const FVector& SocketOrigin, const FVector& EndPoint, ECollisionChannel CollisionChannel) const
+{
+	FHitResult Hit;
+	bool bWasThereAHit = GetWorld()->LineTraceSingleByChannel(Hit, SocketOrigin, DesiredEndPoint, CollisionChannel);
+	FPointDamageEvent PointDamage;
+	PointDamage.Damage = DamageAmount;
+	PointDamage.HitInfo = Hit;
+	// Мы вполне можем получить нуллптр тут и нам не надо волноваться об этом:
+	// Это просто значит то, что у нас не было оружие присоединено к Актору
+	AActor* ActorThatDealtDamage = UECasts_Private::DynamicCast<AActor*>(GetOuter());
+	if (bWasThereAHit && Hit.bBlockingHit)
+	{
+		// Если есть компонент с ХП, то значит мы можем нанести урон
+		// Потом можно перенести в интерфейс
+		if (Hit.GetActor()->FindComponentByClass<UHealthComponent>())
+		{
+			Hit.GetActor()->TakeDamage(DamageAmount, PointDamage, nullptr, ActorThatDealtDamage);
+		}
+		// TODO: Actually make this work
+
+		DrawDebugSphere(GetWorld(), Hit.Location, 10, 32, FColor::Purple);
+		//EndPoint = Hit.Location;
+	}
+}
+
 // Called every frame
 void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                           FActorComponentTickFunction* ThisTickFunction)
@@ -106,25 +132,7 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	
 	if (IsValid(GetWorld()) && !BlinkAnimationTimer.IsValid())
 	{
-		FHitResult Hit;
-		bool bWasThereAHit = GetWorld()->LineTraceSingleByChannel(Hit, SocketOrigin, DesiredEndPoint, ECC_Pawn);
-		FPointDamageEvent PointDamage;
-		PointDamage.Damage = DamageAmount;
-		PointDamage.HitInfo = Hit;
-		// Мы вполне можем получить нуллптр тут и нам не надо волноваться об этом:
-		// Это просто значит то, что у нас не было оружие присоединено к Актору
-		AActor* ActorThatDealtDamage = dynamic_cast<AActor*>(GetOuter());
-		if (bWasThereAHit && Hit.bBlockingHit)
-		{
-			// Если есть компонент с ХП, то значит мы можем нанести урон
-			// Потом можно перенести в интерфейс
-			if (Hit.GetActor()->FindComponentByClass<UHealthComponent>())
-			{
-				Hit.GetActor()->TakeDamage(DamageAmount, PointDamage, nullptr, ActorThatDealtDamage);
-			}
-			// TODO: Actually make this work
-			EndPoint = Hit.Location;
-		}
+		DoHit(SocketOrigin, EndPoint, HitCollisionChannel);
 		CalculateAnimationDurationAndSetTimer();
 	}
 	Laser->SetEndPoint(EndPoint);
@@ -169,12 +177,10 @@ float ULaserWeaponComponent::GetLaserThickness() const
 	return Laser->GetThickness();
 }
 
-FVector ULaserWeaponComponent::CalculateDefaultEndPoint()
+FVector ULaserWeaponComponent::CalculateDefaultEndPoint() const
 {
 	const FVector SocketOrigin = GetSocketLocation(GetAttachSocketName());
 	const FRotator SocketRotation = GetSocketRotation(GetAttachSocketName());
-
-	
 
 	FVector EndPoint = SocketOrigin + FVector(
 		LaserLength * cos(FMath::DegreesToRadians(SocketRotation.Yaw)),
