@@ -33,6 +33,8 @@ ATurret::ATurret()
 	}
 	Health->HealthChangedDelegate.AddUFunction(this, FName("OnHealthChanged"));
 
+
+	bReplicates = true;
 	
 	//healthbar->Text = FText::FromString("Helloworld");
 	//healthbar->bAlwaysRenderAsText = false;

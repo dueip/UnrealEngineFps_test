@@ -12,6 +12,8 @@ ADestroyableObject::ADestroyableObject()
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 	MaxHp = 100.f;
+
+	bReplicates = true;
 	
 }
 

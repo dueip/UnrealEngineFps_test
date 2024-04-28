@@ -6,11 +6,18 @@
 #include "GameFramework/Character.h"
 #include "InputAction.h"
 #include "DeadPlayer.h"
-#include "HudSettings.h"
 #include "LestaStart/Core/HealthComponent.h"
 #include "LestaStart/Core/Weapons/WeaponHoldableInterface.h"
 #include "LestaStart/Core/Weapons/WeaponInvenotryComponent.h"
 #include "LestaCharacter.generated.h"
+
+UENUM()
+enum class EPlayerState
+{
+	None = 0 UMETA(Hidden),
+	Reloading = 1,
+	Dead
+};
 
 class UCameraComponent;
 
@@ -117,4 +124,7 @@ protected:
 private:
 	bool bIsDead = false;
 	FTimerHandle ReloadTimerHandle;
+
+	
+	TEnumAsByte<EPlayerState> PlayerState;
 };
