@@ -106,6 +106,12 @@ int32 ALestaCharacter::CycleWeaponsIndex(int32 Index) const
 	return std::abs(Index);
 }
 
+void ALestaCharacter::Server_DealDamage_Implementation(float DamageAmount, FDamageEvent const& DamageEvent,
+	AController* EventInstigator, AActor* DamageCauser)
+{
+	TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
 void ALestaCharacter::CreateHUD_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Please implement"));

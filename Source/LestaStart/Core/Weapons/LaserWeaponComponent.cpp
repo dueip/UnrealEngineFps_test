@@ -105,10 +105,12 @@ std::optional<FVector> ULaserWeaponComponent::DoHit(const FVector& SocketOrigin,
 	{
 		// Если есть компонент с ХП, то значит мы можем нанести урон
 		// Потом можно перенести в интерфейс
-		if (Hit.GetActor()->FindComponentByClass<UHealthComponent>())
+		if (UHealthComponent* Health = Hit.GetActor()->FindComponentByClass<UHealthComponent>())
 		{
-			Hit.GetActor()->TakeDamage(DamageAmount, PointDamage, nullptr, ActorThatDealtDamage);
+			//Hit.GetActor()->TakeDamage(DamageAmount, PointDamage, nullptr, ActorThatDealtDamage);
+			Health->ServerSetHealth(Health->GetHealth() - DamageAmount);
 		}
+		
 		return Hit.Location;
 	}
 	return std::nullopt;

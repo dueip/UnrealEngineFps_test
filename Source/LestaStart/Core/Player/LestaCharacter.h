@@ -37,6 +37,9 @@ public:
 	void OnDead();
 	int32 CycleWeaponsIndex(int32 Index) const;
 
+	UFUNCTION(Server, Unreliable)
+	void Server_DealDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void CreateHUD();
