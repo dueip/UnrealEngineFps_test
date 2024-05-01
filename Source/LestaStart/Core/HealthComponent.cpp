@@ -57,8 +57,7 @@ void UHealthComponent::SetHealth(float NewHP)
 	{
 		HealthChangedDelegate.Broadcast(NewHP);
 	}
-	// if (GetOwner() && GetOwner()->HasAuthority())
-	//     ServerSetHealth(NewHP);	
+	MulticastEnsureAllClientsKnowThatHealthChanged(NewHP);
 }
 
 
@@ -85,10 +84,6 @@ void UHealthComponent::MulticastEnsureAllClientsKnowThatHealthChanged_Implementa
 
 void UHealthComponent::OnRep_HP()
 {
-	if (HealthChangedDelegate.IsBound())
-	{
-		HealthChangedDelegate.Broadcast(HealthPoints);
-	}
 
 	return;
 }
