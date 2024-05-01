@@ -26,7 +26,9 @@ class LESTASTART_API ATurret : public AActor
 
 public:
 	//DECLARE_DELEGATE_RetVal(FCheckIfPawnIsInTheFOV);
-	
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	UPROPERTY(EditDefaultsOnly, Category="Mode")
 	Modes BeginningMode;
 	UPROPERTY(EditAnywhere, Category="Animation")
@@ -90,7 +92,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Health")
 	float MaxHP;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Health")
+	UPROPERTY(EditDefaultsOnly, Category="Health", Replicated)
 	TObjectPtr<UHealthComponent> Health;
 
 	UPROPERTY(EditAnywhere, Category="Attack")

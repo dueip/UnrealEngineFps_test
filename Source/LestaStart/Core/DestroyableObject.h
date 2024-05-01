@@ -20,15 +20,22 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastOnDead();
+
+	UFUNCTION()
+	void OnDead();
+
+
 protected:
-	UPROPERTY(EditDefaultsOnly, Category="Health")
+	UPROPERTY(EditDefaultsOnly, Category="Health", Replicated)
 	UHealthComponent* HealthComponent;
 
 	UPROPERTY(EditAnywhere, Category="Health")

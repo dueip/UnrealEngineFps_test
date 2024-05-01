@@ -26,6 +26,8 @@ protected:
 	void CalculateAnimationDurationAndSetTimer();
 
 public:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
 	virtual float GetReloadTime() override;
 
 	virtual int32 GetMaxDrainage() override;

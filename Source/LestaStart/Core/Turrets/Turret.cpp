@@ -8,9 +8,14 @@
 #include "Components/TextRenderComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
+#include "Net/UnrealNetwork.h"
 
-	
 
+void ATurret::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ATurret, Health);
+}
 
 // Sets default values
 ATurret::ATurret()
@@ -26,10 +31,13 @@ ATurret::ATurret()
 
 	TimeBetweenShots = 1.f;
 	
+	SetReplicates(true);
+	SetReplicatingMovement(true);
+	
 	if (!Health)
 	{
 		Health = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
-		Health->SetHealth(MaxHP);
+		
 	}
 	Health->HealthChangedDelegate.AddUFunction(this, FName("OnHealthChanged"));
 

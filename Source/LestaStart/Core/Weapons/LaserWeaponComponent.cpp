@@ -28,6 +28,7 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 	ReloadTime = 0.5f;
 	
 	HitCollisionChannel = ECC_Pawn;
+	
 	// ...
 }
 
@@ -39,7 +40,7 @@ void ULaserWeaponComponent::BeginPlay()
 	Laser->Deactivate();
 	BaseColor = Laser->GetColor();
 	Reload();
-	
+	SetIsReplicated(true);
 	IWeaponHoldableInterface* Outer = dynamic_cast<IWeaponHoldableInterface*>(GetOuter());
 	if (Outer && Outer->CanHoldWeapon())
 	{
@@ -67,6 +68,11 @@ void ULaserWeaponComponent::CalculateAnimationDurationAndSetTimer()
 	}
 	GetWorld()->GetTimerManager().SetTimer(BlinkAnimationTimer, this,
 	                                       &ThisClass::BlinckingAnimationCallback, TimerDuration, false);
+}
+
+void ULaserWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
 float ULaserWeaponComponent::GetReloadTime()
