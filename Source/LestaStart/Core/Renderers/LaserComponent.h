@@ -26,6 +26,8 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 							   FActorComponentTickFunction* ThisTickFunction) override;
 
+	UFUNCTION(NetMulticast, Unreliable, BlueprintCallable)
+	void MulticastDrawOnAllClients();
 	UFUNCTION(BlueprintCallable)
 	virtual void SetOrigin(const FVector& NewOrigin);
 	UFUNCTION(BlueprintCallable)
@@ -39,15 +41,15 @@ public:
 	/* Moves both Begin and End positions by MoveVector*/
 	UFUNCTION(BlueprintCallable)
 	virtual void Move(const FVector& MoveVector);
-
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Replicated)
 	FVector BeginPosition;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Replicated)
 	FVector EndPosition;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Replicated)
 	FColor Color;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Replicated)
 	float Thickness;
 };

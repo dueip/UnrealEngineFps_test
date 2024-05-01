@@ -6,8 +6,8 @@
 #include "WeaponInterface.h"
 #include "LestaStart/Core/Renderers/LaserComponent.h"
 #include "optional"
+#include "Engine/NetDriver.h"
 #include "LaserWeaponComponent.generated.h"
-
 
 DECLARE_DELEGATE(FShootDelegate)
 
@@ -59,11 +59,13 @@ public:
 	virtual bool IsDrained() override;
 
 	virtual void Reload() override;
+
+	
 	
 	FVector DesiredEndPoint;
 	
 protected:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Replicated)
 	TObjectPtr<ULaserComponent> Laser;
 
 	FTimerHandle BlinkAnimationTimer;

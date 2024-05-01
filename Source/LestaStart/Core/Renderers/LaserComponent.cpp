@@ -4,6 +4,7 @@
 #include "LaserComponent.h"
 
 #include "Evaluation/IMovieSceneEvaluationHook.h"
+#include "Net/UnrealNetwork.h"
 
 
 // Sets default values for this component's properties
@@ -14,6 +15,7 @@ ULaserComponent::ULaserComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	Thickness = 5.f;
 	// ...
+	
 }
 
 
@@ -31,7 +33,12 @@ void ULaserComponent::BeginPlay()
 void ULaserComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	//MulticastDrawOnAllClients();
+	
+}
 
+void ULaserComponent::MulticastDrawOnAllClients_Implementation()
+{
 	const UWorld* const World =  GetWorld();
 	const AActor* Owner = GetOwner();
 	if (IsValid(World) && IsValid(Owner))
@@ -75,4 +82,13 @@ void ULaserComponent::Move(const FVector& MoveVector)
 {
 	BeginPosition += MoveVector;
 	EndPosition += MoveVector;
+}
+
+void ULaserComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ULaserComponent, BeginPosition);
+	DOREPLIFETIME(ULaserComponent, EndPosition);
+	DOREPLIFETIME(ULaserComponent, Color);
+	DOREPLIFETIME(ULaserComponent, Thickness);
 }

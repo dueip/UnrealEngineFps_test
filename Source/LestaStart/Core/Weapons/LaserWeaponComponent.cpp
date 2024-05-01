@@ -7,6 +7,7 @@
 #include "WeaponHoldableInterface.h"
 #include "LestaStart/Core/HealthComponent.h"
 #include "LestaStart/Core/Renderers/LaserComponent.h"
+#include "Net/UnrealNetwork.h"
 
 
 // Sets default values for this component's properties
@@ -36,6 +37,8 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 // Called when the game starts
 void ULaserWeaponComponent::BeginPlay()
 {
+	
+	
 	Super::BeginPlay();
 	Laser->Deactivate();
 	BaseColor = Laser->GetColor();
@@ -45,6 +48,7 @@ void ULaserWeaponComponent::BeginPlay()
 	if (Outer && Outer->CanHoldWeapon())
 	{
 		Outer->SetWeapon(this);
+		
 	}
 	
 	// Safety checks:
@@ -57,6 +61,7 @@ void ULaserWeaponComponent::BeginPlay()
 
 void ULaserWeaponComponent::CalculateAnimationDurationAndSetTimer()
 {
+	
 	float TimerDuration = 0.f;
 	if (Laser->GetColor() != BaseColor)
 	{
@@ -73,6 +78,7 @@ void ULaserWeaponComponent::CalculateAnimationDurationAndSetTimer()
 void ULaserWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ULaserWeaponComponent, Laser)
 }
 
 float ULaserWeaponComponent::GetReloadTime()
@@ -126,7 +132,7 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	{
 		return;
 	}
-
+	
 	// It's fine to use GetSocketLocation in here since it will return the component's transform anyways
 	// See: https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/GetSocketLocation/
 
@@ -144,7 +150,10 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		CalculateAnimationDurationAndSetTimer();
 	}
 	Laser->SetEndPoint(EndPoint);
-
+	
+	UE_LOG(LogTemp, Warning, TEXT("Owner role: %i"), GetOwnerRole());
+	Laser->MulticastDrawOnAllClients();
+	
 	CurrentDurability -= DurabilityLossInOneSecond * DeltaTime;
 }
 
