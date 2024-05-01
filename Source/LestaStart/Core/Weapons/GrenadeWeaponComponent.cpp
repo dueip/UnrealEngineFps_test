@@ -11,6 +11,10 @@
 // Sets default values for this component's properties
 UGrenadeWeaponComponent::UGrenadeWeaponComponent()
 {
+	/*
+	 * Defaults
+	*/
+	
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
@@ -22,6 +26,9 @@ UGrenadeWeaponComponent::UGrenadeWeaponComponent()
 	bShouldIgnoreOuter = true;
 	MaxAmmo = 3;
 	ReloadTime = 1.f;
+
+	// Networking
+	SetIsReplicated(true);
 	
 }
 
@@ -179,34 +186,32 @@ void UGrenadeWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType
 		CurrentCharge += ChargeGainPerSecond * DeltaTime;
 	}
 
+
+	
 	// Draw Outer Sphere
-	DrawDebugSphere(
-		GetWorld(),
-		GetSocketLocation(GetAttachSocketName()),
-		MaximumRadius,
-		32,
-		FColor::Red ,
-		false,
-		0,
-		0,
-		0
-	);
+	Multicast_DrawCustomSphereOnAllClients(MaximumRadius, FColor::Red);
+	
 	// Draw Inner Sphere
-	DrawDebugSphere(
-		GetWorld(),
-		GetSocketLocation(GetAttachSocketName()),
-		CalculateRadiusBasedOffCurrentCharge(),
-		32,
-		FColor::Green,
-		false,
-		0,
-		0,
-		0
-	);
+	Multicast_DrawCustomSphereOnAllClients(CalculateRadiusBasedOffCurrentCharge(), FColor::Green);
 }
 
 bool UGrenadeWeaponComponent::IsCurrentlyShooting()
 {
 	return bIsGainingCharge;
+}
+
+void UGrenadeWeaponComponent::DrawSphere(const int32 Radius, const FColor& Color) const
+{
+	DrawDebugSphere(
+		GetWorld(),
+		GetSocketLocation(GetAttachSocketName()),
+		Radius,
+		32,
+		Color,
+		false,
+		0,
+		0,
+		0
+	);
 }
 

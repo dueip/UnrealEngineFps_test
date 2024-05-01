@@ -14,6 +14,7 @@ ULaserComponent::ULaserComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 	Thickness = 5.f;
+	SetIsReplicated(true);
 	// ...
 	
 }

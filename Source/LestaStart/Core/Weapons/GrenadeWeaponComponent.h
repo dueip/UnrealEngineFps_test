@@ -65,6 +65,11 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 	virtual bool IsCurrentlyShooting() override;
 private:
+	UFUNCTION(NetMulticast, Unreliable)
+	void Multicast_DrawCustomSphereOnAllClients(const int32 Radius, const FColor& Color);
+	
+	void DrawSphere(const int32 Radius, const FColor& Color) const;
+	
 	float CurrentCharge = 0;
 	bool bIsGainingCharge = false;
 	int32 CurrentAmmoNumber;
