@@ -52,8 +52,13 @@ void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UHealthComponent::SetHealth(float NewHP)
 {
-	if (GetOwner() && GetOwner()->HasAuthority())
-	    ServerSetHealth(NewHP);	
+	HealthPoints = NewHP;
+	if (HealthChangedDelegate.IsBound())
+	{
+		HealthChangedDelegate.Broadcast(NewHP);
+	}
+	// if (GetOwner() && GetOwner()->HasAuthority())
+	//     ServerSetHealth(NewHP);	
 }
 
 
@@ -80,6 +85,11 @@ void UHealthComponent::MulticastEnsureAllClientsKnowThatHealthChanged_Implementa
 
 void UHealthComponent::OnRep_HP()
 {
+	if (HealthChangedDelegate.IsBound())
+	{
+		HealthChangedDelegate.Broadcast(HealthPoints);
+	}
+
 	return;
 }
 

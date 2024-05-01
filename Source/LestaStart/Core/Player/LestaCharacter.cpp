@@ -11,6 +11,7 @@
 #include "LestaStart/Core/Weapons/LaserWeaponComponent.h"
 #include "LestaStart/Core/Weapons/WeaponInterface.h"
 #include "LestaStart/Core/Weapons/WeaponInvenotryComponent.h"
+#include "Net/UnrealNetwork.h"
 
 ALestaCharacter::ALestaCharacter()
 {
@@ -25,13 +26,23 @@ ALestaCharacter::ALestaCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("MainCamera"));
 	CameraComponent->bUsePawnControlRotation = true; // Camera rotation is synchronized with Player Controller rotation
 	CameraComponent->SetupAttachment(GetMesh());
+
+	bReplicates = true;
 }
 
 void ALestaCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	
+	IWeaponInterface* const CurrentWeapon =  WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
+	ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>();
+	
+	const bool bIsCurrentWeaponLaser = CurrentWeapon && LaserWeapon && (CurrentWeapon == LaserWeapon);
+	const bool bIsLaserShooting = bIsCurrentWeaponLaser && CurrentWeapon->IsCurrentlyShooting();
 
-	if (ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>())
+	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, FString::Printf(TEXT("Health: %i"), HealthComponent->GetHealth()));
+	
+	if (bIsLaserShooting)
 	{
 		// Assuming LaserWeapon and CameraComponent are valid and accessible
 		FVector CameraCenter = CameraComponent->GetComponentLocation();
@@ -48,7 +59,10 @@ void ALestaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	// Устанавливает кол-во хп в рантайме потому что В таком случае установится то, что показывается в блюпринтах
-	HealthComponent->SetHealth(MaxHP);
+	if (HasAuthority())
+	{
+		HealthComponent->SetHealth(MaxHP);
+	}
 	CreateHUD();
 	
 }
@@ -156,6 +170,7 @@ void ALestaCharacter::OnReload()
 	}
 }
 
+
 void ALestaCharacter::OnSwitchWeapons(const FInputActionValue& InputActionValue)
 {
 	if (IsReloading()) return;
@@ -212,6 +227,10 @@ bool ALestaCharacter::SetWeapon(IWeaponInterface* Weapon)
 float ALestaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	AActor* DamageCauser)
 {
+	if (!DamageCauser->HasAuthority())
+	{
+		return 0;
+	}
 	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageAmount);
 	if (HealthComponent->GetHealth() < 0.f)
 	{
@@ -254,6 +273,12 @@ float ALestaCharacter::CurrentWeaponAmmo() const
 {
 	float CurrentDrainage = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex)->GetCurrentDrainage();
 	return CurrentDrainage <= 0.f ? 0 : CurrentDrainage;
+}
+
+void ALestaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ALestaCharacter, MaxHP);
 }
 
 void ALestaCharacter::OnMoveInput(const FInputActionInstance& InputActionInstance)

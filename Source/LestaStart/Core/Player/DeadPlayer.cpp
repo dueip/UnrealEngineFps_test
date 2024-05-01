@@ -39,15 +39,22 @@ void ADeadPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ADeadPlayer::AfterPossesed()
 {
 
+	if (!HasAuthority())
+	{
+		return;
+	}
 	
-	if (ULocalPlayer* LocalPlayer = GetGameInstance()->GetLocalPlayerByIndex(0))
+	if (ULocalPlayer* LocalPlayer = GWorld->GetFirstLocalPlayerFromController())
 	{
 		if (auto* InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 		{
 			InputSystem->AddMappingContext(InputMapping, InputMappingPriority);
 		}
 	}
-	GetController()->InputComponent->ClearBindingValues();
+	if (UInputComponent* IC =  GetController()->InputComponent)
+	{
+		IC->ClearBindingValues();
+	}
 	SetupPlayerInputComponent(GetController()->InputComponent);
 }
 

@@ -41,7 +41,7 @@ void ADestroyableObject::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	//auto* LocalPlayerController = GEngine->GetFirstLocalPlayerController(GetWorld());
 	//SetOwner(LocalPlayerController);
-GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("health is: %f"), HealthComponent->GetHealth()));
+//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("health is: %f"), HealthComponent->GetHealth()));
 	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString::Printf(TEXT("Authority is: %i"), HasNetOwner()));
 }
 

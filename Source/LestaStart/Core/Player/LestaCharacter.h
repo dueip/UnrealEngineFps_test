@@ -102,13 +102,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UHealthComponent> HealthComponent;
 
-	UPROPERTY(EditDefaultsOnly, Category="Stats")
+	UPROPERTY(Replicated, EditDefaultsOnly, Category="Stats")
 	float MaxHP;
 	
 	
 	UPROPERTY(EditDefaultsOnly, Category="Death")
 	TSubclassOf<ADeadPlayer> DeadPlayerToSpawn;
-	
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void OnMoveInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnLookInput(const FInputActionInstance& InputActionInstance);
@@ -124,6 +125,8 @@ protected:
 private:
 	bool bIsDead = false;
 	FTimerHandle ReloadTimerHandle;
+
+	
 
 	
 	TEnumAsByte<EPlayerState> PlayerState;
