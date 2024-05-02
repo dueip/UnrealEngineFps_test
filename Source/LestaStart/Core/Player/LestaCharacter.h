@@ -7,6 +7,7 @@
 #include "InputAction.h"
 #include "DeadPlayer.h"
 #include "LestaStart/Core/HealthComponent.h"
+#include "LestaStart/Core/Renderers/LaserComponent.h"
 #include "LestaStart/Core/Weapons/WeaponHoldableInterface.h"
 #include "LestaStart/Core/Weapons/WeaponInvenotryComponent.h"
 #include "LestaCharacter.generated.h"
@@ -125,11 +126,16 @@ protected:
 	UFUNCTION()
 	void ReloadWeapon();
 	virtual void OnReload();
+
+	UPROPERTY(EditDefaultsOnly, Replicated)
+	ULaserComponent* JustForTesting;
 private:
 	bool bIsDead = false;
 	FTimerHandle ReloadTimerHandle;
 
+
 	
+
 
 	
 	TEnumAsByte<EPlayerState> PlayerState;

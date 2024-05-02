@@ -27,12 +27,18 @@ ALestaCharacter::ALestaCharacter()
 	CameraComponent->bUsePawnControlRotation = true; // Camera rotation is synchronized with Player Controller rotation
 	CameraComponent->SetupAttachment(GetMesh());
 
+	JustForTesting = CreateDefaultSubobject<ULaserComponent>(TEXT("Laser"));
+	
 	bReplicates = true;
 }
 
 void ALestaCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	JustForTesting->SetOrigin(GetActorLocation());
+	JustForTesting->SetEndPoint(GetActorLocation() + FVector(500, 0, 0));
+	JustForTesting->MulticastDrawOnAllClients();
 	
 	IWeaponInterface* const CurrentWeapon =  WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
 	ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>();
@@ -65,6 +71,7 @@ void ALestaCharacter::BeginPlay()
 	}
 	CreateHUD();
 	
+	JustForTesting->SetColor(FColor::Silver);
 }
 
 void ALestaCharacter::OnDead()
@@ -285,6 +292,7 @@ void ALestaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ALestaCharacter, MaxHP);
+	DOREPLIFETIME(ALestaCharacter, JustForTesting);
 }
 
 void ALestaCharacter::OnMoveInput(const FInputActionInstance& InputActionInstance)
