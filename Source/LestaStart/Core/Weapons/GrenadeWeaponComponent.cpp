@@ -28,8 +28,7 @@ UGrenadeWeaponComponent::UGrenadeWeaponComponent()
 	ReloadTime = 1.f;
 
 	// Networking
-	SetIsReplicated(true);
-	
+	SetIsReplicatedByDefault(true);
 }
 
 
@@ -185,8 +184,6 @@ void UGrenadeWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	{
 		CurrentCharge += ChargeGainPerSecond * DeltaTime;
 	}
-
-
 	
 	// Draw Outer Sphere
 	Multicast_DrawCustomSphereOnAllClients(MaximumRadius, FColor::Red);
@@ -198,6 +195,12 @@ void UGrenadeWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType
 bool UGrenadeWeaponComponent::IsCurrentlyShooting()
 {
 	return bIsGainingCharge;
+}
+
+void UGrenadeWeaponComponent::Multicast_DrawCustomSphereOnAllClients_Implementation(const int32 Radius,
+	const FColor& Color)
+{
+	DrawSphere(Radius, Color);
 }
 
 void UGrenadeWeaponComponent::DrawSphere(const int32 Radius, const FColor& Color) const

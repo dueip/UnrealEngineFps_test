@@ -17,7 +17,7 @@ UHealthComponent::UHealthComponent()
 	
 	PrimaryComponentTick.bCanEverTick = true;
 	HealthPoints = 0.f;
-	SetIsReplicated(true);
+	SetIsReplicatedByDefault(true);
 	//SetIsReplicatedByDefault(true);
 	// ...
 }

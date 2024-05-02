@@ -29,8 +29,8 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 	ReloadTime = 0.5f;
 	
 	HitCollisionChannel = ECC_Pawn;
-	SetIsReplicated(true);
-	
+
+	SetIsReplicatedByDefault(true);
 	// ...
 }
 

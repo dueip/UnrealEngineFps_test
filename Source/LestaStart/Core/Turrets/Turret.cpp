@@ -59,6 +59,7 @@ void ATurret::BeginPlay()
 	{
 		CurrentMode = Modes::Scouting;
 	}
+	bReplicates = true;
 }
 
 void ATurret::ChangeStateTo(const Modes Mode)
