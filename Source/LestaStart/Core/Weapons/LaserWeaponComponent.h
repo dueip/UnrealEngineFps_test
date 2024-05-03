@@ -100,6 +100,8 @@ protected:
 	
 	FShootDelegate ShootDelegate;
 
+	UFUNCTION(Server, Reliable)
+	void Server_TryToUpdateDurability(float NewDrainage);
 	
 	
 private:

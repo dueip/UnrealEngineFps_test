@@ -153,8 +153,13 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Laser->SetEndPoint(EndPoint);
 	
 	Laser->MulticastDrawOnAllClients();
+
+	/* Shoudl move this somehwere */
+	const TObjectPtr<const AActor> Outer = dynamic_cast<AActor*>(GetOuter());
 	
-	CurrentDurability -= DurabilityLossInOneSecond * DeltaTime;
+	if (Outer && Outer->HasAuthority()) {
+		CurrentDurability -= DurabilityLossInOneSecond * DeltaTime;
+	}
 }
 
 void ULaserWeaponComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
@@ -214,6 +219,11 @@ bool ULaserWeaponComponent::IsDrained()
 void ULaserWeaponComponent::Reload()
 {
 	CurrentDurability = MaxDurability;
+}
+
+void ULaserWeaponComponent::Server_TryToUpdateDurability_Implementation(float NewDrainage)
+{
+	CurrentDurability = NewDrainage;
 }
 
 void ULaserWeaponComponent::BlinckingAnimationCallback()
