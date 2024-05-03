@@ -152,7 +152,6 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	}
 	Laser->SetEndPoint(EndPoint);
 	
-	UE_LOG(LogTemp, Warning, TEXT("Owner role: %i"), GetOwnerRole());
 	Laser->MulticastDrawOnAllClients();
 	
 	CurrentDurability -= DurabilityLossInOneSecond * DeltaTime;

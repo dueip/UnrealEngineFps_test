@@ -106,6 +106,7 @@ private:
 	UFUNCTION()
 	void BlinckingAnimationCallback();
 
+	UPROPERTY(Replicated)
 	float CurrentDurability;
 };
 
