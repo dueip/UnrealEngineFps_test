@@ -152,7 +152,7 @@ void ULaserWeaponComponent::StopShooting()
 
 void ULaserWeaponComponent::Shoot()
 {
-	
+	OnShoot();
 }
 
 bool ULaserWeaponComponent::IsCurrentlyShooting()
@@ -206,38 +206,43 @@ void ULaserWeaponComponent::Server_TryToUpdateDurability_Implementation(float Ne
 	CurrentDurability = NewDrainage;
 }
 
-void ULaserWeaponComponent::OnShoot()
+
+void ULaserWeaponComponent::CalculateLaserPosition(const FVector& EndPoint)
 {
 	// It's fine to use GetSocketLocation in here since it will return the component's transform anyways
 	// See: https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/GetSocketLocation/
-
 	const FVector SocketOrigin = GetSocketLocation(GetAttachSocketName());
-	FVector EndPoint = DesiredEndPoint;
 	Laser->SetOrigin(SocketOrigin);
+	Laser->SetEndPoint(EndPoint);
+}
+
+void ULaserWeaponComponent::Server_DrainAmmo_Implementation(int32 NumberOfAmmo)
+{
+	CurrentDurability -= DurabilityLossInOneClick * NumberOfAmmo;
+}
+
+void ULaserWeaponComponent::Server_DoHit_Implementation(const FVector& OriginPoint, const FVector& EndPoint, ECollisionChannel HitCollisionChannel)
+{
+	LastHitPointAfterCollision = DoHit(GetSocketLocation(GetAttachSocketName()), DesiredEndPoint, HitCollisionChannel);
+}
+
+void ULaserWeaponComponent::OnShoot()
+{
+	/* Actually do a hit */
+	Server_DoHit(GetSocketLocation(GetAttachSocketName()), DesiredEndPoint, ECC_Pawn);
+	FVector BlockedEndPoint = LastHitPointAfterCollision.value_or(DesiredEndPoint);
 	
+	CalculateLaserPosition(BlockedEndPoint);
 	
-	
-	const std::optional<FVector> HitPointAfterCollision = DoHit(SocketOrigin, EndPoint, HitCollisionChannel);
-	EndPoint = HitPointAfterCollision.value_or(EndPoint);
-	
+	Server_DrainAmmo(1);
+
+	/* Draw After everything's ready */ 
 	if (IsValid(GetWorld()) && !BlinkAnimationTimer.IsValid())
 	{
 		CalculateAnimationDurationAndSetTimer();
 	}
-	Laser->SetEndPoint(EndPoint);
 	
 	Laser->MulticastDrawOnAllClients();
-
-	/* Shoudl move this somehwere */
-	const TObjectPtr<const AActor> Outer = dynamic_cast<AActor*>(GetOuter());
-	
-	if (Outer && Outer->HasAuthority()) {
-		CurrentDurability -= DurabilityLossInOneClick;
-		if (CurrentDurability <= 0 && CompletelyDrainedDelegate.IsBound())
-		{
-			CompletelyDrainedDelegate.Broadcast();
-		}
-	}
 }
 
 void ULaserWeaponComponent::BlinckingAnimationCallback()

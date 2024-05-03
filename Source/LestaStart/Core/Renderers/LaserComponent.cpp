@@ -40,6 +40,7 @@ void ULaserComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 
 void ULaserComponent::MulticastDrawOnAllClients_Implementation()
 {
+	
 	const UWorld* const World =  GetWorld();
 	const AActor* Owner = GetOwner();
 	if (IsValid(World) && IsValid(Owner))

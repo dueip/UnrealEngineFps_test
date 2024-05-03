@@ -119,12 +119,24 @@ protected:
 
 	
 private:
+	void CalculateLaserPosition(const FVector& EndPoint);
+
+
+	UFUNCTION(Server, Unreliable)
+	void Server_DrainAmmo(int32 NumberOfAmmo);
+
+	UFUNCTION(Server, Unreliable)
+	void Server_DoHit(const FVector& OriginPoint, const FVector& EndPoint, ECollisionChannel HitCollisionChannel);
+	
 	UFUNCTION()
 	void OnShoot();
 
 	UFUNCTION()
 	void BlinckingAnimationCallback();
 
+
+	std::optional<FVector> LastHitPointAfterCollision;
+	
 	UPROPERTY(Replicated)
 	float CurrentDurability;
 };
