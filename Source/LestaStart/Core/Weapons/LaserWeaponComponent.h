@@ -85,7 +85,7 @@ protected:
 	int32 MaxDurability;
 
 	UPROPERTY(EditAnywhere, Category="Ammo")
-	int32 DurabilityLossInOneSecond;
+	int32 DurabilityLossInOneClick;
 
 	UPROPERTY(EditAnywhere, Category="Ammo")
 	float ReloadTime;
@@ -116,8 +116,12 @@ protected:
 
 	FCompletelyDrainedDelegate CompletelyDrainedDelegate;
 	FStartedReloadingDelegate StartedReloadingDelegate;
+
 	
 private:
+	UFUNCTION()
+	void OnShoot();
+
 	UFUNCTION()
 	void BlinckingAnimationCallback();
 

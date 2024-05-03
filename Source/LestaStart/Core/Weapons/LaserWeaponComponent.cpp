@@ -25,7 +25,7 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 	DamageAmount = 1.f;
 
 	MaxDurability = 10;
-	DurabilityLossInOneSecond = 3;
+	DurabilityLossInOneClick = 3;
 	ReloadTime = 0.5f;
 	
 	HitCollisionChannel = ECC_Pawn;
@@ -133,37 +133,9 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	{
 		return;
 	}
-	
-	// It's fine to use GetSocketLocation in here since it will return the component's transform anyways
-	// See: https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/GetSocketLocation/
 
-	const FVector SocketOrigin = GetSocketLocation(GetAttachSocketName());
-	FVector EndPoint = DesiredEndPoint;
-	Laser->SetOrigin(SocketOrigin);
 	
 	
-	
-	const std::optional<FVector> HitPointAfterCollision = DoHit(SocketOrigin, EndPoint, HitCollisionChannel);
-	EndPoint = HitPointAfterCollision.value_or(EndPoint);
-	
-	if (IsValid(GetWorld()) && !BlinkAnimationTimer.IsValid())
-	{
-		CalculateAnimationDurationAndSetTimer();
-	}
-	Laser->SetEndPoint(EndPoint);
-	
-	Laser->MulticastDrawOnAllClients();
-
-	/* Shoudl move this somehwere */
-	const TObjectPtr<const AActor> Outer = dynamic_cast<AActor*>(GetOuter());
-	
-	if (Outer && Outer->HasAuthority()) {
-		CurrentDurability -= DurabilityLossInOneSecond * DeltaTime;
-		if (CurrentDurability <= 0 && CompletelyDrainedDelegate.IsBound())
-		{
-			CompletelyDrainedDelegate.Broadcast();
-		}
-	}
 }
 
 void ULaserWeaponComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
@@ -180,7 +152,7 @@ void ULaserWeaponComponent::StopShooting()
 
 void ULaserWeaponComponent::Shoot()
 {
-	Laser->Activate();
+	
 }
 
 bool ULaserWeaponComponent::IsCurrentlyShooting()
@@ -232,6 +204,40 @@ void ULaserWeaponComponent::Reload()
 void ULaserWeaponComponent::Server_TryToUpdateDurability_Implementation(float NewDrainage)
 {
 	CurrentDurability = NewDrainage;
+}
+
+void ULaserWeaponComponent::OnShoot()
+{
+	// It's fine to use GetSocketLocation in here since it will return the component's transform anyways
+	// See: https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/GetSocketLocation/
+
+	const FVector SocketOrigin = GetSocketLocation(GetAttachSocketName());
+	FVector EndPoint = DesiredEndPoint;
+	Laser->SetOrigin(SocketOrigin);
+	
+	
+	
+	const std::optional<FVector> HitPointAfterCollision = DoHit(SocketOrigin, EndPoint, HitCollisionChannel);
+	EndPoint = HitPointAfterCollision.value_or(EndPoint);
+	
+	if (IsValid(GetWorld()) && !BlinkAnimationTimer.IsValid())
+	{
+		CalculateAnimationDurationAndSetTimer();
+	}
+	Laser->SetEndPoint(EndPoint);
+	
+	Laser->MulticastDrawOnAllClients();
+
+	/* Shoudl move this somehwere */
+	const TObjectPtr<const AActor> Outer = dynamic_cast<AActor*>(GetOuter());
+	
+	if (Outer && Outer->HasAuthority()) {
+		CurrentDurability -= DurabilityLossInOneClick;
+		if (CurrentDurability <= 0 && CompletelyDrainedDelegate.IsBound())
+		{
+			CompletelyDrainedDelegate.Broadcast();
+		}
+	}
 }
 
 void ULaserWeaponComponent::BlinckingAnimationCallback()
