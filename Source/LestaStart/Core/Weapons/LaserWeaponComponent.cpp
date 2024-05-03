@@ -159,6 +159,10 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	
 	if (Outer && Outer->HasAuthority()) {
 		CurrentDurability -= DurabilityLossInOneSecond * DeltaTime;
+		if (CurrentDurability <= 0 && CompletelyDrainedDelegate.IsBound())
+		{
+			CompletelyDrainedDelegate.Broadcast();
+		}
 	}
 }
 
@@ -219,6 +223,10 @@ bool ULaserWeaponComponent::IsDrained()
 void ULaserWeaponComponent::Reload()
 {
 	CurrentDurability = MaxDurability;
+	if (StartedReloadingDelegate.IsBound())
+	{
+		StartedReloadingDelegate.Broadcast(GetReloadTime(), GetMaxDrainage());
+	}
 }
 
 void ULaserWeaponComponent::Server_TryToUpdateDurability_Implementation(float NewDrainage)

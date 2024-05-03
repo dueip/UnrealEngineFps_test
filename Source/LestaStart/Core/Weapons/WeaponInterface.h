@@ -6,8 +6,8 @@
 #include "UObject/Interface.h"
 #include "WeaponInterface.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FCompletelyDrained);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FStartedReloading, /* ReloadTime */ float, /* MaxCapacity */ float);
+DECLARE_MULTICAST_DELEGATE(FCompletelyDrainedDelegate);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FStartedReloadingDelegate, /* ReloadTime */ float,   /* MaxCapacity */ float);
 
 
 UINTERFACE(MinimalAPI)
@@ -34,8 +34,8 @@ public:
 	virtual float GetCurrentDrainage() { return 0.f;}
 
 
-	virtual FCompletelyDrained* GetDrainageDelegate() { return nullptr; }
-	virtual FCompletelyDrained* GetStartedReloadingDelegate() { return nullptr; }
+	virtual FCompletelyDrainedDelegate* GetCompletelyDrainedDelegate() { return nullptr; }
+	virtual FStartedReloadingDelegate* GetStartedReloadingDelegate() { return nullptr; }
 	
 	// Мне не очень нравится это делать, но через сабкомпонент получится довольно плохо.
 	virtual FName GetDisplayName() const { return ""; } 

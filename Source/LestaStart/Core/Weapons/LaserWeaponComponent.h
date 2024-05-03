@@ -102,7 +102,20 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 	void Server_TryToUpdateDurability(float NewDrainage);
-	
+
+
+	virtual FCompletelyDrainedDelegate* GetCompletelyDrainedDelegate() override
+	{
+		return &CompletelyDrainedDelegate;
+	}
+
+	virtual FStartedReloadingDelegate* GetStartedReloadingDelegate() override
+	{
+		return &StartedReloadingDelegate;
+	}
+
+	FCompletelyDrainedDelegate CompletelyDrainedDelegate;
+	FStartedReloadingDelegate StartedReloadingDelegate;
 	
 private:
 	UFUNCTION()
