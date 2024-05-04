@@ -14,7 +14,9 @@ public class LestaStart : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"InputCore",
-			"EnhancedInput"
+			"EnhancedInput",
+			"UMG",
+			"UMGEditor"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

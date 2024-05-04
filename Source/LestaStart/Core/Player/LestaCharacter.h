@@ -10,6 +10,7 @@
 #include "LestaStart/Core/Renderers/LaserComponent.h"
 #include "LestaStart/Core/Weapons/WeaponHoldableInterface.h"
 #include "LestaStart/Core/Weapons/WeaponInvenotryComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "LestaCharacter.generated.h"
 
 UENUM()
@@ -42,7 +43,7 @@ public:
 	void Server_DealDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	AActor* DamageCauser);
 
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(Blueprintable)
 	void CreateHUD();
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
@@ -52,8 +53,14 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION(BlueprintCallable)
+	FString GetHealthText() const;
+	
 	UFUNCTION(BlueprintGetter)
 	int32 GetHealth() const;
+
+	UFUNCTION(Server, Reliable)
+	void ServerOnDead();
 	
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	FString GetWeaponName() const;
@@ -106,6 +113,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UHealthComponent> HealthComponent;
 
+	UPROPERTY(EditDefaultsOnly, Category="UI")
+	TSubclassOf<UUserWidget> StatsWidget;
+
+	UPROPERTY(EditDefaultsOnly, Category="UI")
+	TSubclassOf<UUserWidget> WeaponInfoWidget;
+	
 	UPROPERTY(Replicated, EditDefaultsOnly, Category="Stats")
 	float MaxHP;
 	
@@ -127,7 +140,9 @@ protected:
 	void ReloadWeapon();
 	virtual void OnReload();
 
-
+	UFUNCTION(Client, Reliable)
+	virtual void ClientRemoveHUD();
+	
 	UPROPERTY(EditDefaultsOnly, Replicated)
 	TObjectPtr<class ULaserWeaponComponent> LaserWeaponTry;
 	
@@ -139,6 +154,8 @@ private:
 	bool bIsDead = false;
 	FTimerHandle ReloadTimerHandle;
 
+	TObjectPtr<UUserWidget> StatsWidgetCreated;
+	TObjectPtr<UUserWidget> WeaponWidgetCreated;
 
 	
 

@@ -67,9 +67,9 @@ void ADeadPlayer::Tick(float DeltaTime)
 
 
 // Called to bind functionality to input
-void ADeadPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ADeadPlayer::SetupPlayerInputComponent_Implementation(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	//Super::SetupPlayerInputComponent(PlayerInputComponent);
 	
 	UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 	if (EIC) // should validate component because developers can change input component class through Project Settings

@@ -6,6 +6,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "LestaPlayerController.h"
 #include "AssetTypeActions/AssetDefinition_SoundBase.h"
+#include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "LestaStart/Core/HealthComponent.h"
 #include "LestaStart/Core/Weapons/LaserWeaponComponent.h"
@@ -96,19 +97,21 @@ void ALestaCharacter::BeginPlay()
 
 void ALestaCharacter::OnDead()
 {
-	OnShootingEnded();	
-	if (DeadPlayerToSpawn)
-	{
-		ADeadPlayer* DeadPlayer = GetWorld()->SpawnActor<ADeadPlayer>(DeadPlayerToSpawn,
-			GetActorLocation(), GetActorRotation());
-		GetController()->Possess(DeadPlayer);
-		DeadPlayer->AfterPossesed();
-		//DeadPlayer->SetupPlayerInputComponent(GetController()->InputComponent);
-	}
+	OnShootingEnded();
+	Destroy();
+	// if (DeadPlayerToSpawn)
+	// {
+	// 	ADeadPlayer* DeadPlayer = GetWorld()->SpawnActor<ADeadPlayer>(DeadPlayerToSpawn,
+	// 		GetActorLocation(), GetActorRotation());
+	// 	GetController()->Possess(DeadPlayer);
+	// 	DeadPlayer->AfterPossesed();
+	// 	//DeadPlayer->SetupPlayerInputComponent(GetController()->InputComponent);
+	// }
+	//
+	//SetActorHiddenInGame(true);
+	//SetActorTickEnabled(false);
+	//SetActorEnableCollision(false);
 	
-	SetActorHiddenInGame(true);
-	SetActorTickEnabled(false);
-	SetActorEnableCollision(false);
 	bIsDead = true;
 }
 
@@ -139,9 +142,18 @@ void ALestaCharacter::Server_DealDamage_Implementation(float DamageAmount, FDama
 	TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
-void ALestaCharacter::CreateHUD_Implementation()
+void ALestaCharacter::CreateHUD()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Please implement"));
+	if (StatsWidget)
+	{
+		StatsWidgetCreated = CreateWidget<UUserWidget>(GetWorld(), StatsWidget);
+		StatsWidgetCreated->AddToPlayerScreen();
+	}
+	if (WeaponInfoWidget)
+	{
+		WeaponWidgetCreated = CreateWidget<UUserWidget>(GetWorld(), WeaponInfoWidget);
+		WeaponWidgetCreated->AddToPlayerScreen();
+	}
 }
 
 void ALestaCharacter::OnShootingEnded()
@@ -201,6 +213,24 @@ void ALestaCharacter::OnReload()
 
 		}
 	}
+}
+
+void ALestaCharacter::ClientRemoveHUD_Implementation()
+{
+	if (StatsWidgetCreated)
+	{
+		
+		StatsWidgetCreated->RemoveFromRoot();
+		StatsWidgetCreated->Destruct();
+		StatsWidgetCreated = nullptr;
+	}
+	if (WeaponWidgetCreated)
+	{
+		WeaponWidgetCreated->RemoveFromRoot();
+		WeaponWidgetCreated->Destruct();
+		WeaponWidgetCreated = nullptr;
+	}
+	CollectGarbage(RF_NoFlags);
 }
 
 void ALestaCharacter::TEST_FUNCTION_Implementation()
@@ -270,17 +300,34 @@ float ALestaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 	{
 		return 0;
 	}
-	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageAmount);
+	HealthComponent->ServerSetHealth(HealthComponent->GetHealth() - DamageAmount);
 	if (HealthComponent->GetHealth() < 0.f)
 	{
-		OnDead();
+		if (HasAuthority())
+		{
+			ServerOnDead();
+		}
+		if (!HasAuthority())
+		{
+			ClientRemoveHUD();
+		}
 	}
 	return DamageAmount;
+}
+
+FString ALestaCharacter::GetHealthText() const
+{
+	return FString::FromInt(GetHealth());
 }
 
 int32 ALestaCharacter::GetHealth() const
 {
 	return (HealthComponent->GetHealth() < 0.f ? 0 : HealthComponent->GetHealth()) ;
+}
+
+void ALestaCharacter::ServerOnDead_Implementation()
+{
+	OnDead();
 }
 
 FString ALestaCharacter::GetWeaponName() const

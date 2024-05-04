@@ -42,8 +42,9 @@ public:
 	void AfterPossesed();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	
 	// Called to bind functionality to input
+	UFUNCTION(Client, Reliable)
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void OnRestartInput();

@@ -115,8 +115,8 @@ std::optional<FVector> ULaserWeaponComponent::DoHit(const FVector& SocketOrigin,
 		// Потом можно перенести в интерфейс
 		if (UHealthComponent* Health = Hit.GetActor()->FindComponentByClass<UHealthComponent>())
 		{
-			//Hit.GetActor()->TakeDamage(DamageAmount, PointDamage, nullptr, ActorThatDealtDamage);
-			Health->ServerSetHealth(Health->GetHealth() - DamageAmount);
+			Hit.GetActor()->TakeDamage(DamageAmount, PointDamage, nullptr, ActorThatDealtDamage);
+			//Health->ServerSetHealth(Health->GetHealth() - DamageAmount);
 		}
 		
 		return Hit.Location;
