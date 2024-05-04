@@ -28,6 +28,9 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable, BlueprintCallable)
 	void MulticastDrawOnAllClients();
+
+	UFUNCTION()
+	void OnDraw();
 	UFUNCTION(BlueprintCallable)
 	virtual void SetOrigin(const FVector& NewOrigin);
 	UFUNCTION(BlueprintCallable)

@@ -40,19 +40,21 @@ void ULaserComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 
 void ULaserComponent::MulticastDrawOnAllClients_Implementation()
 {
-	
+	OnDraw();
+}
+
+void ULaserComponent::OnDraw()
+{
 	const UWorld* const World =  GetWorld();
-	const AActor* Owner = GetOwner();
-	if (IsValid(World) && IsValid(Owner))
-	{
-		const FVector OwnerPosition = Owner->GetTransform().GetLocation();
-		DrawDebugLine(World, BeginPosition, EndPosition, Color,
-			false, 0, 0, Thickness);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("World or Owner is invalid"));
-	}
+    	if (IsValid(World))
+    	{
+    		DrawDebugLine(World, BeginPosition, EndPosition, Color,
+    			false, 0, 0, Thickness);
+    	}
+    	else
+    	{
+    		UE_LOG(LogTemp, Warning, TEXT("World is invalid"));
+    	}
 }
 
 void ULaserComponent::SetOrigin(const FVector& NewOrigin)

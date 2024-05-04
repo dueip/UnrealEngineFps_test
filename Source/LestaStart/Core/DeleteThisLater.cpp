@@ -26,7 +26,7 @@ void ADeleteThisLater::BeginPlay()
 void ADeleteThisLater::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(ADeleteThisLater, LaserComponent);
+	//DOREPLIFETIME(ADeleteThisLater, LaserComponent);
 }
 
 // Called every frame

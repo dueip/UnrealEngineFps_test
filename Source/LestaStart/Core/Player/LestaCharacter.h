@@ -72,7 +72,7 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCameraComponent> CameraComponent;
 
-	UPROPERTY(EditDefaultsOnly, Category="Inventory")
+	UPROPERTY(EditDefaultsOnly, Category="Inventory", Replicated)
 	TObjectPtr<UWeaponInvenotryComponent> WeaponInventory;
 
 	UPROPERTY(EditDefaultsOnly, Category="Inventory")
@@ -127,8 +127,14 @@ protected:
 	void ReloadWeapon();
 	virtual void OnReload();
 
+
 	UPROPERTY(EditDefaultsOnly, Replicated)
-	ULaserComponent* JustForTesting;
+	TObjectPtr<class ULaserWeaponComponent> LaserWeaponTry;
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void TEST_FUNCTION();
+	//UPROPERTY(EditDefaultsOnly)
+	//ULaserComponent* JustForTesting;
 private:
 	bool bIsDead = false;
 	FTimerHandle ReloadTimerHandle;

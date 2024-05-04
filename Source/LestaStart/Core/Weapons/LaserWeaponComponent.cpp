@@ -25,7 +25,7 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 	DamageAmount = 1.f;
 
 	MaxDurability = 10;
-	DurabilityLossInOneClick = 3;
+	DurabilityLossInOneClick = 0.5;
 	ReloadTime = 0.5f;
 	
 	HitCollisionChannel = ECC_Pawn;
@@ -80,6 +80,7 @@ void ULaserWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ULaserWeaponComponent, Laser)
+	DOREPLIFETIME(ULaserWeaponComponent, CurrentDurability);
 }
 
 float ULaserWeaponComponent::GetReloadTime()
@@ -201,6 +202,21 @@ void ULaserWeaponComponent::Reload()
 	}
 }
 
+
+
+void ULaserWeaponComponent::Multicast_DrawOnFire_Implementation()
+{
+	Laser->OnDraw();
+	//Laser->MulticastDrawOnAllClients();
+	UE_LOG(LogTemp, Warning, TEXT("Helloworld"))
+}
+
+void ULaserWeaponComponent::Server_DoHitWithoutOrigin_Implementation(const FVector& EndPoint,
+                                                                     ECollisionChannel DesiredHitCollisionChannel)
+{
+	Server_DoHit(GetSocketLocation(GetAttachSocketName()), EndPoint, DesiredHitCollisionChannel);
+}
+
 void ULaserWeaponComponent::Server_TryToUpdateDurability_Implementation(float NewDrainage)
 {
 	CurrentDurability = NewDrainage;
@@ -221,28 +237,23 @@ void ULaserWeaponComponent::Server_DrainAmmo_Implementation(int32 NumberOfAmmo)
 	CurrentDurability -= DurabilityLossInOneClick * NumberOfAmmo;
 }
 
-void ULaserWeaponComponent::Server_DoHit_Implementation(const FVector& OriginPoint, const FVector& EndPoint, ECollisionChannel HitCollisionChannel)
+void ULaserWeaponComponent::Server_DoHit_Implementation(const FVector& OriginPoint, const FVector& EndPoint, ECollisionChannel DesiredHitCollisionChannel)
 {
-	LastHitPointAfterCollision = DoHit(GetSocketLocation(GetAttachSocketName()), DesiredEndPoint, HitCollisionChannel);
+	if (IsDrained()) return;
+	LastHitPointAfterCollision = DoHit(OriginPoint, EndPoint, HitCollisionChannel);
+	Server_DrainAmmo(1);
+	UE_LOG(LogTemp, Warning, TEXT("Hello from server :3"));	
 }
 
 void ULaserWeaponComponent::OnShoot()
 {
+	Laser->SetActive(true);
 	/* Actually do a hit */
-	Server_DoHit(GetSocketLocation(GetAttachSocketName()), DesiredEndPoint, ECC_Pawn);
+	//Server_DoHit(GetSocketLocation(GetAttachSocketName()), DesiredEndPoint, HitCollisionChannel);
+
 	FVector BlockedEndPoint = LastHitPointAfterCollision.value_or(DesiredEndPoint);
 	
 	CalculateLaserPosition(BlockedEndPoint);
-	
-	Server_DrainAmmo(1);
-
-	/* Draw After everything's ready */ 
-	if (IsValid(GetWorld()) && !BlinkAnimationTimer.IsValid())
-	{
-		CalculateAnimationDurationAndSetTimer();
-	}
-	
-	Laser->MulticastDrawOnAllClients();
 }
 
 void ULaserWeaponComponent::BlinckingAnimationCallback()
@@ -250,4 +261,6 @@ void ULaserWeaponComponent::BlinckingAnimationCallback()
 	Laser->SetColor(Laser->GetColor() == BaseColor ? BlinkColor : BaseColor);
 	BlinkAnimationTimer.Invalidate();
 }
+
+
 

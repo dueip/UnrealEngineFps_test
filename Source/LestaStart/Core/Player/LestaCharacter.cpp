@@ -27,7 +27,7 @@ ALestaCharacter::ALestaCharacter()
 	CameraComponent->bUsePawnControlRotation = true; // Camera rotation is synchronized with Player Controller rotation
 	CameraComponent->SetupAttachment(GetMesh());
 
-	JustForTesting = CreateDefaultSubobject<ULaserComponent>(TEXT("Laser"));
+	//JustForTesting = CreateDefaultSubobject<ULaserComponent>(TEXT("Laser"));
 	
 	bReplicates = true;
 }
@@ -35,18 +35,27 @@ ALestaCharacter::ALestaCharacter()
 void ALestaCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	TEST_FUNCTION();
 
-	JustForTesting->SetOrigin(GetActorLocation());
-	JustForTesting->SetEndPoint(GetActorLocation() + FVector(500, 0, 0));
-	JustForTesting->MulticastDrawOnAllClients();
+	//JustForTesting->SetOrigin(GetActorLocation());
+	//JustForTesting->SetEndPoint(GetActorLocation() + FVector(500, 0, 0));
+	//JustForTesting->MulticastDrawOnAllClients();
+	//FString b = FString::Printf(TEXT("Owner for JustForTesting: %ls"), *JustForTesting->GetOwner()->GetHumanReadableName());
+	//GEngine->AddOnScreenDebugMessage(-1, 1000, FColor::Red, b);
+	//UE_LOG(LogTemp, Warning, (TEXT("Owner for JustForTesting: %ls"), *JustForTesting->GetOwner()->GetHumanReadableName());
+
 	
 	IWeaponInterface* const CurrentWeapon =  WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
 	ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>();
+	FString a = FString::Printf(TEXT("Owner for Laser: %i"), LaserWeapon->GetNetMode());
+	//UE_LOG(LogTemp, Warning, TEXT("Owner for Laser: %ls"), *LaserWeapon->GetOwner()->GetHumanReadableName());
+	
+	
 	
 	const bool bIsCurrentWeaponLaser = CurrentWeapon && LaserWeapon && (CurrentWeapon == LaserWeapon);
 	const bool bIsLaserShooting = bIsCurrentWeaponLaser && CurrentWeapon->IsCurrentlyShooting();
-
-	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, FString::Printf(TEXT("Health: %i"), HealthComponent->GetHealth()));
+	/* DEBUG */
+	
 	
 	if (bIsLaserShooting)
 	{
@@ -58,7 +67,18 @@ void ALestaCharacter::Tick(float DeltaSeconds)
 		FVector DesiredEndPoint = CameraCenter + (CameraForward * LaserWeapon->GetLaserLength());
 		// Now set the DesiredEndPoint of the LaserWeapon
 		LaserWeapon->DesiredEndPoint = DesiredEndPoint;
+		if (HasAuthority())
+		{
+			LaserWeapon->Server_DoHitWithoutOrigin(LaserWeapon->DesiredEndPoint, ECC_Pawn);
+		}
+		if (!CurrentWeapon->IsDrained())
+		{
+			LaserWeapon->Laser->MulticastDrawOnAllClients();
+		}
 	}
+	
+	
+	
 }
 
 void ALestaCharacter::BeginPlay()
@@ -71,7 +91,7 @@ void ALestaCharacter::BeginPlay()
 	}
 	CreateHUD();
 	
-	JustForTesting->SetColor(FColor::Silver);
+	//JustForTesting->SetColor(FColor::Silver);
 }
 
 void ALestaCharacter::OnDead()
@@ -183,6 +203,11 @@ void ALestaCharacter::OnReload()
 	}
 }
 
+void ALestaCharacter::TEST_FUNCTION_Implementation()
+{
+	return;
+}
+
 
 void ALestaCharacter::OnSwitchWeapons(const FInputActionValue& InputActionValue)
 {
@@ -233,6 +258,7 @@ bool ALestaCharacter::CanHoldWeapon() const
 
 bool ALestaCharacter::SetWeapon(IWeaponInterface* Weapon)
 {
+	
 	WeaponInventory->PushWeapon(Weapon);
 	return (Weapon != nullptr);
 }
@@ -292,7 +318,10 @@ void ALestaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ALestaCharacter, MaxHP);
-	DOREPLIFETIME(ALestaCharacter, JustForTesting);
+	DOREPLIFETIME(ALestaCharacter, LaserWeaponTry);
+	DOREPLIFETIME(ALestaCharacter, WeaponInventory);
+	
+	//DOREPLIFETIME(ALestaCharacter, JustForTesting);
 }
 
 void ALestaCharacter::OnMoveInput(const FInputActionInstance& InputActionInstance)

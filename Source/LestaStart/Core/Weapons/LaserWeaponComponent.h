@@ -63,10 +63,25 @@ public:
 	
 	
 	FVector DesiredEndPoint;
+
+
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void Multicast_DrawOnFire();
 	
-protected:
+	UFUNCTION(Server, Unreliable)
+	void Server_DoHitWithoutOrigin(const FVector& EndPoint, ECollisionChannel DesiredHitCollisionChannel);
+	
+	UFUNCTION(Server, Unreliable)
+	void Server_DoHit(const FVector& OriginPoint, const FVector& EndPoint, ECollisionChannel DesiredHitCollisionChannel);
+
+	
+	UFUNCTION(Server, Unreliable)
+	void Server_DrainAmmo(int32 NumberOfAmmo);
+	
 	UPROPERTY(EditDefaultsOnly, Replicated)
 	TObjectPtr<ULaserComponent> Laser;
+protected:
 
 	FTimerHandle BlinkAnimationTimer;
 
@@ -117,16 +132,11 @@ protected:
 	FCompletelyDrainedDelegate CompletelyDrainedDelegate;
 	FStartedReloadingDelegate StartedReloadingDelegate;
 
-	
+
 private:
 	void CalculateLaserPosition(const FVector& EndPoint);
 
 
-	UFUNCTION(Server, Unreliable)
-	void Server_DrainAmmo(int32 NumberOfAmmo);
-
-	UFUNCTION(Server, Unreliable)
-	void Server_DoHit(const FVector& OriginPoint, const FVector& EndPoint, ECollisionChannel HitCollisionChannel);
 	
 	UFUNCTION()
 	void OnShoot();
