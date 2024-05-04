@@ -33,7 +33,13 @@ public:
 	virtual int32 GetMaxDrainage() { return 0;}
 	virtual float GetCurrentDrainage() { return 0.f;}
 
-
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerShoot();
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerReload();
+	UFUNCTION(NetMulticast, Unreliable)
+	virtual void MulticastDrawShooting();
+	
 	virtual FCompletelyDrainedDelegate* GetCompletelyDrainedDelegate() { return nullptr; }
 	virtual FStartedReloadingDelegate* GetStartedReloadingDelegate() { return nullptr; }
 	

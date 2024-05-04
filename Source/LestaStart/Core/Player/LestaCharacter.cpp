@@ -67,17 +67,17 @@ void ALestaCharacter::Tick(float DeltaSeconds)
 		FVector DesiredEndPoint = CameraCenter + (CameraForward * LaserWeapon->GetLaserLength());
 		// Now set the DesiredEndPoint of the LaserWeapon
 		LaserWeapon->DesiredEndPoint = DesiredEndPoint;
-		if (HasAuthority())
-		{
-			LaserWeapon->Server_DoHitWithoutOrigin(LaserWeapon->DesiredEndPoint, ECC_Pawn);
-		}
-		if (!CurrentWeapon->IsDrained())
-		{
-			LaserWeapon->Laser->MulticastDrawOnAllClients();
-		}
+		// if (HasAuthority())
+		// {
+		// 	LaserWeapon->Server_DoHitWithoutOrigin(LaserWeapon->DesiredEndPoint, ECC_Pawn);
+		// }
+		// if (!CurrentWeapon->IsDrained())
+		// {
+		// 	LaserWeapon->Laser->MulticastDrawOnAllClients();
+		// }
 	}
 	
-	
+	//if (CurrentWeapon->IsDrained())
 	
 }
 
@@ -180,7 +180,7 @@ bool ALestaCharacter::IsReloading() const
 void ALestaCharacter::ReloadWeapon()
 {
 	IWeaponInterface* Weapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
-	Weapon->Reload();
+	Weapon->ServerReload();
 }
 
 
@@ -351,11 +351,14 @@ void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstan
 	IWeaponInterface* const CurrentlyActiveWeapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
 	if (CurrentlyActiveWeapon)
 	{
-		if (IsReloading()) { CurrentlyActiveWeapon->StopShooting(); return;}
+		if (IsReloading()) { return;}
 		// Можем стрелялть только если оружие нам разрешает (т.е. в большинстве случаев у него есть патроны)
 		if (!CurrentlyActiveWeapon->IsDrained())
-			CurrentlyActiveWeapon->Shoot();
+		{
+			CurrentlyActiveWeapon->ServerShoot();
+			CurrentlyActiveWeapon->MulticastDrawShooting();
+		}
 		else
-			CurrentlyActiveWeapon->StopShooting();
+			return;//CurrentlyActiveWeapon->StopShooting();
 	}
 }

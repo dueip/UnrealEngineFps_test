@@ -202,6 +202,20 @@ void ULaserWeaponComponent::Reload()
 	}
 }
 
+void ULaserWeaponComponent::MulticastDrawShooting_Implementation()
+{
+	Laser->MulticastDrawOnAllClients();
+}
+
+void ULaserWeaponComponent::ServerReload_Implementation()
+{
+	Reload();
+}
+
+void ULaserWeaponComponent::ServerShoot_Implementation()
+{
+	Shoot();
+}
 
 
 void ULaserWeaponComponent::Multicast_DrawOnFire_Implementation()
@@ -249,10 +263,8 @@ void ULaserWeaponComponent::OnShoot()
 {
 	Laser->SetActive(true);
 	/* Actually do a hit */
-	//Server_DoHit(GetSocketLocation(GetAttachSocketName()), DesiredEndPoint, HitCollisionChannel);
-
+	Server_DoHit(GetSocketLocation(GetAttachSocketName()), DesiredEndPoint, HitCollisionChannel);
 	FVector BlockedEndPoint = LastHitPointAfterCollision.value_or(DesiredEndPoint);
-	
 	CalculateLaserPosition(BlockedEndPoint);
 }
 

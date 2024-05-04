@@ -150,6 +150,21 @@ FName UGrenadeWeaponComponent::GetDisplayName() const
 }
 
 
+void UGrenadeWeaponComponent::ServerShoot_Implementation()
+{
+	return;
+}
+
+void UGrenadeWeaponComponent::ServerReload_Implementation()
+{
+	return;
+}
+
+void UGrenadeWeaponComponent::MulticastDrawShooting_Implementation()
+{
+	return;
+}
+
 float UGrenadeWeaponComponent::CalculateCurrentChargeBasedOffMaxCharge() const
 {
 	/*

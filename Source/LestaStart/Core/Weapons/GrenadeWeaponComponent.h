@@ -55,6 +55,12 @@ public:
 	UPROPERTY(EditAnywhere, Category="Ammo")
 	float ReloadTime;
 
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerShoot() override;
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerReload() override;
+	UFUNCTION(NetMulticast, Unreliable)
+	virtual void MulticastDrawShooting() override;
 
 	UFUNCTION(BlueprintCallable)
 	float CalculateCurrentChargeBasedOffMaxCharge() const;
