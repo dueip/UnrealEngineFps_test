@@ -56,9 +56,9 @@ public:
 	float GetDistanceToActor(FHitResult& InHitResult, const TObjectPtr<AActor> Actor);
 	static bool CheckIfHitWasTheSameActor(const TObjectPtr<AActor> Actor, const FHitResult& Hit);
 
-	bool CheckIfActorIsInTheFOV(const TObjectPtr<AActor> Actor) const;
+	bool CheckIfActorIsInTheFOV(const FVector& ActorLocation) const;
 
-	FRotator InterpolateToActorsLocation(const TObjectPtr<AActor> Actor, float RotationSpeed) const;
+	FRotator InterpolateToActorsLocation(const FVector& ActorLocation, float RotationSpeed) const;
 	void DrawFOV();
 
 	UPROPERTY(EditAnywhere, Category="Vision")
@@ -108,8 +108,6 @@ protected:
 	void OnHealthChanged(float NewHealth);
 
 
-	UPROPERTY(EditAnywhere, Replicated) 
-	TSubclassOf<AActor> Target;
+	TArray<APlayerController*>* JoinedPlayers;
 private:
-
 };

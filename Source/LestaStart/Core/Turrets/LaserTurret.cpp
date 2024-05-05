@@ -71,8 +71,6 @@ void ALaserTurret::OnStopShooting()
 void ALaserTurret::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	TArray<TObjectPtr<AActor>> Actors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), Target, Actors);
 	
 	if (CurrentMode == Modes::Attacking)
 	{
@@ -87,9 +85,9 @@ void ALaserTurret::Tick(float DeltaTime)
 		{
 			ServerOnShoot();
 		}
-		for (AActor* TEST_CurrentActor: Actors)
+		for (APlayerController* Player : *JoinedPlayers)
 		{
-			if (!CheckIfActorIsInTheFOV(TEST_CurrentActor))
+			if (!CheckIfActorIsInTheFOV(Player->GetPawn()->GetActorLocation()))
 			{
 				if (HasAuthority())
 				{

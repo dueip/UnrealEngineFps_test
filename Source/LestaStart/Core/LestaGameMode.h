@@ -12,6 +12,8 @@ class LESTASTART_API ALestaGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
+	
+	
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
 public:
