@@ -53,14 +53,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ChangeStateTo(const Modes Mode);
 	
-	float GetDistanceToPawn(FHitResult& InHitResult, const APawn* Pawn);
-	static bool CheckIfHitWasTheSameActor(const APawn* Pawn, const FHitResult& Hit);
+	float GetDistanceToActor(FHitResult& InHitResult, const TObjectPtr<AActor> Actor);
+	static bool CheckIfHitWasTheSameActor(const TObjectPtr<AActor> Actor, const FHitResult& Hit);
 
-	UFUNCTION(BlueprintCallable)
-	bool CheckIfPawnIsInTheFOV(const APawn* Pawn) const;
+	bool CheckIfActorIsInTheFOV(const TObjectPtr<AActor> Actor) const;
 
-	UFUNCTION(BlueprintCallable)
-	FRotator InterpolateToPawnsLocation(const APawn* Pawn, float RotationSpeed) const;
+	FRotator InterpolateToActorsLocation(const TObjectPtr<AActor> Actor, float RotationSpeed) const;
 	void DrawFOV();
 
 	UPROPERTY(EditAnywhere, Category="Vision")
@@ -110,5 +108,8 @@ protected:
 	void OnHealthChanged(float NewHealth);
 
 
+	UPROPERTY(EditAnywhere, Replicated) 
+	TSubclassOf<AActor> Target;
 private:
+
 };

@@ -16,6 +16,7 @@ void ATurret::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ATurret, Health);
 	DOREPLIFETIME(ATurret, CurrentMode);
+	DOREPLIFETIME(ATurret, Target);
 }
 
 // Sets default values
@@ -68,7 +69,7 @@ void ATurret::ChangeStateTo(const Modes Mode)
 	CurrentMode = Mode;
 }
 
-float ATurret::GetDistanceToPawn(FHitResult& InHitResult, const APawn* Pawn)
+float ATurret::GetDistanceToActor(FHitResult& InHitResult, const TObjectPtr<AActor> Actor)
 {
 	
 
@@ -76,26 +77,26 @@ float ATurret::GetDistanceToPawn(FHitResult& InHitResult, const APawn* Pawn)
 	return 0;
 }
 
-bool ATurret::CheckIfHitWasTheSameActor(const APawn* Pawn, const FHitResult& Hit)
+bool ATurret::CheckIfHitWasTheSameActor(const TObjectPtr<AActor> Actor, const FHitResult& Hit)
 {
-	return Pawn == Hit.GetActor();
+	return Actor == Hit.GetActor();
 }
 
-bool ATurret::CheckIfPawnIsInTheFOV(const APawn* Pawn) const
+bool ATurret::CheckIfActorIsInTheFOV(const TObjectPtr<AActor> Actor) const
 {
 	FHitResult Hit;
 	const FVector TurretLocation = GetActorLocation();
-	const FVector TraceEnd = Pawn->GetActorLocation();
+	const FVector TraceEnd = Actor->GetActorLocation();
 	bool bBlockHit = GetWorld()->LineTraceSingleByChannel(Hit, TurretLocation, TraceEnd, ECC_Pawn);
 	const float DistanceFromTheTurret = FVector::Distance(TurretLocation, TraceEnd);
 
-	return CheckIfHitWasTheSameActor(Pawn, Hit) && Hit.bBlockingHit && DistanceFromTheTurret <= ViewRadius;
+	return CheckIfHitWasTheSameActor(Actor, Hit) && Hit.bBlockingHit && DistanceFromTheTurret <= ViewRadius;
 }
 
-FRotator ATurret::InterpolateToPawnsLocation(const APawn* Pawn, const float RotationSpeed) const
+FRotator ATurret::InterpolateToActorsLocation(const TObjectPtr<AActor> Actor, const float RotationSpeed) const
 {
 	// Расстояние между Турелью и Павном 
-	FVector DirectionVector = GetActorLocation() - Pawn->GetActorLocation();
+	FVector DirectionVector = GetActorLocation() - Actor->GetActorLocation();
 	DirectionVector.Normalize();
 	
 	float Pitch = FMath::Atan2(DirectionVector.Z,
@@ -141,8 +142,16 @@ void ATurret::Tick(float DeltaTime)
 	
 	Super::Tick(DeltaTime);
 	
-	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	//const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (!(Target && GetWorld()))
+	{
+		return;
+	}
 	
+	TArray<TObjectPtr<AActor>> Actors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), Target, Actors);
+
+
 	DrawFOV();	
 	
 	switch (CurrentMode)
@@ -151,9 +160,9 @@ void ATurret::Tick(float DeltaTime)
 		{
 			FRotator DeltaRotator = FRotator(0, UE_PI / 2, 0) * DeltaTime * ScoutingRotationSpeed; 
 			AddActorWorldRotation(DeltaRotator);
-			if (Pawn)
+			for (AActor* TEST_Actor : Actors)
 			{
-				if (CheckIfPawnIsInTheFOV(Pawn))
+				if (CheckIfActorIsInTheFOV(TEST_Actor))
 				{
 					ServerRequestChangeStateTo(Modes::Activated);
 				}
@@ -168,9 +177,9 @@ void ATurret::Tick(float DeltaTime)
 		break;
 	case Modes::Attacking:
 		{
-			if (Pawn)
+			for (AActor* TEST_Actor : Actors)
 			{
-				const FRotator NewRotation = InterpolateToPawnsLocation(Pawn, RotationSpeedWhenAttacking * DeltaTime);
+				const FRotator NewRotation = InterpolateToActorsLocation(TEST_Actor, RotationSpeedWhenAttacking * DeltaTime);
 				SetActorRotation(NewRotation);
 			}
 		}

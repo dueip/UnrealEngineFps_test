@@ -71,8 +71,9 @@ void ALaserTurret::OnStopShooting()
 void ALaserTurret::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	// TODO: Implement actually checking for any player, not just the local one
-	const APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	TArray<TObjectPtr<AActor>> Actors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), Target, Actors);
+	
 	if (CurrentMode == Modes::Attacking)
 	{
 		
@@ -86,11 +87,15 @@ void ALaserTurret::Tick(float DeltaTime)
 		{
 			ServerOnShoot();
 		}
-		
-		if (PlayerPawn && !CheckIfPawnIsInTheFOV(PlayerPawn))
+		for (AActor* TEST_CurrentActor: Actors)
 		{
-			OnStopShooting();
-			ServerRequestChangeStateTo(Modes::Scouting);
+			if (!CheckIfActorIsInTheFOV(TEST_CurrentActor))
+			{
+				if (HasAuthority())
+				{
+					ServerRequestChangeStateTo(Modes::Scouting);
+				}
+			}
 		}
 	}
 }
