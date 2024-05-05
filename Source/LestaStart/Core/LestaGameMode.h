@@ -12,6 +12,14 @@ class LESTASTART_API ALestaGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
-	// You can extend this class if required
-	// Blueprint GameMode class is derived from the ALestaGameMode
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual void Logout(AController* Exiting) override;
+public:
+	
+	/**
+	 * Массив пользователей, которые сейчас находятся в игре.
+	 * Используется массив, т.к. нам редко когда понадобится на самом деле удалять что-либо.
+	 */
+	UPROPERTY()
+	TArray<APlayerController*> JoinedPlayers;	
 };

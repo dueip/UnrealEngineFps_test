@@ -45,6 +45,8 @@ public:
 
 	UFUNCTION(Blueprintable)
 	void CreateHUD();
+
+	
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	bool IsShooting() const;

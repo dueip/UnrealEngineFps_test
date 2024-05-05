@@ -179,6 +179,7 @@ void ATurret::Tick(float DeltaTime)
 		{
 			for (AActor* TEST_Actor : Actors)
 			{
+				
 				const FRotator NewRotation = InterpolateToActorsLocation(TEST_Actor, RotationSpeedWhenAttacking * DeltaTime);
 				SetActorRotation(NewRotation);
 			}
