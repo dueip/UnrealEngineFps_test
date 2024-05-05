@@ -88,15 +88,6 @@ void ALaserTurret::Tick(float DeltaTime)
 		{
 			ServerOnShoot();
 		}
-	
-		if (!CheckIfActorIsInTheFOV(Player->GetFocalLocation()))
-		{
-			if (HasAuthority())
-			{
-				ServerRequestChangeStateTo(Modes::Scouting);
-			}
-		}
-		
 	}
 }
 

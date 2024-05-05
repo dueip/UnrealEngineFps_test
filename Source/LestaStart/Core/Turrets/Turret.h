@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../HealthComponent.h"
+#include "Components/SphereComponent.h"
 #include "Turret.generated.h"
 
 
@@ -54,12 +55,15 @@ public:
 	void ChangeStateTo(const Modes Mode);
 	
 	float GetDistanceToActor(FHitResult& InHitResult, const TObjectPtr<AActor> Actor);
-	static bool CheckIfHitWasTheSameActor(const TObjectPtr<AActor> Actor, const FHitResult& Hit);
+	static bool CheckIfHitWasTheSameActor(const TObjectPtr<const AActor> Actor, const FHitResult& Hit);
 
-	bool CheckIfActorIsInTheFOV(const FVector& ActorLocation) const;
+	bool CheckIfViewToActorIsBlocked(const TObjectPtr<AActor> ActorLocation) const;
+	
+	bool CheckIfActorIsInTheFOV(const TObjectPtr<AActor> ActorLocation, bool bShouldIgnoreSelf = false) const;
 
 	FRotator InterpolateToActorsLocation(const FVector& ActorLocation, float RotationSpeed) const;
 	void DrawFOV();
+	void ObjectLeftFOV();
 
 	UPROPERTY(EditAnywhere, Category="Vision")
 	float ViewRadius;
@@ -106,8 +110,22 @@ protected:
 	
 	UFUNCTION(Blueprintable)
 	void OnHealthChanged(float NewHealth);
+	
+	UFUNCTION()
+	void OnEnteredView(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent*
+	OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION()
+	void OnExitedView(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	TArray<APlayerController*>* JoinedPlayers;
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USphereComponent> VisionSphere;
+
+	UPROPERTY()
+	TObjectPtr<AActor> ActorCurrentlyBeingAttacked = nullptr;
+	
+	UPROPERTY()
+	TObjectPtr<AActor> ActorLockedOnto = nullptr;
 private:
 };

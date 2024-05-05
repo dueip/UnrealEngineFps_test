@@ -5,6 +5,7 @@
 
 #include "IMessageTracer.h"
 #include "ScreenPass.h"
+#include "Components/SphereComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
@@ -31,6 +32,7 @@ ATurret::ATurret()
 	ScoutingRotationSpeed = 500.f;
 	RotationSpeedWhenAttacking = ScoutingRotationSpeed * 1.5f;
 	MaxHP = 0;
+	ActorLockedOnto = nullptr;
 
 	TimeBetweenShots = 1.f;
 	
@@ -44,17 +46,25 @@ ATurret::ATurret()
 	}
 	Health->HealthChangedDelegate.AddUFunction(this, FName("OnHealthChanged"));
 
+	USceneComponent* Scene = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComponent"));
+	USphereComponent* Vision = CreateDefaultSubobject<USphereComponent>(TEXT("VisionRange"));
+	Vision->SetupAttachment(Scene);
+	Vision->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnEnteredView);
+	Vision->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnExitedView);
+	
+	Vision->SetSphereRadius(ViewRadius);
 
+	VisionSphere = Vision;
+	
 	bReplicates = true;
 	
-	//healthbar->Text = FText::FromString("Helloworld");
-	//healthbar->bAlwaysRenderAsText = false;
 }
 
 // Called when the game starts or when spawned
 void ATurret::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	// Set the mode to the current
 	Health->SetHealth(MaxHP);
 	CurrentMode = BeginningMode;
@@ -78,20 +88,31 @@ float ATurret::GetDistanceToActor(FHitResult& InHitResult, const TObjectPtr<AAct
 	return 0;
 }
 
-bool ATurret::CheckIfHitWasTheSameActor(const TObjectPtr<AActor> Actor, const FHitResult& Hit)
+bool ATurret::CheckIfHitWasTheSameActor(const TObjectPtr<const AActor> Actor, const FHitResult& Hit)
 {
 	return Actor == Hit.GetActor();
 }
 
-bool ATurret::CheckIfActorIsInTheFOV(const FVector& ActorLocation) const
+bool ATurret::CheckIfViewToActorIsBlocked(const TObjectPtr<AActor> Actor) const
 {
 	FHitResult Hit;
 	const FVector TurretLocation = GetActorLocation();
-	const FVector TraceEnd = ActorLocation;
+	const FVector TraceEnd = Actor->GetActorLocation();
+	bool bBlockHit = GetWorld()->LineTraceSingleByChannel(Hit, TurretLocation, TraceEnd, ECC_Pawn);
+	return !(CheckIfHitWasTheSameActor(Actor, Hit) && Hit.bBlockingHit); 
+}
+
+bool ATurret::CheckIfActorIsInTheFOV(const TObjectPtr<AActor> Actor, bool bShouldIgnoreSelf) const
+{
+	FHitResult Hit;
+	const FVector TurretLocation = GetActorLocation();
+	const FVector TraceEnd = Actor->GetActorLocation();
 	bool bBlockHit = GetWorld()->LineTraceSingleByChannel(Hit, TurretLocation, TraceEnd, ECC_Pawn);
 	const float DistanceFromTheTurret = FVector::Distance(TurretLocation, TraceEnd);
-
-	return Hit.bBlockingHit && DistanceFromTheTurret <= ViewRadius;
+	bool bIsInTheFov = DistanceFromTheTurret <= VisionSphere->GetScaledSphereRadius();
+	bool bWasThereAHit = false;
+	bWasThereAHit =  CheckIfHitWasTheSameActor(Actor, Hit) && Hit.bBlockingHit; 
+	return bWasThereAHit && bIsInTheFov;
 }
 
 FRotator ATurret::InterpolateToActorsLocation(const FVector& ActorLocation, const float RotationSpeed) const
@@ -125,7 +146,7 @@ void ATurret::DrawFOV()
 	DrawDebugCircle(
 		GetWorld(),
 		GetActorLocation(),
-		ViewRadius,
+		VisionSphere->GetScaledSphereRadius(),
 		32,
 		DebugCircleColor,
 		false,
@@ -137,37 +158,19 @@ void ATurret::DrawFOV()
 		false);
 }
 
+void ATurret::ObjectLeftFOV()
+{
+	// TODO: Probably should do a better thing, but for now this also works; 
+	ActorCurrentlyBeingAttacked = nullptr;
+	ServerRequestChangeStateTo(Modes::Scouting);
+}
+
 // Called every frame
 void ATurret::Tick(float DeltaTime)
 {
 	
 	Super::Tick(DeltaTime);
-	if (HasAuthority())
-	{
-		if (!JoinedPlayers)
-		{
-			if (GetWorld())
-			{
-				if (ALestaGameMode* AuthMode = dynamic_cast<ALestaGameMode*>(GetWorld()->GetAuthGameMode()))
-				{
-					JoinedPlayers = &AuthMode->JoinedPlayers;
-				}
-			}
-		} else
-		{
-			if (JoinedPlayers->IsEmpty())
-			{
-				if (GetWorld())
-				{
-					if (ALestaGameMode* AuthMode = dynamic_cast<ALestaGameMode*>(GetWorld()->GetAuthGameMode()))
-					{
-						JoinedPlayers = &AuthMode->JoinedPlayers;
-					}
-				}
-			}
-		}
-		
-	}
+	
 
 	if (!GetWorld()) { return; }
 	//const TArray<ULocalPlayer*>& GamePlayers = GEngine->GetGamePlayers(GetWorld());
@@ -182,23 +185,41 @@ void ATurret::Tick(float DeltaTime)
 		{
 			FRotator DeltaRotator = FRotator(0, UE_PI / 2, 0) * DeltaTime * ScoutingRotationSpeed; 
 			AddActorWorldRotation(DeltaRotator);
-			if (CheckIfActorIsInTheFOV(Player->GetPawn()->GetActorLocation()))
+
+			if (!ActorCurrentlyBeingAttacked && ActorLockedOnto)
 			{
-				ServerRequestChangeStateTo(Modes::Activated);
+				bool bIsOverlapping = VisionSphere->IsOverlappingActor(ActorLockedOnto);
+				// Проверяемся на то, что мы "нашли" актора, но он уже вышел из-за стену уву!
+				if (bIsOverlapping && !CheckIfViewToActorIsBlocked(ActorLockedOnto))
+				{
+					ActorCurrentlyBeingAttacked = ActorLockedOnto;
+					ChangeStateTo(Modes::Activated);
+				}
+				
 			}
+			
 			break;
 		}
 	case Modes::Activated:
-		if (!AnimationTimerHandle.IsValid())
+		// Если актор не за стеной, то всё ок, начинаем анимацию
+		if (ActorCurrentlyBeingAttacked && !AnimationTimerHandle.IsValid())
 		{
 			GetWorldTimerManager().SetTimer(AnimationTimerHandle, this, &ThisClass::ServerRequestChangeStateToAttack, 1.f);
 		}
 		break;
 	case Modes::Attacking:
 		{
-				
-			const FRotator NewRotation = InterpolateToActorsLocation(Player->GetPawn()->GetActorLocation(), RotationSpeedWhenAttacking * DeltaTime);
-			SetActorRotation(NewRotation);
+			// Если турелька не видит актора, то что-то плохо :(
+			if (ActorCurrentlyBeingAttacked)
+			{
+				const FRotator NewRotation = InterpolateToActorsLocation(ActorCurrentlyBeingAttacked->GetActorLocation(),
+					RotationSpeedWhenAttacking * DeltaTime);
+				SetActorRotation(NewRotation);
+				if (CheckIfViewToActorIsBlocked(ActorCurrentlyBeingAttacked))
+				{
+					ObjectLeftFOV();
+				}
+			}
 		}
 	}
 		
@@ -248,5 +269,39 @@ void ATurret::OnHealthChanged(float NewHealth)
 {
 	
 	//UE_LOG(LogTemp, Warning, TEXT("%s's new health is: %f"), GetName().GetCharArray().GetData(), NewHealth);
+}
+
+void ATurret::OnEnteredView(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	
+	//if (dynamic_cast<ACharacter*>(OtherActor))
+	//{
+		if (!ActorLockedOnto)
+		{
+			ActorLockedOnto = OtherActor;
+		}
+		if (ActorLockedOnto)
+		{
+			if (!CheckIfViewToActorIsBlocked(ActorLockedOnto))
+			{
+				ActorCurrentlyBeingAttacked = ActorLockedOnto;
+				ServerRequestChangeStateTo(Modes::Activated);
+			}
+		}
+		
+	//}
+	UE_LOG(LogTemp, Warning, TEXT("Overlapped name is: %s"), *OtherActor->GetHumanReadableName());
+}
+
+void ATurret::OnExitedView(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex)
+{
+	if (OtherActor == ActorLockedOnto)
+	{
+		ActorLockedOnto = nullptr;
+		ActorCurrentlyBeingAttacked = nullptr;
+		ServerRequestChangeStateTo(Modes::Scouting);
+	}
 }
 
