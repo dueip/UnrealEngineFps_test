@@ -71,6 +71,9 @@ void ALaserTurret::OnStopShooting()
 void ALaserTurret::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (!GetWorld()) { return; }
+	APlayerController* Player = GetWorld()->GetFirstPlayerController();
 	
 	if (CurrentMode == Modes::Attacking)
 	{
@@ -85,16 +88,15 @@ void ALaserTurret::Tick(float DeltaTime)
 		{
 			ServerOnShoot();
 		}
-		for (APlayerController* Player : *JoinedPlayers)
+	
+		if (!CheckIfActorIsInTheFOV(Player->GetFocalLocation()))
 		{
-			if (!CheckIfActorIsInTheFOV(Player->GetPawn()->GetActorLocation()))
+			if (HasAuthority())
 			{
-				if (HasAuthority())
-				{
-					ServerRequestChangeStateTo(Modes::Scouting);
-				}
+				ServerRequestChangeStateTo(Modes::Scouting);
 			}
 		}
+		
 	}
 }
 

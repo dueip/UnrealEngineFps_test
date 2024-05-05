@@ -8,6 +8,7 @@
 #include "Components/TextRenderComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
+#include "GameFramework/GameSession.h"
 #include "LestaStart/Core/LestaGameMode.h"
 #include "Net/UnrealNetwork.h"
 
@@ -167,9 +168,12 @@ void ATurret::Tick(float DeltaTime)
 		}
 		
 	}
+
+	if (!GetWorld()) { return; }
+	//const TArray<ULocalPlayer*>& GamePlayers = GEngine->GetGamePlayers(GetWorld());
+	APlayerController* Player = GetWorld()->GetFirstPlayerController();
 	
-
-
+	
 	DrawFOV();	
 	
 	switch (CurrentMode)
@@ -178,12 +182,9 @@ void ATurret::Tick(float DeltaTime)
 		{
 			FRotator DeltaRotator = FRotator(0, UE_PI / 2, 0) * DeltaTime * ScoutingRotationSpeed; 
 			AddActorWorldRotation(DeltaRotator);
-			for (APlayerController* Player : *JoinedPlayers)
+			if (CheckIfActorIsInTheFOV(Player->GetPawn()->GetActorLocation()))
 			{
-				if (CheckIfActorIsInTheFOV(Player->GetPawn()->GetActorLocation()))
-				{
-					ServerRequestChangeStateTo(Modes::Activated);
-				}
+				ServerRequestChangeStateTo(Modes::Activated);
 			}
 			break;
 		}
@@ -195,12 +196,9 @@ void ATurret::Tick(float DeltaTime)
 		break;
 	case Modes::Attacking:
 		{
-			for (APlayerController* Player : *JoinedPlayers)
-			{
 				
-				const FRotator NewRotation = InterpolateToActorsLocation(Player->GetPawn()->GetActorLocation(), RotationSpeedWhenAttacking * DeltaTime);
-				SetActorRotation(NewRotation);
-			}
+			const FRotator NewRotation = InterpolateToActorsLocation(Player->GetPawn()->GetActorLocation(), RotationSpeedWhenAttacking * DeltaTime);
+			SetActorRotation(NewRotation);
 		}
 	}
 		
