@@ -43,6 +43,12 @@ protected:
 public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(Server, Reliable)
+	void ServerRequestDestroy();
+	
+	UFUNCTION(Server, Reliable)
+	void ServerRequestChangeStateTo(const Modes Mode);
 	
 	UFUNCTION(BlueprintCallable)
 	void ChangeStateTo(const Modes Mode);
@@ -81,12 +87,14 @@ protected:
 	FTimerHandle AnimationTimerHandle;
 	FTimerHandle TimerBetweenShotsHandle;
 
-	void ChangeStateToAttack() {  ChangeStateTo(Modes::Attacking); AnimationTimerHandle.Invalidate(); } ;
+	UFUNCTION(Server, Reliable)
+	void ServerRequestChangeStateToAttack();
 	void destr()
 	{
 		Destroy();
 	}
 
+	UPROPERTY(Replicated)
 	Modes CurrentMode;
 
 	UPROPERTY(EditAnywhere, Category="Health")
@@ -96,8 +104,11 @@ protected:
 	TObjectPtr<UHealthComponent> Health;
 
 	UPROPERTY(EditAnywhere, Category="Attack")
-	float TimeBetweenShots;	
+	float TimeBetweenShots;
 	
 	UFUNCTION(Blueprintable)
 	void OnHealthChanged(float NewHealth);
+
+
+private:
 };

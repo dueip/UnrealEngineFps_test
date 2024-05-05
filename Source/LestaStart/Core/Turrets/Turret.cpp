@@ -15,6 +15,7 @@ void ATurret::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ATurret, Health);
+	DOREPLIFETIME(ATurret, CurrentMode);
 }
 
 // Sets default values
@@ -139,6 +140,7 @@ void ATurret::Tick(float DeltaTime)
 {
 	
 	Super::Tick(DeltaTime);
+	
 	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	
 	DrawFOV();	
@@ -153,7 +155,7 @@ void ATurret::Tick(float DeltaTime)
 			{
 				if (CheckIfPawnIsInTheFOV(Pawn))
 				{
-					ChangeStateTo(Modes::Activated);
+					ServerRequestChangeStateTo(Modes::Activated);
 				}
 			}
 			break;
@@ -161,7 +163,7 @@ void ATurret::Tick(float DeltaTime)
 	case Modes::Activated:
 		if (!AnimationTimerHandle.IsValid())
 		{
-			GetWorldTimerManager().SetTimer(AnimationTimerHandle, this, &ThisClass::ChangeStateToAttack, 1.f);
+			GetWorldTimerManager().SetTimer(AnimationTimerHandle, this, &ThisClass::ServerRequestChangeStateToAttack, 1.f);
 		}
 		break;
 	case Modes::Attacking:
@@ -176,9 +178,15 @@ void ATurret::Tick(float DeltaTime)
 		
 }
 
+void ATurret::ServerRequestChangeStateToAttack_Implementation()
+{
+	ChangeStateTo(Modes::Attacking);
+	AnimationTimerHandle.Invalidate(); 
+}
+
 
 float ATurret::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-	AActor* DamageCauser)
+                          AActor* DamageCauser)
 {
 	
 	if (DamageCauser == this)
@@ -191,9 +199,22 @@ float ATurret::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, A
 	if (Health->GetHealth() <= 0.f)
 	{
 		SetActorScale3D(GetActorScale3D() / 2);
-		Destroy();
+		if (HasAuthority())
+		{
+			ServerRequestDestroy();
+		}
 	}
 	return DamageAmount;
+}
+
+void ATurret::ServerRequestDestroy_Implementation()
+{
+	Destroy();
+}
+
+void ATurret::ServerRequestChangeStateTo_Implementation(const Modes Mode)
+{
+	CurrentMode = Mode;
 }
 
 

@@ -22,6 +22,10 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerOnShoot();
+	
 	virtual void OnShoot() override;
 
 	virtual void OnStopShooting() override;

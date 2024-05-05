@@ -29,16 +29,21 @@ void ALaserTurret::BeginPlay()
 	}
 }
 
+void ALaserTurret::ServerOnShoot_Implementation()
+{
+	OnShoot();
+}
+
 void ALaserTurret::OnShoot()
 {
 	
 	if (WeaponComponent && !WeaponComponent->IsDrained())
 	{
-		WeaponComponent->Shoot();
+		WeaponComponent->ServerShoot();
 	}
 	else if (WeaponComponent->IsDrained())
 	{
-		OnStopShooting();
+		//OnStopShooting();
 		if (GetWorldTimerManager().IsTimerActive(ReloadTimerHandle))
 		{
 			return;
@@ -66,6 +71,7 @@ void ALaserTurret::OnStopShooting()
 void ALaserTurret::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	// TODO: Implement actually checking for any player, not just the local one
 	const APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	if (CurrentMode == Modes::Attacking)
 	{
@@ -76,21 +82,24 @@ void ALaserTurret::Tick(float DeltaTime)
 			LaserWeapon->DesiredEndPoint = LaserWeapon->CalculateDefaultEndPoint();
 		}
 
-		OnShoot();
+		if (HasAuthority())
+		{
+			ServerOnShoot();
+		}
 		
 		if (PlayerPawn && !CheckIfPawnIsInTheFOV(PlayerPawn))
 		{
 			OnStopShooting();
-			ChangeStateTo(Modes::Scouting);
+			ServerRequestChangeStateTo(Modes::Scouting);
 		}
 	}
 }
 
 void ALaserTurret::ReloadWeapon() const
 {
-	if (WeaponComponent)
+	if (WeaponComponent && HasAuthority())
 	{
-		WeaponComponent->Reload();
+		WeaponComponent->ServerReload();
 	}
 }
 
