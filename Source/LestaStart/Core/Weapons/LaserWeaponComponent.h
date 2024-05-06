@@ -68,13 +68,12 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void Multicast_DrawOnFire();
-	
 	UFUNCTION(Server, Unreliable)
 	void Server_DoHitWithoutOrigin(const FVector& EndPoint, ECollisionChannel DesiredHitCollisionChannel);
-	
 	UFUNCTION(Server, Unreliable)
 	void Server_DoHit(const FVector& OriginPoint, const FVector& EndPoint, ECollisionChannel DesiredHitCollisionChannel);
 
+	
 
 	UFUNCTION(Server, Unreliable)
 	virtual void ServerShoot() override;
@@ -82,7 +81,8 @@ public:
 	virtual void ServerReload() override;
 	UFUNCTION(NetMulticast, Unreliable)
 	virtual void MulticastDrawShooting() override;
-	
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerStopShooting() override;
 	UFUNCTION(Server, Unreliable)
 	void Server_DrainAmmo(int32 NumberOfAmmo);
 	

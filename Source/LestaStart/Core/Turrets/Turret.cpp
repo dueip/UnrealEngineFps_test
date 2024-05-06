@@ -227,7 +227,13 @@ void ATurret::Tick(float DeltaTime)
 
 void ATurret::ServerRequestChangeStateToAttack_Implementation()
 {
-	ChangeStateTo(Modes::Attacking);
+	if (ActorCurrentlyBeingAttacked)
+	{
+		ChangeStateTo(Modes::Attacking);
+	} else
+	{
+		ChangeStateTo(Modes::Scouting);
+	}
 	AnimationTimerHandle.Invalidate(); 
 }
 
@@ -277,7 +283,7 @@ void ATurret::OnEnteredView(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 	
 	//if (dynamic_cast<ACharacter*>(OtherActor))
 	//{
-		if (!ActorLockedOnto)
+		if (!ActorCurrentlyBeingAttacked)
 		{
 			ActorLockedOnto = OtherActor;
 		}
@@ -291,13 +297,12 @@ void ATurret::OnEnteredView(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 		}
 		
 	//}
-	UE_LOG(LogTemp, Warning, TEXT("Overlapped name is: %s"), *OtherActor->GetHumanReadableName());
 }
 
 void ATurret::OnExitedView(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex)
 {
-	if (OtherActor == ActorLockedOnto)
+	if (OtherActor == ActorLockedOnto || ActorLockedOnto == nullptr)
 	{
 		ActorLockedOnto = nullptr;
 		ActorCurrentlyBeingAttacked = nullptr;

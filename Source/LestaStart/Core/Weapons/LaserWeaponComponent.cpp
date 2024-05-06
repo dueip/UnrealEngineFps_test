@@ -202,6 +202,11 @@ void ULaserWeaponComponent::Reload()
 	}
 }
 
+void ULaserWeaponComponent::ServerStopShooting_Implementation()
+{
+	StopShooting();
+}
+
 void ULaserWeaponComponent::MulticastDrawShooting_Implementation()
 {
 	Laser->MulticastDrawOnAllClients();

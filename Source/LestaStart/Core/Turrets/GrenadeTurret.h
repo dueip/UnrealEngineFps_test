@@ -23,6 +23,8 @@ protected:
 	void OnShoot();
 	void OnStopShooting();
 
+	
+
 	IWeaponInterface* WeaponComponent;
 public:
 	// Called every frame

@@ -20,7 +20,7 @@ void AGrenadeTurret::BeginPlay()
 	Super::BeginPlay();
 	if (WeaponComponent)
 	{
-		WeaponComponent->StopShooting();
+		WeaponComponent->ServerStopShooting();
 	}
 	
 }
@@ -30,7 +30,8 @@ void AGrenadeTurret::OnShoot()
 	
 	if (WeaponComponent)
 	{
-		WeaponComponent->Shoot();
+		WeaponComponent->ServerShoot();
+		WeaponComponent->MulticastDrawShooting();
 	}
 }
 
@@ -38,10 +39,10 @@ void AGrenadeTurret::OnStopShooting()
 {
 	if (WeaponComponent)
 	{
-		WeaponComponent->StopShooting();
+		WeaponComponent->ServerStopShooting();
 	}
 	TimerBetweenShotsHandle.Invalidate();
-	Destroy();
+	ServerRequestDestroy();
 }
 
 
@@ -53,15 +54,15 @@ void AGrenadeTurret::Tick(float DeltaTime)
 	if (CurrentMode == Modes::Attacking)
 	{
 		OnShoot();
-
-		
-		if (WeaponComponent->IsAtFullCapacity()) WeaponComponent->StopShooting();
-		
-		
-		if (WeaponComponent && !WeaponComponent->IsCurrentlyShooting())
+		if (WeaponComponent)
 		{
-			OnStopShooting();
-		} 
+			WeaponComponent->MulticastDrawShooting();
+			if (WeaponComponent->IsAtFullCapacity())
+			{
+				WeaponComponent->ServerStopShooting();
+			}
+		}
+
 		
 	}
 }

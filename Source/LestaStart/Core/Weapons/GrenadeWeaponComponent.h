@@ -21,6 +21,15 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerShoot() override;
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerReload() override;
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerStopShooting() override;
+	UFUNCTION(NetMulticast, Unreliable)
+	virtual void MulticastDrawShooting() override;
+	
 	virtual void Shoot() override;
 	virtual void StopShooting() override;
 	virtual bool IsAtFullCapacity() override;
@@ -36,6 +45,7 @@ protected:
 	float CalculateCurrentDamageBasedOffCurrentCharge() const;
 	bool IsBlockedByOtherElement(const FVector& StartPoint, const FVector& EndPoint,
 	ECollisionChannel CollisionChannel, const AActor* const HitActor) const;
+	UFUNCTION(Server, Unreliable)
 	void DoDamage(const TArray<FHitResult>& Hits) const;
 public:
 	UPROPERTY(EditAnywhere, Category="Charge")
@@ -55,12 +65,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="Ammo")
 	float ReloadTime;
 
-	UFUNCTION(Server, Unreliable)
-	virtual void ServerShoot() override;
-	UFUNCTION(Server, Unreliable)
-	virtual void ServerReload() override;
-	UFUNCTION(NetMulticast, Unreliable)
-	virtual void MulticastDrawShooting() override;
+	
 
 	UFUNCTION(BlueprintCallable)
 	float CalculateCurrentChargeBasedOffMaxCharge() const;
