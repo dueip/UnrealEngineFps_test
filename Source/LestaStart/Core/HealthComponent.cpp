@@ -51,7 +51,7 @@ void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// ...
 }
 
-void UHealthComponent::SetHealth(float NewHP)
+void UHealthComponent::SetHealth(int32 NewHP)
 {
 	HealthPoints = NewHP;
 	if (HealthChangedDelegate.IsBound())
@@ -68,14 +68,14 @@ void UHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(UHealthComponent, HealthPoints);
 }
 
-void UHealthComponent::ServerSetHealth_Implementation(float NewHP)
+void UHealthComponent::ServerSetHealth_Implementation(int32 NewHP)
 {
 	
 	HealthPoints = NewHP;
 	MulticastEnsureAllClientsKnowThatHealthChanged(NewHP);	
 }
 
-void UHealthComponent::MulticastEnsureAllClientsKnowThatHealthChanged_Implementation(float NewHP)
+void UHealthComponent::MulticastEnsureAllClientsKnowThatHealthChanged_Implementation(int32 NewHP)
 {
 	if (HealthChangedDelegate.IsBound())
 	{

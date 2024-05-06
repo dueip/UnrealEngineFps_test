@@ -36,50 +36,7 @@ ALestaCharacter::ALestaCharacter()
 void ALestaCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	TEST_FUNCTION();
 
-	//JustForTesting->SetOrigin(GetActorLocation());
-	//JustForTesting->SetEndPoint(GetActorLocation() + FVector(500, 0, 0));
-	//JustForTesting->MulticastDrawOnAllClients();
-	//FString b = FString::Printf(TEXT("Owner for JustForTesting: %ls"), *JustForTesting->GetOwner()->GetHumanReadableName());
-	//GEngine->AddOnScreenDebugMessage(-1, 1000, FColor::Red, b);
-	//UE_LOG(LogTemp, Warning, (TEXT("Owner for JustForTesting: %ls"), *JustForTesting->GetOwner()->GetHumanReadableName());
-
-	
-	IWeaponInterface* const CurrentWeapon =  WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
-	ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>();
-	FString a = FString::Printf(TEXT("Owner for Laser: %i"), LaserWeapon->GetNetMode());
-	//UE_LOG(LogTemp, Warning, TEXT("Owner for Laser: %ls"), *LaserWeapon->GetOwner()->GetHumanReadableName());
-	
-	
-	
-	const bool bIsCurrentWeaponLaser = CurrentWeapon && LaserWeapon && (CurrentWeapon == LaserWeapon);
-	const bool bIsLaserShooting = bIsCurrentWeaponLaser && CurrentWeapon->IsCurrentlyShooting();
-	/* DEBUG */
-	
-	
-	if (bIsLaserShooting)
-	{
-		// Assuming LaserWeapon and CameraComponent are valid and accessible
-		FVector CameraCenter = CameraComponent->GetComponentLocation();
-		FVector CameraForward = CameraComponent->GetForwardVector();
-
-		// Calculate the endpoint by extending the camera's forward direction by the laser's length
-		FVector DesiredEndPoint = CameraCenter + (CameraForward * LaserWeapon->GetLaserLength());
-		// Now set the DesiredEndPoint of the LaserWeapon
-		LaserWeapon->DesiredEndPoint = DesiredEndPoint;
-		// if (HasAuthority())
-		// {
-		// 	LaserWeapon->Server_DoHitWithoutOrigin(LaserWeapon->DesiredEndPoint, ECC_Pawn);
-		// }
-		// if (!CurrentWeapon->IsDrained())
-		// {
-		// 	LaserWeapon->Laser->MulticastDrawOnAllClients();
-		// }
-	}
-	
-	//if (CurrentWeapon->IsDrained())
-	
 }
 
 void ALestaCharacter::BeginPlay()
@@ -402,6 +359,21 @@ void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstan
 		// Можем стрелялть только если оружие нам разрешает (т.е. в большинстве случаев у него есть патроны)
 		if (!CurrentlyActiveWeapon->IsDrained())
 		{
+			ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>();
+	
+			const bool bIsCurrentWeaponLaser = LaserWeapon && (CurrentlyActiveWeapon == LaserWeapon);
+			if (bIsCurrentWeaponLaser)
+			{
+				// Assuming LaserWeapon and CameraComponent are valid and accessible
+				FVector CameraCenter = CameraComponent->GetComponentLocation();
+				FVector CameraForward = CameraComponent->GetForwardVector();
+
+				// Calculate the endpoint by extending the camera's forward direction by the laser's length
+				FVector DesiredEndPoint = CameraCenter + (CameraForward * LaserWeapon->GetLaserLength());
+				// Now set the DesiredEndPoint of the LaserWeapon
+				LaserWeapon->DesiredEndPoint = DesiredEndPoint;
+			}
+			
 			CurrentlyActiveWeapon->ServerShoot();
 			CurrentlyActiveWeapon->MulticastDrawShooting();
 		}

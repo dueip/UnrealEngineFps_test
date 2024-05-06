@@ -29,23 +29,23 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	//UFUNCTION(Server, Unreliable)
-	void SetHealth(float NewHP);
+	void SetHealth(int32 NewHP);
 	UFUNCTION(BlueprintGetter)
 	float GetHealth() const { return HealthPoints;};
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastEnsureAllClientsKnowThatHealthChanged(float NewHP);
+	void MulticastEnsureAllClientsKnowThatHealthChanged(int32 NewHP);
 
 	UFUNCTION(Server, Unreliable)
-	void ServerSetHealth(float NewHP);
+	void ServerSetHealth(int32 NewHP);
 	
 	FHealthChangedDelegate HealthChangedDelegate;
 protected:
 	
 	UPROPERTY(EditAnywhere, Category="Health", ReplicatedUsing=OnRep_HP)
-	float HealthPoints;
+	int32 HealthPoints;
 
 	UFUNCTION()
 	void OnRep_HP();
