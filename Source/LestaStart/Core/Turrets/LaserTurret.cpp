@@ -78,16 +78,18 @@ void ALaserTurret::Tick(float DeltaTime)
 	if (CurrentMode == Modes::Attacking)
 	{
 		
-		
 		if (ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>())
 		{
 			LaserWeapon->DesiredEndPoint = LaserWeapon->CalculateDefaultEndPoint();
+			LaserWeapon->MulticastDrawShooting();
 		}
 
+		
 		if (HasAuthority())
 		{
 			ServerOnShoot();
 		}
+		
 	}
 }
 
