@@ -118,7 +118,7 @@ void ALestaCharacter::OnShootingEnded()
 	IWeaponInterface* const CurrentlyActiveWeapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
 	if (CurrentlyActiveWeapon)
 	{
-		CurrentlyActiveWeapon->StopShooting();
+			CurrentlyActiveWeapon->ServerStopShooting();
 	}
 	
 }
@@ -324,7 +324,7 @@ void ALestaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(ALestaCharacter, MaxHP);
 	DOREPLIFETIME(ALestaCharacter, LaserWeaponTry);
 	DOREPLIFETIME(ALestaCharacter, WeaponInventory);
-	
+	DOREPLIFETIME(ALestaCharacter, CurrentlyActiveWeaponIndex);
 	//DOREPLIFETIME(ALestaCharacter, JustForTesting);
 }
 
@@ -373,8 +373,7 @@ void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstan
 				// Now set the DesiredEndPoint of the LaserWeapon
 				LaserWeapon->DesiredEndPoint = DesiredEndPoint;
 			}
-			
-			CurrentlyActiveWeapon->ServerShoot();
+				CurrentlyActiveWeapon->ServerShoot();
 			CurrentlyActiveWeapon->MulticastDrawShooting();
 		}
 		else

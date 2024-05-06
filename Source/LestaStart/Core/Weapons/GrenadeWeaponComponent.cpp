@@ -7,6 +7,7 @@
 #include "Chaos/SpatialAccelerationCollection.h"
 #include "Engine/DamageEvents.h"
 #include "LestaStart/Core/HealthComponent.h"
+#include "Net/UnrealNetwork.h"
 
 
 // Sets default values for this component's properties
@@ -44,6 +45,23 @@ void UGrenadeWeaponComponent::BeginPlay()
 		Outer->SetWeapon(this);
 	}
 	
+}
+
+void UGrenadeWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UGrenadeWeaponComponent, MaximumCharge);
+	DOREPLIFETIME(UGrenadeWeaponComponent, ChargeGainPerSecond);
+	DOREPLIFETIME(UGrenadeWeaponComponent, MaximumRadius);
+	DOREPLIFETIME(UGrenadeWeaponComponent, MaximumDamage);
+	DOREPLIFETIME(UGrenadeWeaponComponent, MinimumDamage);
+	DOREPLIFETIME(UGrenadeWeaponComponent, bShouldIgnoreOuter);
+	DOREPLIFETIME(UGrenadeWeaponComponent, MaxAmmo);
+	DOREPLIFETIME(UGrenadeWeaponComponent, ReloadTime);
+	
+	DOREPLIFETIME(UGrenadeWeaponComponent, CurrentCharge);
+	DOREPLIFETIME(UGrenadeWeaponComponent, bIsGainingCharge);
+	DOREPLIFETIME(UGrenadeWeaponComponent, CurrentAmmoNumber);
 }
 
 void UGrenadeWeaponComponent::ServerStopShooting_Implementation()

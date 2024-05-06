@@ -21,6 +21,8 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	UFUNCTION(Server, Unreliable)
 	virtual void ServerShoot() override;
 	UFUNCTION(Server, Unreliable)
@@ -48,21 +50,21 @@ protected:
 	UFUNCTION(Server, Unreliable)
 	void DoDamage(const TArray<FHitResult>& Hits) const;
 public:
-	UPROPERTY(EditAnywhere, Category="Charge")
+	UPROPERTY(EditAnywhere, Category="Charge", Replicated)
 	float MaximumCharge;
-	UPROPERTY(EditAnywhere, Category="Charge")
+	UPROPERTY(EditAnywhere, Category="Charge", Replicated)
 	float ChargeGainPerSecond;
-	UPROPERTY(EditAnywhere, Category="Charge")
+	UPROPERTY(EditAnywhere, Category="Charge", Replicated)
 	float MaximumRadius;
-	UPROPERTY(EditAnywhere, Category="Damage")
+	UPROPERTY(EditAnywhere, Category="Damage", Replicated)
 	float MaximumDamage;
-	UPROPERTY(EditAnywhere, Category="Damage")
+	UPROPERTY(EditAnywhere, Category="Damage", Replicated)
 	float MinimumDamage;
-	UPROPERTY(EditAnywhere, Category="Damage")
+	UPROPERTY(EditAnywhere, Category="Damage", Replicated)
 	bool bShouldIgnoreOuter;
-	UPROPERTY(EditAnywhere, Category="Ammo")
+	UPROPERTY(EditAnywhere, Category="Ammo", Replicated)
 	int32 MaxAmmo;
-	UPROPERTY(EditAnywhere, Category="Ammo")
+	UPROPERTY(EditAnywhere, Category="Ammo", Replicated)
 	float ReloadTime;
 
 	
@@ -81,8 +83,11 @@ private:
 	void Multicast_DrawCustomSphereOnAllClients(const int32 Radius, const FColor& Color);
 	
 	void DrawSphere(const int32 Radius, const FColor& Color) const;
-	
+
+	UPROPERTY(Replicated)
 	float CurrentCharge = 0;
+	UPROPERTY(Replicated)
 	bool bIsGainingCharge = false;
+	UPROPERTY(Replicated)
 	int32 CurrentAmmoNumber;
 };

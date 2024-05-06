@@ -84,7 +84,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Inventory", Replicated)
 	TObjectPtr<UWeaponInvenotryComponent> WeaponInventory;
 
-	UPROPERTY(EditDefaultsOnly, Category="Inventory")
+	UPROPERTY(EditDefaultsOnly, Category="Inventory", Replicated)
 	int32 CurrentlyActiveWeaponIndex;
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
