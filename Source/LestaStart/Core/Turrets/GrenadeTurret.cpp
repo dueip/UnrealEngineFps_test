@@ -42,7 +42,7 @@ void AGrenadeTurret::OnStopShooting()
 		WeaponComponent->ServerStopShooting();
 	}
 	TimerBetweenShotsHandle.Invalidate();
-	ServerRequestDestroy();
+	
 }
 
 
@@ -61,6 +61,7 @@ void AGrenadeTurret::Tick(float DeltaTime)
 			if (WeaponComponent->IsAtFullCapacity())
 			{
 				WeaponComponent->ServerStopShooting();
+				ServerRequestDestroy();
 			}
 		}
 	}
