@@ -49,10 +49,11 @@ void AGrenadeTurret::OnStopShooting()
 // Called every frame
 void AGrenadeTurret::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
 	
-	if (CurrentMode == Modes::Attacking)
+	
+	if (CurrentMode == Modes::Attacking || bHasBeenTriggered)
 	{
+		bHasBeenTriggered = true;
 		OnShoot();
 		if (WeaponComponent)
 		{
@@ -62,8 +63,11 @@ void AGrenadeTurret::Tick(float DeltaTime)
 				WeaponComponent->ServerStopShooting();
 			}
 		}
-
-		
 	}
+	if (!bHasBeenTriggered)
+	{
+		Super::Tick(DeltaTime);
+	}
+	
 }
 
