@@ -18,7 +18,6 @@ UHealthComponent::UHealthComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	HealthPoints = 0.f;
 	SetIsReplicatedByDefault(true);
-	//SetIsReplicatedByDefault(true);
 	// ...
 }
 
@@ -29,16 +28,6 @@ void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	SetHealth(HealthPoints);
-
-	// if (!(GetOwner() && GetOwner()->HasAuthority()))
-	// {
-	// 	if (HealthChangedDelegate.IsBound())
-	// 	{
-	// 		HealthChangedDelegate.Broadcast(HealthPoints);
-	// 	}
-	// }
-	
-	//SetIsReplicated(true);
 }
 
 

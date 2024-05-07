@@ -29,8 +29,25 @@ ALestaCharacter::ALestaCharacter()
 	CameraComponent->SetupAttachment(GetMesh());
 
 	//JustForTesting = CreateDefaultSubobject<ULaserComponent>(TEXT("Laser"));
+
+	
 	
 	bReplicates = true;
+}
+
+void ALestaCharacter::OnRep_HealthComponent(int32 Health)
+{
+	if (HealthComponent->GetHealth() <= 0.f)
+	{
+		if (HasAuthority())
+		{
+			ServerOnDead();
+		}
+		if (!HasAuthority())
+		{
+			ClientRemoveHUD();
+		}
+	}
 }
 
 void ALestaCharacter::Tick(float DeltaSeconds)
@@ -47,6 +64,7 @@ void ALestaCharacter::BeginPlay()
 	{
 		HealthComponent->SetHealth(MaxHP);
 	}
+	HealthComponent->HealthChangedDelegate.AddUFunction(this, "OnRep_HealthComponent");
 	CreateHUD();
 	
 	//JustForTesting->SetColor(FColor::Silver);
@@ -258,17 +276,7 @@ float ALestaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 		return 0;
 	}
 	HealthComponent->ServerSetHealth(HealthComponent->GetHealth() - DamageAmount);
-	if (HealthComponent->GetHealth() < 0.f)
-	{
-		if (HasAuthority())
-		{
-			ServerOnDead();
-		}
-		if (!HasAuthority())
-		{
-			ClientRemoveHUD();
-		}
-	}
+	
 	return DamageAmount;
 }
 
@@ -286,6 +294,7 @@ void ALestaCharacter::ServerOnDead_Implementation()
 {
 	OnDead();
 }
+
 
 FString ALestaCharacter::GetWeaponName() const
 {
@@ -325,6 +334,7 @@ void ALestaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(ALestaCharacter, LaserWeaponTry);
 	DOREPLIFETIME(ALestaCharacter, WeaponInventory);
 	DOREPLIFETIME(ALestaCharacter, CurrentlyActiveWeaponIndex);
+	DOREPLIFETIME(ALestaCharacter, HealthComponent);
 	//DOREPLIFETIME(ALestaCharacter, JustForTesting);
 }
 

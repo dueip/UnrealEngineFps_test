@@ -63,6 +63,7 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void ServerOnDead();
+
 	
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	FString GetWeaponName() const;
@@ -112,9 +113,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> ReloadInputAction;
 
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category="Stats", Replicated)
 	TObjectPtr<UHealthComponent> HealthComponent;
 
+
+	UFUNCTION()
+	void OnRep_HealthComponent(int32 Health);
+
+	
 	UPROPERTY(EditDefaultsOnly, Category="UI")
 	TSubclassOf<UUserWidget> StatsWidget;
 

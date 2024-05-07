@@ -38,7 +38,7 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastEnsureAllClientsKnowThatHealthChanged(int32 NewHP);
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(Server, Reliable)
 	void ServerSetHealth(int32 NewHP);
 	
 	FHealthChangedDelegate HealthChangedDelegate;
