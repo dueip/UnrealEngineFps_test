@@ -138,6 +138,8 @@ protected:
 
 	virtual void OnMoveInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnLookInput(const FInputActionInstance& InputActionInstance);
+	UFUNCTION(Server, Unreliable)
+	void ClientCalculateDesiredEndPoint(ULaserWeaponComponent* LaserWeapon);
 	virtual void OnShootInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnSwitchWeapons(const FInputActionValue& InputActionValue);
 	virtual void OnShootingEnded();

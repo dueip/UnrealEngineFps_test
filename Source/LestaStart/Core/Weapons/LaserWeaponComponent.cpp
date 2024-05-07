@@ -81,6 +81,7 @@ void ULaserWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ULaserWeaponComponent, Laser)
 	DOREPLIFETIME(ULaserWeaponComponent, CurrentDurability);
+	DOREPLIFETIME(ULaserWeaponComponent, DesiredEndPoint);
 }
 
 float ULaserWeaponComponent::GetReloadTime()

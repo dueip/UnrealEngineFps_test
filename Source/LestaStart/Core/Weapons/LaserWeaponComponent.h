@@ -61,7 +61,7 @@ public:
 	virtual void Reload() override;
 
 	
-	
+	UPROPERTY(Replicated)
 	FVector DesiredEndPoint;
 
 

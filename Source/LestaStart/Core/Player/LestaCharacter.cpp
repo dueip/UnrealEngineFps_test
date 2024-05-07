@@ -372,6 +372,18 @@ void ALestaCharacter::OnLookInput(const FInputActionInstance& InputActionInstanc
 	
 }
 
+void ALestaCharacter::ClientCalculateDesiredEndPoint_Implementation(ULaserWeaponComponent* LaserWeapon)
+{
+	// Assuming LaserWeapon and CameraComponent are valid and accessible
+	FVector CameraCenter = CameraComponent->GetComponentLocation();
+	FVector CameraForward = CameraComponent->GetForwardVector();
+
+	// Calculate the endpoint by extending the camera's forward direction by the laser's length
+	FVector DesiredEndPoint = CameraCenter + (CameraForward * LaserWeapon->GetLaserLength());
+	// Now set the DesiredEndPoint of the LaserWeapon
+	LaserWeapon->DesiredEndPoint = DesiredEndPoint;
+}
+
 void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstance)
 {
 	IWeaponInterface* const CurrentlyActiveWeapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
@@ -386,16 +398,9 @@ void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstan
 			const bool bIsCurrentWeaponLaser = LaserWeapon && (CurrentlyActiveWeapon == LaserWeapon);
 			if (bIsCurrentWeaponLaser)
 			{
-				// Assuming LaserWeapon and CameraComponent are valid and accessible
-				FVector CameraCenter = CameraComponent->GetComponentLocation();
-				FVector CameraForward = CameraComponent->GetForwardVector();
-
-				// Calculate the endpoint by extending the camera's forward direction by the laser's length
-				FVector DesiredEndPoint = CameraCenter + (CameraForward * LaserWeapon->GetLaserLength());
-				// Now set the DesiredEndPoint of the LaserWeapon
-				LaserWeapon->DesiredEndPoint = DesiredEndPoint;
+				ClientCalculateDesiredEndPoint(LaserWeapon);
 			}
-				CurrentlyActiveWeapon->ServerShoot();
+			CurrentlyActiveWeapon->ServerShoot();
 			CurrentlyActiveWeapon->MulticastDrawShooting();
 		}
 		else
