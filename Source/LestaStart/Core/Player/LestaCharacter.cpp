@@ -119,6 +119,12 @@ void ALestaCharacter::Server_DealDamage_Implementation(float DamageAmount, FDama
 
 void ALestaCharacter::CreateHUD()
 {
+	if (!GetWorld()) return;
+	if (GEngine->GetNetMode(GetWorld()) == NM_DedicatedServer)
+	{
+		return;
+	}
+		
 	if (StatsWidget)
 	{
 		StatsWidgetCreated = CreateWidget<UUserWidget>(GetWorld(), StatsWidget);
@@ -192,6 +198,12 @@ void ALestaCharacter::OnReload()
 
 void ALestaCharacter::ClientRemoveHUD_Implementation()
 {
+	if (!GetWorld()) return;
+	if (GEngine->GetNetMode(GetWorld()) == NM_DedicatedServer)
+	{
+		return;
+	}
+	
 	if (StatsWidgetCreated)
 	{
 		
