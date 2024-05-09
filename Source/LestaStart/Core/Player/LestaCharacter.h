@@ -87,7 +87,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Inventory", Replicated)
 	int32 CurrentlyActiveWeaponIndex;
-
+	/*
+	 * INPUT
+	 */
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	bool bShouldCycleThroughInventory;
 	/** Input action assigned to movement. */
@@ -112,46 +114,55 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> ReloadInputAction;
-
+	/*
+	 * HEALTH
+	 */
 	UPROPERTY(EditDefaultsOnly, Category="Stats", Replicated)
 	TObjectPtr<UHealthComponent> HealthComponent;
 
+	UPROPERTY(Replicated, EditDefaultsOnly, Category="Stats")
+	float MaxHP;
 
-	UFUNCTION()
-	void OnRep_HealthComponent(int32 Health);
-
-	
+	/*
+	 * UI	
+	 */
 	UPROPERTY(EditDefaultsOnly, Category="UI")
 	TSubclassOf<UUserWidget> StatsWidget;
 
 	UPROPERTY(EditDefaultsOnly, Category="UI")
 	TSubclassOf<UUserWidget> WeaponInfoWidget;
 	
-	UPROPERTY(Replicated, EditDefaultsOnly, Category="Stats")
-	float MaxHP;
-	
-	
-	UPROPERTY(EditDefaultsOnly, Category="Death")
-	TSubclassOf<ADeadPlayer> DeadPlayerToSpawn;
-
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	UFUNCTION(Client, Reliable)
+	virtual void ClientRemoveHUD();
+	/*
+	 * INPUT CALLBACKS
+	 */
 	virtual void OnMoveInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnLookInput(const FInputActionInstance& InputActionInstance);
-	UFUNCTION(Server, Unreliable)
-	void ClientCalculateDesiredEndPoint(ULaserWeaponComponent* LaserWeapon);
 	virtual void OnShootInput(const FInputActionInstance& InputActionInstance);
 	virtual void OnSwitchWeapons(const FInputActionValue& InputActionValue);
 	virtual void OnShootingEnded();
 	virtual void OnChooseFirstWeapon();
 	virtual void OnChooseSecondWeapon();
-	bool IsReloading() const;
-	UFUNCTION()
-	void ReloadWeapon();
 	virtual void OnReload();
 
-	UFUNCTION(Client, Reliable)
-	virtual void ClientRemoveHUD();
+	UFUNCTION()
+	void ReloadWeapon();
+	bool IsReloading() const;
+	
+	UFUNCTION()
+	void OnRep_DesiredRotationChanged(const FVector2D& NewRotation);
+	UPROPERTY(ReplicatedUsing=OnRep_DesiredRotationChanged)
+	FVector2D UpdatedLookVector;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Death")
+	TSubclassOf<ADeadPlayer> DeadPlayerToSpawn;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	UFUNCTION(Server, Unreliable)
+	void ClientCalculateDesiredEndPoint(ULaserWeaponComponent* LaserWeapon);
+	
 	
 	UPROPERTY(EditDefaultsOnly, Replicated)
 	TObjectPtr<class ULaserWeaponComponent> LaserWeaponTry;
@@ -161,15 +172,14 @@ protected:
 	//UPROPERTY(EditDefaultsOnly)
 	//ULaserComponent* JustForTesting;
 private:
-	bool bIsDead = false;
 	FTimerHandle ReloadTimerHandle;
 
+	/*
+	 * WIDGET HANDLERS
+	 */ 
 	TObjectPtr<UUserWidget> StatsWidgetCreated;
 	TObjectPtr<UUserWidget> WeaponWidgetCreated;
-
 	
-
-
-	
+	bool bIsDead = false;
 	TEnumAsByte<EPlayerState> PlayerState;
 };

@@ -35,8 +35,20 @@ ALestaCharacter::ALestaCharacter()
 	bReplicates = true;
 }
 
-void ALestaCharacter::OnRep_HealthComponent(int32 Health)
+void ALestaCharacter::OnRep_DesiredRotationChanged(const FVector2D& NewRotation)
 {
+	const FRotator PrevRotation = GetActorRotation();
+	const FRotator Rotation = FRotator(PrevRotation.Pitch + NewRotation.Y, PrevRotation.Yaw , PrevRotation.Roll + NewRotation.X);
+	SetActorRotation(Rotation);
+}
+
+
+void ALestaCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+
+	// Put this here for now
 	if (HealthComponent->GetHealth() <= 0.f)
 	{
 		if (HasAuthority())
@@ -48,11 +60,6 @@ void ALestaCharacter::OnRep_HealthComponent(int32 Health)
 			ClientRemoveHUD();
 		}
 	}
-}
-
-void ALestaCharacter::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
 
 }
 
@@ -67,7 +74,6 @@ void ALestaCharacter::BeginPlay()
 	HealthComponent->HealthChangedDelegate.AddUFunction(this, "OnRep_HealthComponent");
 	CreateHUD();
 	
-	//JustForTesting->SetColor(FColor::Silver);
 }
 
 void ALestaCharacter::OnDead()
@@ -347,6 +353,7 @@ void ALestaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(ALestaCharacter, WeaponInventory);
 	DOREPLIFETIME(ALestaCharacter, CurrentlyActiveWeaponIndex);
 	DOREPLIFETIME(ALestaCharacter, HealthComponent);
+	DOREPLIFETIME(ALestaCharacter, UpdatedLookVector)
 	//DOREPLIFETIME(ALestaCharacter, JustForTesting);
 }
 
@@ -369,6 +376,8 @@ void ALestaCharacter::OnLookInput(const FInputActionInstance& InputActionInstanc
 	const FVector2D Input2D = InputActionInstance.GetValue().Get<FVector2D>();
 	AddControllerYawInput(Input2D.X);
 	AddControllerPitchInput(Input2D.Y);
+	UpdatedLookVector = Input2D;
+	
 	
 }
 
