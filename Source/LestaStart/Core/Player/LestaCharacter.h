@@ -13,6 +13,23 @@
 #include "Blueprint/UserWidget.h"
 #include "LestaCharacter.generated.h"
 
+
+#define WIDGET_DECLARE(widget_name) UPROPERTY(EditDefaultsOnly, Category="UI") \
+	TSubclassOf<UUserWidget> widget_name; \
+	TObjectPtr<UUserWidget> widget_name ## _generated;
+
+#define WIDGET_ADD_TO_HUD(widget_name)  { if (widget_name)\
+	{ \
+		widget_name ## _generated = CreateWidget<UUserWidget>(GetWorld(), widget_name); \
+		widget_name ## _generated->AddToPlayerScreen(); \
+	} }
+#define WIDGET_REMOVE_FROM_HUD(widget_name)  { if (widget_name ## _generated) \
+	{ \
+		widget_name ## _generated ->RemoveFromRoot(); \
+		widget_name ## _generated->Destruct(); \
+		widget_name ## _generated = nullptr; \
+	} }
+
 UENUM()
 enum class EPlayerState
 {
@@ -126,11 +143,11 @@ protected:
 	/*
 	 * UI	
 	 */
-	UPROPERTY(EditDefaultsOnly, Category="UI")
-	TSubclassOf<UUserWidget> StatsWidget;
+//	UPROPERTY(EditDefaultsOnly, Category="UI")
+//	TSubclassOf<UUserWidget> StatsWidget;
 
-	UPROPERTY(EditDefaultsOnly, Category="UI")
-	TSubclassOf<UUserWidget> WeaponInfoWidget;
+	WIDGET_DECLARE(StatsWidget);
+	WIDGET_DECLARE(WeaponInfoWidget);
 	
 	UFUNCTION(Client, Reliable)
 	virtual void ClientRemoveHUD();
@@ -174,11 +191,6 @@ protected:
 private:
 	FTimerHandle ReloadTimerHandle;
 
-	/*
-	 * WIDGET HANDLERS
-	 */ 
-	TObjectPtr<UUserWidget> StatsWidgetCreated;
-	TObjectPtr<UUserWidget> WeaponWidgetCreated;
 	
 	bool bIsDead = false;
 	TEnumAsByte<EPlayerState> PlayerState;

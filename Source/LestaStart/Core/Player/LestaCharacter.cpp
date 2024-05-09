@@ -130,17 +130,8 @@ void ALestaCharacter::CreateHUD()
 	{
 		return;
 	}
-		
-	if (StatsWidget)
-	{
-		StatsWidgetCreated = CreateWidget<UUserWidget>(GetWorld(), StatsWidget);
-		StatsWidgetCreated->AddToPlayerScreen();
-	}
-	if (WeaponInfoWidget)
-	{
-		WeaponWidgetCreated = CreateWidget<UUserWidget>(GetWorld(), WeaponInfoWidget);
-		WeaponWidgetCreated->AddToPlayerScreen();
-	}
+	WIDGET_ADD_TO_HUD(StatsWidget);
+	WIDGET_ADD_TO_HUD(WeaponInfoWidget);
 }
 
 void ALestaCharacter::OnShootingEnded()
@@ -209,20 +200,8 @@ void ALestaCharacter::ClientRemoveHUD_Implementation()
 	{
 		return;
 	}
-	
-	if (StatsWidgetCreated)
-	{
-		
-		StatsWidgetCreated->RemoveFromRoot();
-		StatsWidgetCreated->Destruct();
-		StatsWidgetCreated = nullptr;
-	}
-	if (WeaponWidgetCreated)
-	{
-		WeaponWidgetCreated->RemoveFromRoot();
-		WeaponWidgetCreated->Destruct();
-		WeaponWidgetCreated = nullptr;
-	}
+	WIDGET_REMOVE_FROM_HUD(WeaponInfoWidget);
+	WIDGET_REMOVE_FROM_HUD(StatsWidget);
 	CollectGarbage(RF_NoFlags);
 }
 
