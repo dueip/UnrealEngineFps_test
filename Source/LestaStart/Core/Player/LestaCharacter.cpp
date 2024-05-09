@@ -47,20 +47,6 @@ void ALestaCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-
-	// Put this here for now
-	if (HealthComponent->GetHealth() <= 0.f)
-	{
-		if (HasAuthority())
-		{
-			ServerOnDead();
-		}
-		if (!HasAuthority())
-		{
-			ClientRemoveHUD();
-		}
-	}
-
 }
 
 void ALestaCharacter::BeginPlay()
@@ -190,6 +176,22 @@ void ALestaCharacter::OnReload()
 				Weapon->GetReloadTime()
 			);
 
+		}
+	}
+}
+
+void ALestaCharacter::OnRep_HealthComponent(int32 NewHP)
+{
+	// Put this here for now
+	if (HealthComponent->GetHealth() <= 0.f)
+	{
+		if (HasAuthority())
+		{
+			ServerOnDead();
+		}
+		if (!HasAuthority())
+		{
+			ClientRemoveHUD();
 		}
 	}
 }

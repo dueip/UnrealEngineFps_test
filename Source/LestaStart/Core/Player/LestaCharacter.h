@@ -14,16 +14,18 @@
 #include "LestaCharacter.generated.h"
 
 
-#define WIDGET_DECLARE(widget_name) UPROPERTY(EditDefaultsOnly, Category="UI") \
-	TSubclassOf<UUserWidget> widget_name; \
-	TObjectPtr<UUserWidget> widget_name ## _generated;
+#define WIDGET_DECLARE(WidgetName) \
+	UPROPERTY(EditDefaultsOnly, Category="UI")\
+	TSubclassOf<UUserWidget> WidgetName; \
+	UPROPERTY()\
+	TObjectPtr<UUserWidget> WidgetName ## _generated;
 
 #define WIDGET_ADD_TO_HUD(widget_name)  { if (widget_name)\
 	{ \
 		widget_name ## _generated = CreateWidget<UUserWidget>(GetWorld(), widget_name); \
 		widget_name ## _generated->AddToPlayerScreen(); \
-	} else \
-	UE_LOG(LogTemp, Warning, TEXT("Widget %s could not be added to the HUD"), #widget_name); }
+	} else { \
+	UE_LOG(LogTemp, Warning, TEXT("Widget %s could not be added to the HUD"), #widget_name); } }
 
 #define WIDGET_REMOVE_FROM_HUD(widget_name)  { if (widget_name ## _generated) \
 	{ \
@@ -145,12 +147,18 @@ protected:
 	/*
 	 * UI	
 	 */
-//	UPROPERTY(EditDefaultsOnly, Category="UI")
-//	TSubclassOf<UUserWidget> StatsWidget;
-
-	WIDGET_DECLARE(StatsWidget);
-	WIDGET_DECLARE(WeaponInfoWidget);
-	WIDGET_DECLARE(HudInfoWidget);
+	UPROPERTY(EditDefaultsOnly, Category="UI")
+	TSubclassOf<UUserWidget> WeaponInfoWidget;
+	UPROPERTY()
+	TObjectPtr<UUserWidget> WeaponInfoWidget_generated;
+	UPROPERTY(EditDefaultsOnly, Category="UI")
+	TSubclassOf<UUserWidget> StatsWidget;
+	UPROPERTY()
+	TObjectPtr<UUserWidget> StatsWidget_generated;
+	UPROPERTY(EditDefaultsOnly, Category="UI")
+	TSubclassOf<UUserWidget> HudInfoWidget;
+	UPROPERTY()
+	TObjectPtr<UUserWidget> HudInfoWidget_generated;
 	
 	UFUNCTION(Client, Reliable)
 	virtual void ClientRemoveHUD();
@@ -166,6 +174,8 @@ protected:
 	virtual void OnChooseSecondWeapon();
 	virtual void OnReload();
 
+	UFUNCTION()
+	void OnRep_HealthComponent(int32 NewHP);	
 	UFUNCTION()
 	void ReloadWeapon();
 	bool IsReloading() const;
