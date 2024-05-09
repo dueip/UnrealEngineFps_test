@@ -132,6 +132,7 @@ void ALestaCharacter::CreateHUD()
 	}
 	WIDGET_ADD_TO_HUD(StatsWidget);
 	WIDGET_ADD_TO_HUD(WeaponInfoWidget);
+	WIDGET_ADD_TO_HUD(HudInfoWidget);
 }
 
 void ALestaCharacter::OnShootingEnded()
@@ -202,6 +203,7 @@ void ALestaCharacter::ClientRemoveHUD_Implementation()
 	}
 	WIDGET_REMOVE_FROM_HUD(WeaponInfoWidget);
 	WIDGET_REMOVE_FROM_HUD(StatsWidget);
+	WIDGET_REMOVE_FROM_HUD(HudInfoWidget);
 	CollectGarbage(RF_NoFlags);
 }
 

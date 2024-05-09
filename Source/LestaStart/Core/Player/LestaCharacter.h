@@ -22,7 +22,9 @@
 	{ \
 		widget_name ## _generated = CreateWidget<UUserWidget>(GetWorld(), widget_name); \
 		widget_name ## _generated->AddToPlayerScreen(); \
-	} }
+	} else \
+	UE_LOG(LogTemp, Warning, TEXT("Widget %s could not be added to the HUD"), #widget_name); }
+
 #define WIDGET_REMOVE_FROM_HUD(widget_name)  { if (widget_name ## _generated) \
 	{ \
 		widget_name ## _generated ->RemoveFromRoot(); \
@@ -148,6 +150,7 @@ protected:
 
 	WIDGET_DECLARE(StatsWidget);
 	WIDGET_DECLARE(WeaponInfoWidget);
+	WIDGET_DECLARE(HudInfoWidget);
 	
 	UFUNCTION(Client, Reliable)
 	virtual void ClientRemoveHUD();
