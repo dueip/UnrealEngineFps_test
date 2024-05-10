@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "LestaSpectator.h"
 #include "LestaPlayerController.generated.h"
 
 class UInputMappingContext;
@@ -16,12 +17,16 @@ class LESTASTART_API ALestaPlayerController : public APlayerController
 
 	// You can extend this class if required
 	// Blueprint PlayerController class is derived from the ALestaPlayerController
-
+public:
+	UFUNCTION()
+	ALestaSpectator* SpawnSpectatorPawn();
 protected:
 	/** Added input mapping context on startup. */
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> InputMapping;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ALestaSpectator> SpectatorToSpawn;
 	
 	/** Priority of InputMapping. */
 	UPROPERTY(EditDefaultsOnly, Category = "Input", meta = (ClampMin = 0))

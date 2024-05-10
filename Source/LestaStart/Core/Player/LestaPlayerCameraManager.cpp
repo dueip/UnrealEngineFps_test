@@ -2,3 +2,9 @@
 
 
 #include "LestaPlayerCameraManager.h"
+
+
+ALestaPlayerCameraManager::ALestaPlayerCameraManager()
+{
+	bClientSimulatingViewTarget = false;
+}

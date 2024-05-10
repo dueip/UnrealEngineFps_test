@@ -54,6 +54,10 @@ class LESTASTART_API ALestaCharacter : public ACharacter, public IWeaponHoldable
 	// Blueprint Character class is derived from the ALestaCharacter
 
 public:
+
+	UFUNCTION(Client, Unreliable)
+	void ClientTestCase();
+	
 	ALestaCharacter();
 	void Tick(float DeltaSeconds) override;
 	void BeginPlay() override;
@@ -99,6 +103,9 @@ public:
 	int32 MaxWeaponAmmo() const;
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	float CurrentWeaponAmmo() const;
+
+	void RequestSpawnSpectator();
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCameraComponent> CameraComponent;

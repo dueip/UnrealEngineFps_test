@@ -8,11 +8,28 @@
 #include "AssetTypeActions/AssetDefinition_SoundBase.h"
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/SpectatorPawn.h"
 #include "LestaStart/Core/HealthComponent.h"
+#include "LestaStart/Core/LestaGameMode.h"
 #include "LestaStart/Core/Weapons/LaserWeaponComponent.h"
 #include "LestaStart/Core/Weapons/WeaponInterface.h"
 #include "LestaStart/Core/Weapons/WeaponInvenotryComponent.h"
 #include "Net/UnrealNetwork.h"
+
+void ALestaCharacter::ClientTestCase_Implementation()
+{
+	ClientRemoveHUD();
+	SetActorHiddenInGame(true);
+	SetActorTickEnabled(false);
+
+	ALestaPlayerController* PlayerController =  dynamic_cast<ALestaPlayerController*>(GetController());
+	if (PlayerController)
+	{
+		PlayerController->SpawnSpectatorPawn();
+	}
+		
+	
+}
 
 ALestaCharacter::ALestaCharacter()
 {
@@ -185,13 +202,13 @@ void ALestaCharacter::OnRep_HealthComponent(int32 NewHP)
 	// Put this here for now
 	if (HealthComponent->GetHealth() <= 0.f)
 	{
+		ClientTestCase();
 		if (HasAuthority())
 		{
 			ServerOnDead();
 		}
 		if (!HasAuthority())
 		{
-			ClientRemoveHUD();
 		}
 	}
 }
@@ -326,6 +343,11 @@ float ALestaCharacter::CurrentWeaponAmmo() const
 {
 	float CurrentDrainage = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex)->GetCurrentDrainage();
 	return CurrentDrainage <= 0.f ? 0 : CurrentDrainage;
+}
+
+void ALestaCharacter::RequestSpawnSpectator()
+{
+	
 }
 
 void ALestaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
