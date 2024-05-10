@@ -19,7 +19,8 @@ class LESTASTART_API ALestaPlayerController : public APlayerController
 	// Blueprint PlayerController class is derived from the ALestaPlayerController
 public:
 	UFUNCTION()
-	ALestaSpectator* SpawnSpectatorPawn();
+	ALestaSpectator* SpawnSpectatorPawnDifferent();
+	virtual ASpectatorPawn* SpawnSpectatorPawn() override;
 protected:
 	/** Added input mapping context on startup. */
 	UPROPERTY(EditDefaultsOnly, Category = "Input")

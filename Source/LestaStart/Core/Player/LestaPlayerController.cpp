@@ -3,9 +3,10 @@
 #include "LestaPlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "LestaCharacter.h"
+#include "EntitySystem/MovieSceneEntitySystemRunner.h"
 #include "Kismet/GameplayStatics.h"
 
-ALestaSpectator* ALestaPlayerController::SpawnSpectatorPawn()
+ALestaSpectator* ALestaPlayerController::SpawnSpectatorPawnDifferent()
 {
 	ALestaSpectator* SpawnedSpectator = nullptr;
 	bool bDoesSpectatorPawnExist = GetSpectatorPawn() == nullptr;
@@ -35,6 +36,17 @@ ALestaSpectator* ALestaPlayerController::SpawnSpectatorPawn()
 		} 
 	}
 	
+	return SpawnedSpectator;
+}
+
+ASpectatorPawn* ALestaPlayerController::SpawnSpectatorPawn()
+{
+	ALestaSpectator* SpawnedSpectator = dynamic_cast<ALestaSpectator*>(Super::SpawnSpectatorPawn());
+	SpawnedSpectator->SetReplicates(false);
+	SpawnedSpectator->PossessedBy(this);
+	SpawnedSpectator->EnableInput(this);
+	SetupInputComponent();	
+	SpawnedSpectator->SetupPlayerInputComponent(InputComponent);
 	return SpawnedSpectator;
 }
 

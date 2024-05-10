@@ -18,7 +18,6 @@
 
 void ALestaCharacter::ClientTestCase_Implementation()
 {
-	ClientRemoveHUD();
 	SetActorHiddenInGame(true);
 	SetActorTickEnabled(false);
 
@@ -26,6 +25,7 @@ void ALestaCharacter::ClientTestCase_Implementation()
 	if (PlayerController)
 	{
 		PlayerController->SpawnSpectatorPawn();
+		
 	}
 		
 	
@@ -82,21 +82,9 @@ void ALestaCharacter::BeginPlay()
 void ALestaCharacter::OnDead()
 {
 	OnShootingEnded();
-	Destroy();
-	// if (DeadPlayerToSpawn)
-	// {
-	// 	ADeadPlayer* DeadPlayer = GetWorld()->SpawnActor<ADeadPlayer>(DeadPlayerToSpawn,
-	// 		GetActorLocation(), GetActorRotation());
-	// 	GetController()->Possess(DeadPlayer);
-	// 	DeadPlayer->AfterPossesed();
-	// 	//DeadPlayer->SetupPlayerInputComponent(GetController()->InputComponent);
-	// }
-	//
-	//SetActorHiddenInGame(true);
-	//SetActorTickEnabled(false);
-	//SetActorEnableCollision(false);
-	
 	bIsDead = true;
+	Destroy();
+	
 }
 
 int32 ALestaCharacter::CycleWeaponsIndex(int32 Index) const
@@ -202,15 +190,16 @@ void ALestaCharacter::OnRep_HealthComponent(int32 NewHP)
 	// Put this here for now
 	if (HealthComponent->GetHealth() <= 0.f)
 	{
-		ClientTestCase();
+		if (HasAuthority())
+		{
+			ClientTestCase();
+		}
 		
 		if (HasAuthority())
 		{
 			ServerOnDead();
 		}
-		if (!HasAuthority())
-		{
-		}
+		
 	}
 }
 
