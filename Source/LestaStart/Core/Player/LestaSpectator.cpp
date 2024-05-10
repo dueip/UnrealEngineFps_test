@@ -4,6 +4,7 @@
 #include "LestaSpectator.h"
 
 #include "EnhancedInputComponent.h"
+#include "LestaPlayerController.h"
 
 
 // Sets default values
@@ -52,21 +53,24 @@ void ALestaSpectator::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	}
 }
 
+void ALestaSpectator::OnReastarting()
+{
+
+}
+
 void ALestaSpectator::ServerVoteOnRestarting_Implementation()
 {
-	if (!GetWorld()) return;
-	ALestaGameState* LestaGameState = dynamic_cast<ALestaGameState*>(GetWorld()->GetGameState());
-	if (LestaGameState)
-	{
-		LestaGameState->ServerVote(EVoteType::RestartGame);
-	}
+	OnReastarting();
 }
 
 void ALestaSpectator::OnRestartRequested()
 {
 	if (!bHasAlreadyVoted)
 	{
-		ServerVoteOnRestarting();
+		if (ALestaPlayerController* LestaPCPlayerController = dynamic_cast<ALestaPlayerController*>(GetController()))
+		{
+			LestaPCPlayerController->ServerVoteForRestart();
+		}
 		bHasAlreadyVoted = true;
 	}
 }

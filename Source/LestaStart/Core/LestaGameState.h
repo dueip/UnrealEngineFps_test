@@ -25,8 +25,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int32 GetVotedOnRestart() const { return VotedOnRestartCount; };
 
-	UFUNCTION(Server, Reliable)
-	void ServerVote(EVoteType VotedOnWhat);
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	//UFUNCTION(Server, Reliable)
+	void Vote(EVoteType VotedOnWhat);
 private:
+	UPROPERTY(Replicated)
 	int32 VotedOnRestartCount;
 };

@@ -3,7 +3,15 @@
 
 #include "LestaGameState.h"
 
-void ALestaGameState::ServerVote_Implementation(EVoteType VotedOnWhat)
+#include "Net/UnrealNetwork.h"
+
+void ALestaGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ALestaGameState, VotedOnRestartCount);
+}
+
+void ALestaGameState::Vote(EVoteType VotedOnWhat)
 {
 	switch (VotedOnWhat)
 	{

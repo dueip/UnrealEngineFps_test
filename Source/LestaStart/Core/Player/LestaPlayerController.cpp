@@ -45,13 +45,22 @@ ASpectatorPawn* ALestaPlayerController::SpawnSpectatorPawn()
 	ALestaSpectator* SpawnedSpectator = dynamic_cast<ALestaSpectator*>(Super::SpawnSpectatorPawn());
 	if (SpawnedSpectator)
 	{
-		SpawnedSpectator->SetReplicates(false);
 		SpawnedSpectator->PossessedBy(this);
 		SpawnedSpectator->EnableInput(this);
 		SpawnedSpectator->SetupPlayerInputComponent(InputComponent);
 		SetupInputComponent();
 	}
 	return SpawnedSpectator;
+}
+
+void ALestaPlayerController::ServerVoteForRestart_Implementation()
+{
+	if (!GetWorld()) return;
+	ALestaGameState* LestaGameState = dynamic_cast<ALestaGameState*>(GetWorld()->GetGameState());
+	if (LestaGameState)
+	{
+		LestaGameState->Vote(EVoteType::RestartGame);
+	}
 }
 
 void ALestaPlayerController::BeginPlay()

@@ -22,6 +22,10 @@ public:
 	ALestaSpectator* SpawnSpectatorPawnDifferent();
 	UFUNCTION()
 	virtual ASpectatorPawn* SpawnSpectatorPawn() override;
+
+	UFUNCTION(Server, Reliable)
+	void ServerVoteForRestart();
+	
 protected:
 	/** Added input mapping context on startup. */
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
