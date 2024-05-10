@@ -16,8 +16,9 @@ ALestaSpectator* ALestaPlayerController::SpawnSpectatorPawnDifferent()
 		FActorSpawnParameters Params;
 		Params.ObjectFlags |= RF_Transient;
 		Params.Owner = this;
-		SpawnedSpectator = GetWorld()->SpawnActor<ALestaSpectator>(SpectatorToSpawn->GetDefaultObject<ALestaSpectator>()->GetClass(),
-			GetSpawnLocation(), GetControlRotation(), Params);
+		//SpawnedSpectator = GetWorld()->SpawnActor<ALestaSpectator>(SpectatorToSpawn->GetDefaultObject<ALestaSpectator>()->GetClass(),
+		//
+		//	GetSpawnLocation(), GetControlRotation(), Params);
 		
 	
 		if (SpawnedSpectator)
@@ -42,11 +43,14 @@ ALestaSpectator* ALestaPlayerController::SpawnSpectatorPawnDifferent()
 ASpectatorPawn* ALestaPlayerController::SpawnSpectatorPawn()
 {
 	ALestaSpectator* SpawnedSpectator = dynamic_cast<ALestaSpectator*>(Super::SpawnSpectatorPawn());
-	SpawnedSpectator->SetReplicates(false);
-	SpawnedSpectator->PossessedBy(this);
-	SpawnedSpectator->EnableInput(this);
-	SetupInputComponent();	
-	SpawnedSpectator->SetupPlayerInputComponent(InputComponent);
+	if (SpawnedSpectator)
+	{
+		SpawnedSpectator->SetReplicates(false);
+		SpawnedSpectator->PossessedBy(this);
+		SpawnedSpectator->EnableInput(this);
+		SpawnedSpectator->SetupPlayerInputComponent(InputComponent);
+		SetupInputComponent();
+	}
 	return SpawnedSpectator;
 }
 

@@ -20,14 +20,15 @@ class LESTASTART_API ALestaPlayerController : public APlayerController
 public:
 	UFUNCTION()
 	ALestaSpectator* SpawnSpectatorPawnDifferent();
+	UFUNCTION()
 	virtual ASpectatorPawn* SpawnSpectatorPawn() override;
 protected:
 	/** Added input mapping context on startup. */
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> InputMapping;
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ALestaSpectator> SpectatorToSpawn;
+	//UPROPERTY(EditDefaultsOnly)
+	//TSubclassOf<ALestaSpectator> SpectatorToSpawn;
 	
 	/** Priority of InputMapping. */
 	UPROPERTY(EditDefaultsOnly, Category = "Input", meta = (ClampMin = 0))
