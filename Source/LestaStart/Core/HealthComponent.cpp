@@ -27,7 +27,8 @@ UHealthComponent::UHealthComponent()
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	SetHealth(HealthPoints);
+	//HealthPoints = HealthPoints;
+	//SetHealth(HealthPoints);
 }
 
 

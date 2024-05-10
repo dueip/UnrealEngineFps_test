@@ -15,10 +15,8 @@ ALestaSpectator* ALestaPlayerController::SpawnSpectatorPawn()
 		FActorSpawnParameters Params;
 		Params.ObjectFlags |= RF_Transient;
 		Params.Owner = this;
-		FTransform SpawnedTransform = FTransform(GetControlRotation(), GetSpawnLocation());
-		auto* SpawnedSpectator1 = GetWorld()->SpawnActor<ALestaSpectator>(SpectatorToSpawn->GetDefaultObject<ALestaSpectator>()->GetClass(),  GetSpawnLocation(), GetControlRotation(), Params);
-		//SpawnedSpectator = GetWorld()->SpawnActorDeferred<ALestaSpectator>(SpectatorToSpawn->StaticClass(),
-		//	SpawnedTransform, this);
+		SpawnedSpectator = GetWorld()->SpawnActor<ALestaSpectator>(SpectatorToSpawn->GetDefaultObject<ALestaSpectator>()->GetClass(),
+			GetSpawnLocation(), GetControlRotation(), Params);
 		
 	
 		if (SpawnedSpectator)
@@ -26,9 +24,7 @@ ALestaSpectator* ALestaPlayerController::SpawnSpectatorPawn()
 			SpawnedSpectator->SetReplicates(false);
 			SpawnedSpectator->PossessedBy(this);
 			SpawnedSpectator->EnableInput(this);
-			//SpawnedSpectator->RequestRestartAction = SpectatorToSpawn->GetDefaultObject<ALestaSpectator>()->RequestRestartAction;
-			//UGameplayStatics::FinishSpawningActor(SpawnedSpectator, SpawnedTransform);
-			SetupInputComponent();
+			SetupInputComponent();	
 			SpawnedSpectator->SetupPlayerInputComponent(InputComponent);
 
 			

@@ -203,6 +203,7 @@ void ALestaCharacter::OnRep_HealthComponent(int32 NewHP)
 	if (HealthComponent->GetHealth() <= 0.f)
 	{
 		ClientTestCase();
+		
 		if (HasAuthority())
 		{
 			ServerOnDead();

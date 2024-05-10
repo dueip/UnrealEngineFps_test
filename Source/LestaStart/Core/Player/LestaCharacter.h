@@ -55,7 +55,7 @@ class LESTASTART_API ALestaCharacter : public ACharacter, public IWeaponHoldable
 
 public:
 
-	UFUNCTION(Client, Unreliable)
+	UFUNCTION(Client, Reliable)
 	void ClientTestCase();
 	
 	ALestaCharacter();
