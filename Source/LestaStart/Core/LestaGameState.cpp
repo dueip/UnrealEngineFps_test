@@ -3,6 +3,7 @@
 
 #include "LestaGameState.h"
 
+#include "Chaos/ChaosPerfTest.h"
 #include "Net/UnrealNetwork.h"
 
 void ALestaGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

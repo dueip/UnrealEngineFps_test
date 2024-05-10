@@ -60,6 +60,11 @@ void ALestaPlayerController::ServerVoteForRestart_Implementation()
 	if (LestaGameState)
 	{
 		LestaGameState->Vote(EVoteType::RestartGame);
+		if (LestaGameState->GetVotedOnRestart() == LestaGameState->GetHowManyPlayersNeedToVoteOnRestart())
+		{
+			
+			GetWorld()->ServerTravel(GetWorld()->GetMapName());
+		}
 	}
 }
 
