@@ -26,6 +26,8 @@ protected:
 	void CalculateAnimationDurationAndSetTimer();
 
 public:
+	//FVector CalculateDesiredEndPoint()
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	virtual float GetReloadTime() override;

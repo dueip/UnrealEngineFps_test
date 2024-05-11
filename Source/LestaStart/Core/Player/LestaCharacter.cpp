@@ -69,18 +69,17 @@ ALestaCharacter::ALestaCharacter()
 	bReplicates = true;
 }
 
-void ALestaCharacter::OnRep_DesiredRotationChanged(const FVector2D& NewRotation)
+void ALestaCharacter::OnRep_DesiredPitchChanged(float NewPitch)
 {
-	const FRotator PrevRotation = GetActorRotation();
-	const FRotator Rotation = FRotator(PrevRotation.Pitch + NewRotation.Y, PrevRotation.Yaw , PrevRotation.Roll + NewRotation.X);
-	SetActorRotation(Rotation);
+	AddControllerPitchInput(NewPitch);
+	//AddActorLocalRotation({0, NewRotation.X, 0});
+	//AddActorLocalRotation({NewRotation.Y, 0, 0});
 }
 
 
 void ALestaCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
 }
 
 void ALestaCharacter::BeginPlay()
@@ -373,8 +372,13 @@ void ALestaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(ALestaCharacter, WeaponInventory);
 	DOREPLIFETIME(ALestaCharacter, CurrentlyActiveWeaponIndex);
 	DOREPLIFETIME(ALestaCharacter, HealthComponent);
-	DOREPLIFETIME(ALestaCharacter, UpdatedLookVector)
+	DOREPLIFETIME(ALestaCharacter, PitchAimOffset)
 	//DOREPLIFETIME(ALestaCharacter, JustForTesting);
+}
+
+void ALestaCharacter::ServerUpdateAimOffset_Implementation(float NewValue)
+{
+	PitchAimOffset = NewValue;	
 }
 
 void ALestaCharacter::OnMoveInput(const FInputActionInstance& InputActionInstance)
@@ -391,13 +395,22 @@ void ALestaCharacter::OnMoveInput(const FInputActionInstance& InputActionInstanc
 	AddMovementInput(ForwardDirection * Input2D.X + RightDirection * Input2D.Y);
 }
 
+
 void ALestaCharacter::OnLookInput(const FInputActionInstance& InputActionInstance)
 {
 	const FVector2D Input2D = InputActionInstance.GetValue().Get<FVector2D>();
+	if (Input2D.IsNearlyZero()) return;
 	AddControllerYawInput(Input2D.X);
-	AddControllerPitchInput(Input2D.Y);
-	UpdatedLookVector = Input2D;
-	
+	float Pitch = Input2D.Y;
+	if (HasAuthority())
+	{
+		PitchAimOffset = Pitch;	
+	}
+	else
+	{
+		ServerUpdateAimOffset(Pitch);
+	}
+	AddControllerPitchInput(Pitch);
 	
 }
 
@@ -423,7 +436,6 @@ void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstan
 		if (!CurrentlyActiveWeapon->IsDrained())
 		{
 			ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>();
-	
 			const bool bIsCurrentWeaponLaser = LaserWeapon && (CurrentlyActiveWeapon == LaserWeapon);
 			if (bIsCurrentWeaponLaser)
 			{

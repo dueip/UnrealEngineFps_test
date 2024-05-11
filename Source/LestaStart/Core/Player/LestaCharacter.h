@@ -120,6 +120,16 @@ public:
 
 	void RequestSpawnSpectator();
 
+
+	UFUNCTION(BlueprintCallable)
+	float GetPitchAimOffset() const { return PitchAimOffset; }
+	
+	UFUNCTION()
+	void OnRep_DesiredPitchChanged(float NewPitch);
+	UPROPERTY(ReplicatedUsing=OnRep_DesiredPitchChanged)
+	float PitchAimOffset;
+	
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCameraComponent> CameraComponent;
@@ -203,12 +213,7 @@ protected:
 	UFUNCTION()
 	void ReloadWeapon();
 	bool IsReloading() const;
-	
-	UFUNCTION()
-	void OnRep_DesiredRotationChanged(const FVector2D& NewRotation);
-	UPROPERTY(ReplicatedUsing=OnRep_DesiredRotationChanged)
-	FVector2D UpdatedLookVector;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category="Death")
 	TSubclassOf<ADeadPlayer> DeadPlayerToSpawn;
 
@@ -228,7 +233,9 @@ protected:
 private:
 	FTimerHandle ReloadTimerHandle;
 
-	
+	UFUNCTION(Server, Unreliable)
+	void ServerUpdateAimOffset(float NewPitch);
+
 	bool bIsDead = false;
 	TEnumAsByte<EPlayerState> PlayerState;
 };
