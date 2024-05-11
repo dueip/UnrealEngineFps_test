@@ -219,8 +219,7 @@ protected:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
-	UFUNCTION(Server, Unreliable)
-	void ClientCalculateDesiredEndPoint(ULaserWeaponComponent* LaserWeapon);
+	FVector CalculateDesiredEndPoint(class ULaserWeaponComponent* LaserWeapon);
 	
 	
 	UPROPERTY(EditDefaultsOnly, Replicated)

@@ -82,7 +82,7 @@ public:
 	UFUNCTION(Server, Unreliable)
 	virtual void ServerShoot() override;
 	UFUNCTION(Server, Unreliable)
-	virtual void ServerShootAt(const FVector& Origin) override;
+	virtual void ServerShootAt(const FVector& Origin, const FVector& EndPoint) override;
 	UFUNCTION(Server, Unreliable)
 	virtual void ServerReload() override;
 	UFUNCTION(NetMulticast, Unreliable)

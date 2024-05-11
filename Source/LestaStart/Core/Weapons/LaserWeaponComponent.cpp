@@ -111,7 +111,7 @@ float ULaserWeaponComponent::GetCurrentDrainage()
 std::optional<FVector> ULaserWeaponComponent::DoHit(const FVector& SocketOrigin, const FVector& EndPoint, ECollisionChannel CollisionChannel) const
 {
 	FHitResult Hit;
-	bool bWasThereAHit = GetWorld()->LineTraceSingleByChannel(Hit, SocketOrigin, DesiredEndPoint, CollisionChannel);
+	bool bWasThereAHit = GetWorld()->LineTraceSingleByChannel(Hit, SocketOrigin, EndPoint, CollisionChannel);
 	FPointDamageEvent PointDamage;
 	PointDamage.Damage = DamageAmount;
 	PointDamage.HitInfo = Hit;
@@ -208,12 +208,12 @@ void ULaserWeaponComponent::Reload()
 	}
 }
 
-void ULaserWeaponComponent::ServerShootAt_Implementation(const FVector& Origin)
+void ULaserWeaponComponent::ServerShootAt_Implementation(const FVector& Origin, const FVector& EndPoint)
 {
 	if (IsDrained()) return;
 	Laser->SetOrigin(Origin);
-	LastHitPointAfterCollision = DoHit(Origin, DesiredEndPoint, HitCollisionChannel);
-	Laser->SetEndPoint(LastHitPointAfterCollision.value_or(DesiredEndPoint));
+	LastHitPointAfterCollision = DoHit(Origin, EndPoint, HitCollisionChannel);
+	Laser->SetEndPoint(LastHitPointAfterCollision.value_or(EndPoint));
 	Server_DrainAmmo(1);
 	MulticastDrawShooting();
 }

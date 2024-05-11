@@ -65,7 +65,7 @@ void UGrenadeWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	DOREPLIFETIME(UGrenadeWeaponComponent, CurrentAmmoNumber);
 }
 
-void UGrenadeWeaponComponent::ServerShootAt_Implementation(const FVector& Origin)
+void UGrenadeWeaponComponent::ServerShootAt_Implementation(const FVector& Origin, const FVector& EndPoint)
 {
 return;	
 }

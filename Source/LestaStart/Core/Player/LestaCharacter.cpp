@@ -414,7 +414,7 @@ void ALestaCharacter::OnLookInput(const FInputActionInstance& InputActionInstanc
 	
 }
 
-void ALestaCharacter::ClientCalculateDesiredEndPoint_Implementation(ULaserWeaponComponent* LaserWeapon)
+FVector ALestaCharacter::CalculateDesiredEndPoint(ULaserWeaponComponent* LaserWeapon)
 {
 	// Assuming LaserWeapon and CameraComponent are valid and accessible
 	FVector CameraCenter = CameraComponent->GetComponentLocation();
@@ -424,6 +424,7 @@ void ALestaCharacter::ClientCalculateDesiredEndPoint_Implementation(ULaserWeapon
 	FVector DesiredEndPoint = CameraCenter + (CameraForward * LaserWeapon->GetLaserLength());
 	// Now set the DesiredEndPoint of the LaserWeapon
 	LaserWeapon->DesiredEndPoint = DesiredEndPoint;
+	return DesiredEndPoint;
 }
 
 void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstance)
@@ -437,12 +438,16 @@ void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstan
 		{
 			ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>();
 			const bool bIsCurrentWeaponLaser = LaserWeapon && (CurrentlyActiveWeapon == LaserWeapon);
+			USceneComponent* WeaponComp = dynamic_cast<USceneComponent*>(CurrentlyActiveWeapon);
+
+			const FVector Origin = WeaponComp->GetSocketLocation(WeaponComp->GetAttachSocketName());
+			FVector EndPoint = Origin;
+
 			if (bIsCurrentWeaponLaser)
 			{
-				ClientCalculateDesiredEndPoint(LaserWeapon);
+				EndPoint = CalculateDesiredEndPoint(LaserWeapon);
 			}
-			USceneComponent* WeaponComp = dynamic_cast<USceneComponent*>(CurrentlyActiveWeapon);
-			CurrentlyActiveWeapon->ServerShootAt(WeaponComp->GetSocketLocation(WeaponComp->GetAttachSocketName()));
+			CurrentlyActiveWeapon->ServerShootAt(Origin, EndPoint);
 		}
 		else
 			return;//CurrentlyActiveWeapon->StopShooting();

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <optional>
+
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "WeaponInterface.generated.h"
@@ -35,8 +37,9 @@ public:
 
 	UFUNCTION(Server, Unreliable)
 	virtual void ServerShoot();
+	// Endpoint is not relivant to a non-hitscan wweapon
 	UFUNCTION(Server, Unreliable)
-	virtual void ServerShootAt(const FVector& Origin);
+	virtual void ServerShootAt(const FVector& Origin, const FVector& EndPoint);
 	UFUNCTION(Server, Unreliable)
 	virtual void ServerReload();
 	UFUNCTION(Server, Unreliable)
