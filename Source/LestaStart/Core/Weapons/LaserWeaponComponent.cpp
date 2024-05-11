@@ -90,6 +90,12 @@ float ULaserWeaponComponent::GetReloadTime()
 	return ReloadTime;
 }
 
+void ULaserWeaponComponent::DrawShooting()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Draw shooting from laser got called once :)"));
+	Laser->OnDraw();
+}
+
 int32 ULaserWeaponComponent::GetMaxDrainage()
 {
 	return MaxDurability;
@@ -208,7 +214,8 @@ void ULaserWeaponComponent::ServerStopShooting_Implementation()
 
 void ULaserWeaponComponent::MulticastDrawShooting_Implementation()
 {
-	Laser->MulticastDrawOnAllClients();
+	Laser->OnDraw();
+	//Laser->MulticastDrawOnAllClients();
 }
 
 void ULaserWeaponComponent::ServerReload_Implementation()
@@ -219,6 +226,7 @@ void ULaserWeaponComponent::ServerReload_Implementation()
 void ULaserWeaponComponent::ServerShoot_Implementation()
 {
 	Shoot();
+	MulticastDrawShooting();
 }
 
 

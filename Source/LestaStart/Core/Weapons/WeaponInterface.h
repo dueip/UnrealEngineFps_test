@@ -41,6 +41,8 @@ public:
 	virtual void ServerStopShooting();
 	UFUNCTION(NetMulticast, Unreliable)
 	virtual void MulticastDrawShooting();
+
+	virtual void DrawShooting() {};
 	
 	virtual FCompletelyDrainedDelegate* GetCompletelyDrainedDelegate() { return nullptr; }
 	virtual FStartedReloadingDelegate* GetStartedReloadingDelegate() { return nullptr; }

@@ -88,10 +88,6 @@ void ALaserTurret::Tick(float DeltaTime)
 		{
 			ServerOnShoot();
 		}
-		if (LaserWeapon)
-		{
-			LaserWeapon->MulticastDrawShooting();
-		}
 	}
 }
 

@@ -31,7 +31,6 @@ void AGrenadeTurret::OnShoot()
 	if (WeaponComponent)
 	{
 		WeaponComponent->ServerShoot();
-		WeaponComponent->MulticastDrawShooting();
 	}
 }
 

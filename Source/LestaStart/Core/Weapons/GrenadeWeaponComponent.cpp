@@ -78,6 +78,7 @@ void UGrenadeWeaponComponent::Shoot()
 void UGrenadeWeaponComponent::ServerShoot_Implementation()
 {
 	Shoot();
+	DrawShooting();
 }
 
 TArray<FHitResult> UGrenadeWeaponComponent::SweepSphere(const ECollisionChannel TraceChannel) const
@@ -147,6 +148,15 @@ void UGrenadeWeaponComponent::StopShooting()
 bool UGrenadeWeaponComponent::IsAtFullCapacity()
 {
 	return (CurrentCharge >= MaximumCharge);
+}
+
+void UGrenadeWeaponComponent::DrawShooting()
+{
+	// Draw Outer Sphere
+	DrawSphere(MaximumRadius, FColor::Red);
+	
+	// Draw Inner Sphere
+	DrawSphere(CalculateRadiusBasedOffCurrentCharge(), FColor::Green);
 }
 
 bool UGrenadeWeaponComponent::IsDrained()

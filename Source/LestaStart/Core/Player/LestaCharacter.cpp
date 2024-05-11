@@ -275,6 +275,14 @@ void ALestaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	}
 }
 
+void ALestaCharacter::MulticastDrawShootOnAllClients_Implementation(UObject* Weapon)
+{
+	if (IWeaponInterface* WeaponInt = dynamic_cast<IWeaponInterface*>(Weapon))
+	{
+		WeaponInt->DrawShooting();
+	}
+}
+
 bool ALestaCharacter::IsShooting() const
 {
 	
@@ -422,7 +430,6 @@ void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstan
 				ClientCalculateDesiredEndPoint(LaserWeapon);
 			}
 			CurrentlyActiveWeapon->ServerShoot();
-			CurrentlyActiveWeapon->MulticastDrawShooting();
 		}
 		else
 			return;//CurrentlyActiveWeapon->StopShooting();

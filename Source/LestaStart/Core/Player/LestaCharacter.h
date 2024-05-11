@@ -59,7 +59,7 @@ public IDamagableInterface
 	// Blueprint Character class is derived from the ALestaCharacter
 
 public:
-
+	
 	virtual void ReceiveDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -84,6 +84,10 @@ public:
 	
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastDrawShootOnAllClients(UObject* Weapon);
+
 	bool IsShooting() const;
 	virtual bool CanHoldWeapon() const override;
 	virtual bool SetWeapon(IWeaponInterface* Weapon) override;

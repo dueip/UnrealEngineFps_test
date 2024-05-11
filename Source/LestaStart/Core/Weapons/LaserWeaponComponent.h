@@ -30,6 +30,8 @@ public:
 	
 	virtual float GetReloadTime() override;
 
+	virtual void DrawShooting() override;
+	
 	virtual int32 GetMaxDrainage() override;
 	virtual float GetCurrentDrainage() override;
 	// Returns a Hit Location if there was a hit.

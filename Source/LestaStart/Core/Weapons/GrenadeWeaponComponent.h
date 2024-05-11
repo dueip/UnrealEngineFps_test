@@ -20,7 +20,8 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
+	
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(Server, Unreliable)
@@ -35,6 +36,7 @@ protected:
 	virtual void Shoot() override;
 	virtual void StopShooting() override;
 	virtual bool IsAtFullCapacity() override;
+	virtual void DrawShooting() override;
 
 	virtual bool IsDrained() override;
 	virtual void Reload() override;
