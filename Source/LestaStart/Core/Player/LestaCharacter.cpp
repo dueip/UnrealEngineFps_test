@@ -441,7 +441,8 @@ void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstan
 			{
 				ClientCalculateDesiredEndPoint(LaserWeapon);
 			}
-			CurrentlyActiveWeapon->ServerShoot();
+			USceneComponent* WeaponComp = dynamic_cast<USceneComponent*>(CurrentlyActiveWeapon);
+			CurrentlyActiveWeapon->ServerShootAt(WeaponComp->GetSocketLocation(WeaponComp->GetAttachSocketName()));
 		}
 		else
 			return;//CurrentlyActiveWeapon->StopShooting();

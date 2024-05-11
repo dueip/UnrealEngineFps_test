@@ -77,6 +77,7 @@ void ULaserWeaponComponent::CalculateAnimationDurationAndSetTimer()
 	                                       &ThisClass::BlinckingAnimationCallback, TimerDuration, false);
 }
 
+
 void ULaserWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -207,6 +208,16 @@ void ULaserWeaponComponent::Reload()
 	}
 }
 
+void ULaserWeaponComponent::ServerShootAt_Implementation(const FVector& Origin)
+{
+	if (IsDrained()) return;
+	Laser->SetOrigin(Origin);
+	LastHitPointAfterCollision = DoHit(Origin, DesiredEndPoint, HitCollisionChannel);
+	Laser->SetEndPoint(LastHitPointAfterCollision.value_or(DesiredEndPoint));
+	Server_DrainAmmo(1);
+	MulticastDrawShooting();
+}
+
 void ULaserWeaponComponent::ServerStopShooting_Implementation()
 {
 	StopShooting();
@@ -266,7 +277,6 @@ void ULaserWeaponComponent::Server_DoHit_Implementation(const FVector& OriginPoi
 	if (IsDrained()) return;
 	LastHitPointAfterCollision = DoHit(OriginPoint, EndPoint, HitCollisionChannel);
 	Server_DrainAmmo(1);
-	UE_LOG(LogTemp, Warning, TEXT("Hello from server :3"));	
 }
 
 void ULaserWeaponComponent::OnShoot()

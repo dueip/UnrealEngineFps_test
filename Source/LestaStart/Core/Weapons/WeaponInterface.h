@@ -36,6 +36,8 @@ public:
 	UFUNCTION(Server, Unreliable)
 	virtual void ServerShoot();
 	UFUNCTION(Server, Unreliable)
+	virtual void ServerShootAt(const FVector& Origin);
+	UFUNCTION(Server, Unreliable)
 	virtual void ServerReload();
 	UFUNCTION(Server, Unreliable)
 	virtual void ServerStopShooting();
