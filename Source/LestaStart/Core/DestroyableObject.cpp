@@ -7,6 +7,12 @@
 #include "Net/UnrealNetwork.h"
 
 
+void ADestroyableObject::ReceiveDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+	AController* EventInstigator, AActor* DamageCauser)
+{
+	TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
 // Sets default values
 ADestroyableObject::ADestroyableObject()
 {

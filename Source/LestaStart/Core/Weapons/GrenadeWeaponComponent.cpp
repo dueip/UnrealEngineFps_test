@@ -3,6 +3,7 @@
 
 #include "GrenadeWeaponComponent.h"
 
+#include "DamagableInterface.h"
 #include "WeaponHoldableInterface.h"
 #include "Chaos/SpatialAccelerationCollection.h"
 #include "Engine/DamageEvents.h"
@@ -121,11 +122,11 @@ void UGrenadeWeaponComponent::DoDamage_Implementation(const TArray<FHitResult>& 
 			
 			
 			AActor* DamageCauser = dynamic_cast<AActor*>(GetOuter());
-			if (IsValid(Hit.GetActor()) && Hit.GetActor()->FindComponentByClass<UHealthComponent>())
-			{
-				Hit.GetActor()->TakeDamage(CalculateCurrentDamageBasedOffCurrentCharge(),
+			if (IDamagableInterface* Damagable = dynamic_cast<IDamagableInterface*>(Hit.GetActor())) {
+				Damagable->ReceiveDamage(CalculateCurrentDamageBasedOffCurrentCharge(),
 					DamageEvent, nullptr, DamageCauser);
-			} 
+			}
+			
 		} 
 	}
 }

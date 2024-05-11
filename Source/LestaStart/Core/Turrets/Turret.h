@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "../HealthComponent.h"
 #include "Components/SphereComponent.h"
+#include "LestaStart/Core/Weapons/DamagableInterface.h"
 #include "Turret.generated.h"
 
 
@@ -21,19 +22,26 @@ enum class Modes
 };
 
 UCLASS()
-class LESTASTART_API ATurret : public AActor
+class LESTASTART_API ATurret : public AActor, public IDamagableInterface
 {
 	GENERATED_BODY()
 
 public:
 	//DECLARE_DELEGATE_RetVal(FCheckIfPawnIsInTheFOV);
 
+	virtual bool CanRecieveDamageFromFriendlies() const override;
+	virtual void ReceiveDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+		AController* EventInstigator, AActor* DamageCauser) override;
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UPROPERTY(EditDefaultsOnly, Category="Mode")
 	Modes BeginningMode;
 	UPROPERTY(EditAnywhere, Category="Animation")
 	float RotationSpeedWhenAttacking;
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bCanFriendlyFire;
 	// Sets default values for this actor's properties
 	ATurret();
 

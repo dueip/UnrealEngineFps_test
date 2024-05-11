@@ -14,6 +14,21 @@
 #include "Net/UnrealNetwork.h"
 
 
+bool ATurret::CanRecieveDamageFromFriendlies() const
+{
+	return bCanFriendlyFire;
+}
+
+void ATurret::ReceiveDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	if (!CanRecieveDamageFromFriendlies() && dynamic_cast<ThisClass*>(DamageCauser))
+	{
+		return;
+	}
+	TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
 void ATurret::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -29,6 +44,7 @@ ATurret::ATurret()
 	BeginningMode = Modes::None;
 	ViewRadius = 500.f;
 	FOV = 2 * UE_PI;
+	bCanFriendlyFire = false;
 	ScoutingRotationSpeed = 500.f;
 	RotationSpeedWhenAttacking = ScoutingRotationSpeed * 1.5f;
 	MaxHP = 0;

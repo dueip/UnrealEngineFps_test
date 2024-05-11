@@ -11,6 +11,7 @@
 #include "LestaStart/Core/Weapons/WeaponHoldableInterface.h"
 #include "LestaStart/Core/Weapons/WeaponInvenotryComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "LestaStart/Core/Weapons/DamagableInterface.h"
 #include "LestaCharacter.generated.h"
 
 
@@ -46,7 +47,11 @@ class UCameraComponent;
 
 /** Base Character class for the Lesta Start project. */
 UCLASS()
-class LESTASTART_API ALestaCharacter : public ACharacter, public IWeaponHoldableInterface
+class LESTASTART_API ALestaCharacter
+	:
+public ACharacter,
+public IWeaponHoldableInterface,
+public IDamagableInterface
 {
 	GENERATED_BODY()
 
@@ -55,6 +60,11 @@ class LESTASTART_API ALestaCharacter : public ACharacter, public IWeaponHoldable
 
 public:
 
+	virtual void ReceiveDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+		AController* EventInstigator, AActor* DamageCauser) override;
+
+	virtual bool CanRecieveDamageFromFriendlies() const override;
+	
 	UFUNCTION(Client, Reliable)
 	void ClientTestCase();
 	
@@ -166,7 +176,10 @@ protected:
 	TSubclassOf<UUserWidget> HudInfoWidget;
 	UPROPERTY()
 	TObjectPtr<UUserWidget> HudInfoWidget_generated;
-	
+
+	UPROPERTY(EditDefaultsOnly, Category="Health")
+	bool bCanFriendlyFire;
+
 	UFUNCTION(Client, Reliable)
 	virtual void ClientRemoveHUD();
 	/*

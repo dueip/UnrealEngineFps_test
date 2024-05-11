@@ -8,6 +8,7 @@
 #include "AssetTypeActions/AssetDefinition_SoundBase.h"
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
+#include "Engine/CoreSettings.h"
 #include "GameFramework/SpectatorPawn.h"
 #include "LestaStart/Core/HealthComponent.h"
 #include "LestaStart/Core/LestaGameMode.h"
@@ -31,6 +32,22 @@ void ALestaCharacter::ClientTestCase_Implementation()
 	
 }
 
+void ALestaCharacter::ReceiveDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	// Если мы можем закастить, то это значит, что наш красавец 
+	if (!CanRecieveDamageFromFriendlies() && dynamic_cast<ThisClass*>(DamageCauser))
+	{
+			return;
+	}
+	TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
+bool ALestaCharacter::CanRecieveDamageFromFriendlies() const
+{
+	return bCanFriendlyFire;
+}
+
 ALestaCharacter::ALestaCharacter()
 {
 	NetUpdateFrequency = 10.f;
@@ -47,7 +64,7 @@ ALestaCharacter::ALestaCharacter()
 
 	//JustForTesting = CreateDefaultSubobject<ULaserComponent>(TEXT("Laser"));
 
-	
+	bCanFriendlyFire = true;
 	
 	bReplicates = true;
 }

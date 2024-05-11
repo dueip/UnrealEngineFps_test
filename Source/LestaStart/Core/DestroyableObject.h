@@ -5,14 +5,17 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "HealthComponent.h"
+#include "Weapons/DamagableInterface.h"
 #include "DestroyableObject.generated.h"
 
 UCLASS()
-class LESTASTART_API ADestroyableObject : public AActor
+class LESTASTART_API ADestroyableObject : public AActor, public IDamagableInterface
 {
 	GENERATED_BODY()
 
 public:
+	virtual void ReceiveDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+		AController* EventInstigator, AActor* DamageCauser) override;
 	// Sets default values for this actor's properties
 	ADestroyableObject();
 

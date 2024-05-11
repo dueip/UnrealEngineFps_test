@@ -3,6 +3,7 @@
 
 #include "LaserWeaponComponent.h"
 
+#include "DamagableInterface.h"
 #include "Engine/DamageEvents.h"
 #include "WeaponHoldableInterface.h"
 #include "LestaStart/Core/HealthComponent.h"
@@ -40,11 +41,11 @@ void ULaserWeaponComponent::BeginPlay()
 {
 	
 	
+	SetIsReplicated(true);
 	Super::BeginPlay();
 	Laser->Deactivate();
 	BaseColor = Laser->GetColor();
 	Reload();
-	SetIsReplicated(true);
 	IWeaponHoldableInterface* Outer = dynamic_cast<IWeaponHoldableInterface*>(GetOuter());
 	if (Outer && Outer->CanHoldWeapon())
 	{
@@ -112,12 +113,9 @@ std::optional<FVector> ULaserWeaponComponent::DoHit(const FVector& SocketOrigin,
 	AActor* ActorThatDealtDamage = UECasts_Private::DynamicCast<AActor*>(GetOuter());
 	if (bWasThereAHit && Hit.bBlockingHit)
 	{
-		// Если есть компонент с ХП, то значит мы можем нанести урон
-		// Потом можно перенести в интерфейс
-		if (UHealthComponent* Health = Hit.GetActor()->FindComponentByClass<UHealthComponent>())
+		if (IDamagableInterface* Damagable = dynamic_cast<IDamagableInterface*>(Hit.GetActor()))
 		{
-			Hit.GetActor()->TakeDamage(DamageAmount, PointDamage, nullptr, ActorThatDealtDamage);
-			//Health->ServerSetHealth(Health->GetHealth() - DamageAmount);
+			Damagable->ReceiveDamage(DamageAmount, PointDamage, nullptr, ActorThatDealtDamage);
 		}
 		
 		return Hit.Location;
@@ -227,8 +225,6 @@ void ULaserWeaponComponent::ServerShoot_Implementation()
 void ULaserWeaponComponent::Multicast_DrawOnFire_Implementation()
 {
 	Laser->OnDraw();
-	//Laser->MulticastDrawOnAllClients();
-	UE_LOG(LogTemp, Warning, TEXT("Helloworld"))
 }
 
 void ULaserWeaponComponent::Server_DoHitWithoutOrigin_Implementation(const FVector& EndPoint,
