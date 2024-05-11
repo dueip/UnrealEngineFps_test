@@ -23,8 +23,15 @@ public:
 	UFUNCTION()
 	virtual ASpectatorPawn* SpawnSpectatorPawn() override;
 
+	virtual void ChangeState(FName NewState) override;
+	virtual void ClientGotoState_Implementation(FName NewState) override;
+	
+	virtual void ServerViewNextPlayer_Implementation() override;
+	
 	UFUNCTION(Server, Reliable)
 	void ServerVoteForRestart();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 protected:
 	/** Added input mapping context on startup. */
@@ -37,6 +44,9 @@ protected:
 	/** Priority of InputMapping. */
 	UPROPERTY(EditDefaultsOnly, Category = "Input", meta = (ClampMin = 0))
 	int32 InputMappingPriority = 0;
+
+	UPROPERTY(Replicated)
+	bool bWantsToSpectate = false;
 
 	virtual void BeginPlay() override;
 };

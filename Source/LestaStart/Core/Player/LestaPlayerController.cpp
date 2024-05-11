@@ -1,10 +1,14 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "LestaPlayerController.h"
+
+#include "BlueprintEditor.h"
 #include "EnhancedInputSubsystems.h"
 #include "LestaCharacter.h"
 #include "EntitySystem/MovieSceneEntitySystemRunner.h"
+#include "GameFramework/PlayerState.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 ALestaSpectator* ALestaPlayerController::SpawnSpectatorPawnDifferent()
 {
@@ -49,9 +53,48 @@ ASpectatorPawn* ALestaPlayerController::SpawnSpectatorPawn()
 		SpawnedSpectator->EnableInput(this);
 		SpawnedSpectator->SetupPlayerInputComponent(InputComponent);
 		SetupInputComponent();
+		if (PlayerState)
+		{
+			PlayerState->SetIsSpectator(true);
+			bWantsToSpectate = true;
+			ChangeState(NAME_Spectating);
+			ClientGotoState(NAME_Spectating);
+		}
+			
 	}
 	return SpawnedSpectator;
 }
+
+void ALestaPlayerController::ChangeState(FName NewState)
+{
+	Super::ChangeState(NewState);
+	
+}
+
+void ALestaPlayerController::ClientGotoState_Implementation(FName NewState)
+{
+	Super::ClientGotoState_Implementation(NewState);
+	
+}
+
+void ALestaPlayerController::ServerViewNextPlayer_Implementation()
+{
+	// TODO: For whatever reason whenever we try to actually fire this on a client our State is set to Inactive
+	// From whatever place that I cannot debug, so I'll leave this code here. At least for now.
+	ChangeState(NAME_Spectating);
+	ClientGotoState(NAME_Spectating);
+	//UE_LOG(LogTemp, Warning, TEXT("Is in state %i"), IsInState(NAME_Spectating));
+	Super::ServerViewNextPlayer_Implementation();
+}
+
+void ALestaPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ThisClass, bWantsToSpectate)
+}
+
+
+// TODO: Move to gamemode
 
 void ALestaPlayerController::ServerVoteForRestart_Implementation()
 {
@@ -60,16 +103,23 @@ void ALestaPlayerController::ServerVoteForRestart_Implementation()
 	if (LestaGameState)
 	{
 		LestaGameState->Vote(EVoteType::RestartGame);
+		
 		if (LestaGameState->GetVotedOnRestart() == LestaGameState->GetHowManyPlayersNeedToVoteOnRestart())
 		{
-			
+			if (LestaGameState->VoteEndedDelegate.IsBound())
+			{
+				LestaGameState->VoteEndedDelegate.Broadcast(EVoteType::RestartGame,
+					LestaGameState->GetVotedOnRestart(), LestaGameState->GetHowManyPlayersNeedToVoteOnRestart());
+			}
 			GetWorld()->ServerTravel(GetWorld()->GetMapName());
+			
 		}
 	}
 }
 
 void ALestaPlayerController::BeginPlay()
 {
+	bWantsToSpectate = false;
 	Super::BeginPlay();
 	if (const ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player))
 	{

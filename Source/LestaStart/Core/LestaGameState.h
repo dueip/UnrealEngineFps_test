@@ -14,6 +14,8 @@ enum class EVoteType
 	KickPlayer
 };
 
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FVoteEndedDelegate, EVoteType, /* Got votes */ int, /* Max votes */ int);
+
 /**
  * 
  */
@@ -32,7 +34,10 @@ public:
 	
 	//UFUNCTION(Server, Reliable)
 	void Vote(EVoteType VotedOnWhat);
+	
+	FVoteEndedDelegate VoteEndedDelegate;
 private:
 	UPROPERTY(Replicated)
 	int32 VotedOnRestartCount;
+	
 };

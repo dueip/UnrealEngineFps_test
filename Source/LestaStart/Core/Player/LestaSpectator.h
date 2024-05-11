@@ -27,6 +27,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION()
+	void OnPlayerSpectatingChanged();
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -38,6 +40,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<class UInputAction> RequestRestartAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<class UInputAction> RequestChangeSpectatingPlayer;
+
 protected:
 
 	UFUNCTION()

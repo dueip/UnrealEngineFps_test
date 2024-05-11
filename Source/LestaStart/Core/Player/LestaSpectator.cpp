@@ -40,6 +40,20 @@ void ALestaSpectator::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void ALestaSpectator::OnPlayerSpectatingChanged()
+{
+	if (ALestaPlayerController* PC = GetController<ALestaPlayerController>())
+	{
+		if (GetWorld() && GetWorld()->GetGameState())
+		{
+			if (true)//GetWorld()->GetGameState()->PlayerArray.Num() > 1)
+			{
+				PC->ServerViewNextPlayer();
+			}
+		}
+	}
+}
+
 // Called to bind functionality to input
 void ALestaSpectator::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -50,6 +64,7 @@ void ALestaSpectator::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	if (EIC)
 	{
 		EIC->BindAction(RequestRestartAction, ETriggerEvent::Triggered, this, &ThisClass::OnRestartRequested);
+		EIC->BindAction(RequestChangeSpectatingPlayer, ETriggerEvent::Triggered, this, &ThisClass::OnPlayerSpectatingChanged);
 	}
 }
 
