@@ -126,7 +126,7 @@ public:
 	
 	UFUNCTION()
 	void OnRep_DesiredPitchChanged(float NewPitch);
-	UPROPERTY(ReplicatedUsing=OnRep_DesiredPitchChanged)
+	UPROPERTY(Replicated)
 	float PitchAimOffset;
 	
 

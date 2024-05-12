@@ -3,15 +3,10 @@
 #include "LestaCharacter.h"
 
 #include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 #include "LestaPlayerController.h"
-#include "AssetTypeActions/AssetDefinition_SoundBase.h"
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
-#include "Engine/CoreSettings.h"
-#include "GameFramework/SpectatorPawn.h"
 #include "LestaStart/Core/HealthComponent.h"
-#include "LestaStart/Core/LestaGameMode.h"
 #include "LestaStart/Core/Weapons/LaserWeaponComponent.h"
 #include "LestaStart/Core/Weapons/WeaponInterface.h"
 #include "LestaStart/Core/Weapons/WeaponInvenotryComponent.h"
@@ -71,7 +66,7 @@ ALestaCharacter::ALestaCharacter()
 
 void ALestaCharacter::OnRep_DesiredPitchChanged(float NewPitch)
 {
-	AddControllerPitchInput(NewPitch);
+	//AddControllerPitchInput(NewPitch);
 	//AddActorLocalRotation({0, NewRotation.X, 0});
 	//AddActorLocalRotation({NewRotation.Y, 0, 0});
 }
@@ -80,6 +75,11 @@ void ALestaCharacter::OnRep_DesiredPitchChanged(float NewPitch)
 void ALestaCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+//	if (IsLocallyControlled() || HasAuthority()) {
+//		PitchAimOffset = GetControlRotation().Pitch;
+	//}
+
+//	AddControllerPitchInput( PitchAimOffset - GetActorRotation().Pitch); 
 }
 
 void ALestaCharacter::BeginPlay()
@@ -370,7 +370,7 @@ void ALestaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(ALestaCharacter, WeaponInventory);
 	DOREPLIFETIME(ALestaCharacter, CurrentlyActiveWeaponIndex);
 	DOREPLIFETIME(ALestaCharacter, HealthComponent);
-	DOREPLIFETIME(ALestaCharacter, PitchAimOffset);
+	DOREPLIFETIME_CONDITION(ALestaCharacter, PitchAimOffset, COND_SkipOwner);
 	DOREPLIFETIME(ALestaCharacter, bIsDead);
 	//DOREPLIFETIME(ALestaCharacter, JustForTesting);
 }
@@ -401,14 +401,7 @@ void ALestaCharacter::OnLookInput(const FInputActionInstance& InputActionInstanc
 	if (Input2D.IsNearlyZero()) return;
 	AddControllerYawInput(Input2D.X);
 	float Pitch = Input2D.Y;
-	if (HasAuthority())
-	{
-		PitchAimOffset = Pitch;	
-	}
-	else
-	{
-		ServerUpdateAimOffset(Pitch);
-	}
+	
 	AddControllerPitchInput(Pitch);
 	
 }
