@@ -45,8 +45,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input", meta = (ClampMin = 0))
 	int32 InputMappingPriority = 0;
 
+	UPROPERTY(EditDefaultsOnly)
+	float TimeForRestart;
+	
 	UPROPERTY(Replicated)
 	bool bWantsToSpectate = false;
+	FTimerHandle TravelTimer;
 
 	virtual void BeginPlay() override;
 };

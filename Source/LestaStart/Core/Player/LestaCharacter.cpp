@@ -23,7 +23,7 @@ void ALestaCharacter::ClientTestCase_Implementation()
 	SetActorTickEnabled(false);
 
 	ALestaPlayerController* PlayerController =  dynamic_cast<ALestaPlayerController*>(GetController());
-	if (PlayerController)
+	if (PlayerController && PlayerController->IsLocalPlayerController())
 	{
 		PlayerController->SpawnSpectatorPawn();
 		
@@ -65,7 +65,7 @@ ALestaCharacter::ALestaCharacter()
 	//JustForTesting = CreateDefaultSubobject<ULaserComponent>(TEXT("Laser"));
 
 	bCanFriendlyFire = true;
-	
+	bIsDead = false;
 	bReplicates = true;
 }
 
@@ -86,17 +86,18 @@ void ALestaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	// Устанавливает кол-во хп в рантайме потому что В таком случае установится то, что показывается в блюпринтах
+	HealthComponent->HealthChangedDelegate.AddUFunction(this, "OnRep_HealthComponent");
 	if (HasAuthority())
 	{
 		HealthComponent->SetHealth(MaxHP);
 	}
-	HealthComponent->HealthChangedDelegate.AddUFunction(this, "OnRep_HealthComponent");
 	CreateHUD();
 	
 }
 
 void ALestaCharacter::OnDead()
 {
+
 	OnShootingEnded();
 	bIsDead = true;
 	Destroy();
@@ -203,20 +204,14 @@ void ALestaCharacter::OnReload()
 
 void ALestaCharacter::OnRep_HealthComponent(int32 NewHP)
 {
-	// Put this here for now
-	if (HealthComponent->GetHealth() <= 0.f)
+	if (!bIsDead && HealthComponent->GetHealth() <= 0.f)
 	{
-		if (HasAuthority())
-		{
-			ClientTestCase();
-		}
-		
 		if (HasAuthority())
 		{
 			ServerOnDead();
 		}
-		
 	}
+	return;
 }
 
 void ALestaCharacter::ClientRemoveHUD_Implementation()
@@ -308,6 +303,8 @@ float ALestaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 		return 0;
 	}
 	HealthComponent->ServerSetHealth(HealthComponent->GetHealth() - DamageAmount);
+
+	
 	
 	return DamageAmount;
 }
@@ -324,6 +321,7 @@ int32 ALestaCharacter::GetHealth() const
 
 void ALestaCharacter::ServerOnDead_Implementation()
 {
+	ClientTestCase();
 	OnDead();
 }
 
@@ -372,7 +370,8 @@ void ALestaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(ALestaCharacter, WeaponInventory);
 	DOREPLIFETIME(ALestaCharacter, CurrentlyActiveWeaponIndex);
 	DOREPLIFETIME(ALestaCharacter, HealthComponent);
-	DOREPLIFETIME(ALestaCharacter, PitchAimOffset)
+	DOREPLIFETIME(ALestaCharacter, PitchAimOffset);
+	DOREPLIFETIME(ALestaCharacter, bIsDead);
 	//DOREPLIFETIME(ALestaCharacter, JustForTesting);
 }
 
@@ -426,6 +425,7 @@ FVector ALestaCharacter::CalculateDesiredEndPoint(ULaserWeaponComponent* LaserWe
 	LaserWeapon->DesiredEndPoint = DesiredEndPoint;
 	return DesiredEndPoint;
 }
+
 
 void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstance)
 {

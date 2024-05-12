@@ -99,6 +99,7 @@ void ALestaPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 void ALestaPlayerController::ServerVoteForRestart_Implementation()
 {
 	if (!GetWorld()) return;
+	if (GetWorldTimerManager().IsTimerActive(TravelTimer)) { return; }
 	ALestaGameState* LestaGameState = dynamic_cast<ALestaGameState*>(GetWorld()->GetGameState());
 	if (LestaGameState)
 	{
@@ -111,7 +112,16 @@ void ALestaPlayerController::ServerVoteForRestart_Implementation()
 				LestaGameState->VoteEndedDelegate.Broadcast(EVoteType::RestartGame,
 					LestaGameState->GetVotedOnRestart(), LestaGameState->GetHowManyPlayersNeedToVoteOnRestart());
 			}
-			GetWorld()->ServerTravel(GetWorld()->GetMapName());
+			auto* World = GetWorld();
+			GetWorldTimerManager().SetTimer(
+				TravelTimer,
+				[World]()
+				{
+					World->ServerTravel(World->GetMapName());
+				},
+				TimeForRestart,
+				false);
+			
 			
 		}
 	}

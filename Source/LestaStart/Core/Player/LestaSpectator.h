@@ -44,7 +44,6 @@ public:
 	TObjectPtr<class UInputAction> RequestChangeSpectatingPlayer;
 
 protected:
-
 	UFUNCTION()
 	void OnRestartRequested();
 

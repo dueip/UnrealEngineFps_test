@@ -5,7 +5,8 @@
 void ALestaGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-	JoinedPlayers.Add(NewPlayer);
+
+		JoinedPlayers.Add(NewPlayer);
 }
 
 void ALestaGameMode::Logout(AController* Exiting)

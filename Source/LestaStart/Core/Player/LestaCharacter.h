@@ -210,6 +210,8 @@ protected:
 
 	UFUNCTION()
 	void OnRep_HealthComponent(int32 NewHP);	
+
+	
 	UFUNCTION()
 	void ReloadWeapon();
 	bool IsReloading() const;
@@ -235,6 +237,8 @@ private:
 	UFUNCTION(Server, Unreliable)
 	void ServerUpdateAimOffset(float NewPitch);
 
+
+	UPROPERTY(Replicated)
 	bool bIsDead = false;
 	TEnumAsByte<EPlayerState> PlayerState;
 };

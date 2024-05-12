@@ -80,6 +80,8 @@ void ALestaSpectator::ServerVoteOnRestarting_Implementation()
 
 void ALestaSpectator::OnRestartRequested()
 {
+	// We dont want sㅋerver to be able to vote in anyways.
+	if (!IsLocallyControlled()) { return; }
 	if (!bHasAlreadyVoted)
 	{
 		if (ALestaPlayerController* LestaPCPlayerController = dynamic_cast<ALestaPlayerController*>(GetController()))
