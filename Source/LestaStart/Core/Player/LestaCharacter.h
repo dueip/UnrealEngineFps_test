@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputAction.h"
-#include "DeadPlayer.h"
 #include "LestaStart/Core/HealthComponent.h"
 #include "LestaStart/Core/Renderers/LaserComponent.h"
 #include "LestaStart/Core/Weapons/WeaponHoldableInterface.h"
@@ -211,21 +210,10 @@ protected:
 	void ReloadWeapon();
 	bool IsReloading() const;
 
-	UPROPERTY(EditDefaultsOnly, Category="Death")
-	TSubclassOf<ADeadPlayer> DeadPlayerToSpawn;
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	FVector CalculateDesiredEndPoint(class ULaserWeaponComponent* LaserWeapon);
-	
-	
-	UPROPERTY(EditDefaultsOnly, Replicated)
-	TObjectPtr<class ULaserWeaponComponent> LaserWeaponTry;
-	
-	UFUNCTION(BlueprintNativeEvent)
-	void TEST_FUNCTION();
-	//UPROPERTY(EditDefaultsOnly)
-	//ULaserComponent* JustForTesting;
+
 private:
 	FTimerHandle ReloadTimerHandle;
 

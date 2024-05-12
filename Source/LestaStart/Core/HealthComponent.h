@@ -44,9 +44,6 @@ public:
 	FHealthChangedDelegate HealthChangedDelegate;
 protected:
 	
-	UPROPERTY(EditAnywhere, Category="Health", ReplicatedUsing=OnRep_HP)
+	UPROPERTY(EditAnywhere, Category="Health", Replicated)
 	int32 HealthPoints;
-
-	UFUNCTION()
-	void OnRep_HP(int32 NewHp);
 };

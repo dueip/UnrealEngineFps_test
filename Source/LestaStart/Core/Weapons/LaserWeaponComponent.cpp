@@ -93,7 +93,6 @@ float ULaserWeaponComponent::GetReloadTime()
 
 void ULaserWeaponComponent::DrawShooting()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Draw shooting from laser got called once :)"));
 	Laser->OnDraw();
 }
 

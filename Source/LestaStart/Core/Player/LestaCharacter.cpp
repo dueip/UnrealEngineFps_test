@@ -226,11 +226,6 @@ void ALestaCharacter::ClientRemoveHUD_Implementation()
 	CollectGarbage(RF_NoFlags);
 }
 
-void ALestaCharacter::TEST_FUNCTION_Implementation()
-{
-	return;
-}
-
 
 void ALestaCharacter::OnSwitchWeapons(const FInputActionValue& InputActionValue)
 {
@@ -303,8 +298,6 @@ float ALestaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 		return 0;
 	}
 	HealthComponent->ServerSetHealth(HealthComponent->GetHealth() - DamageAmount);
-
-	
 	
 	return DamageAmount;
 }
@@ -366,12 +359,10 @@ void ALestaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ALestaCharacter, MaxHP);
-	DOREPLIFETIME(ALestaCharacter, LaserWeaponTry);
 	DOREPLIFETIME(ALestaCharacter, WeaponInventory);
 	DOREPLIFETIME(ALestaCharacter, CurrentlyActiveWeaponIndex);
 	DOREPLIFETIME(ALestaCharacter, HealthComponent);
 	DOREPLIFETIME(ALestaCharacter, bIsDead);
-	//DOREPLIFETIME(ALestaCharacter, JustForTesting);
 }
 
 

@@ -290,15 +290,11 @@ void ATurret::ServerRequestChangeStateTo_Implementation(const Modes Mode)
 void ATurret::OnHealthChanged(float NewHealth)
 {
 	
-	//UE_LOG(LogTemp, Warning, TEXT("%s's new health is: %f"), GetName().GetCharArray().GetData(), NewHealth);
 }
 
 void ATurret::OnEnteredView(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	
-	//if (dynamic_cast<ACharacter*>(OtherActor))
-	//{
 		if (!ActorCurrentlyBeingAttacked)
 		{
 			ActorLockedOnto = OtherActor;
@@ -311,8 +307,6 @@ void ATurret::OnEnteredView(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 				ServerRequestChangeStateTo(Modes::Activated);
 			}
 		}
-		
-	//}
 }
 
 void ATurret::OnExitedView(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,

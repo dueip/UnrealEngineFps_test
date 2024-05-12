@@ -27,8 +27,6 @@ UHealthComponent::UHealthComponent()
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	//HealthPoints = HealthPoints;
-	//SetHealth(HealthPoints);
 }
 
 
@@ -71,10 +69,5 @@ void UHealthComponent::MulticastEnsureAllClientsKnowThatHealthChanged_Implementa
 	{
 		HealthChangedDelegate.Broadcast(NewHP);
 	}
-}
-
-void UHealthComponent::OnRep_HP(int32 NewHP)
-{
-	return;
 }
 
