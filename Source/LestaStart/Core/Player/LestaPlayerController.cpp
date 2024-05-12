@@ -11,39 +11,6 @@
 #include "LestaStart/Core/LestaGameMode.h"
 #include "Net/UnrealNetwork.h"
 
-ALestaSpectator* ALestaPlayerController::SpawnSpectatorPawnDifferent()
-{
-	ALestaSpectator* SpawnedSpectator = nullptr;
-	bool bDoesSpectatorPawnExist = GetSpectatorPawn() == nullptr;
-	bool bIsLocal = IsLocalController();
-	if (bDoesSpectatorPawnExist && bIsLocal && GetWorld())
-	{
-		FActorSpawnParameters Params;
-		Params.ObjectFlags |= RF_Transient;
-		Params.Owner = this;
-		//SpawnedSpectator = GetWorld()->SpawnActor<ALestaSpectator>(SpectatorToSpawn->GetDefaultObject<ALestaSpectator>()->GetClass(),
-		//
-		//	GetSpawnLocation(), GetControlRotation(), Params);
-		
-	
-		if (SpawnedSpectator)
-		{
-			SpawnedSpectator->SetReplicates(false);
-			SpawnedSpectator->PossessedBy(this);
-			SpawnedSpectator->EnableInput(this);
-			SetupInputComponent();	
-			SpawnedSpectator->SetupPlayerInputComponent(InputComponent);
-
-			
-
-			ChangeState(NAME_Spectating);
-			ClientGotoState(NAME_Spectating);
-
-		} 
-	}
-	
-	return SpawnedSpectator;
-}
 
 ASpectatorPawn* ALestaPlayerController::SpawnSpectatorPawn()
 {
@@ -84,7 +51,6 @@ void ALestaPlayerController::ServerViewNextPlayer_Implementation()
 	// From whatever place that I cannot debug, so I'll leave this code here. At least for now.
 	ChangeState(NAME_Spectating);
 	ClientGotoState(NAME_Spectating);
-	//UE_LOG(LogTemp, Warning, TEXT("Is in state %i"), IsInState(NAME_Spectating));
 	Super::ServerViewNextPlayer_Implementation();
 }
 
@@ -99,6 +65,7 @@ void ALestaPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 
 void ALestaPlayerController::ServerVoteForRestart_Implementation()
 {
+	if (bHasAlreadyVoted) return;
 	if (!GetWorld()) return;
 	
 	ALestaGameState* LestaGameState = dynamic_cast<ALestaGameState*>(GetWorld()->GetGameState());
@@ -112,6 +79,7 @@ void ALestaPlayerController::ServerVoteForRestart_Implementation()
 	
 	if (LestaGameState && LestaGameMode)
 	{
+		bHasAlreadyVoted = true;
 		LestaGameState->Vote(EVoteType::RestartGame);
 		
 		if (LestaGameState->GetVotedOnRestart() == LestaGameMode->GetHowManyPlayersNeedToVoteOnRestart())

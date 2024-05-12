@@ -19,8 +19,6 @@ class LESTASTART_API ALestaPlayerController : public APlayerController
 	// Blueprint PlayerController class is derived from the ALestaPlayerController
 public:
 	UFUNCTION()
-	ALestaSpectator* SpawnSpectatorPawnDifferent();
-	UFUNCTION()
 	virtual ASpectatorPawn* SpawnSpectatorPawn() override;
 
 	virtual void ChangeState(FName NewState) override;
@@ -48,7 +46,8 @@ protected:
 	
 	UPROPERTY(Replicated)
 	bool bWantsToSpectate = false;
-	
+
+	bool bHasAlreadyVoted = false;
 
 	virtual void BeginPlay() override;
 };

@@ -157,6 +157,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UInputAction> ReloadInputAction;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	TObjectPtr<UInputAction> VoteForRestartAction;
 	/*
 	 * HEALTH
 	 */
@@ -198,6 +201,7 @@ protected:
 	virtual void OnChooseFirstWeapon();
 	virtual void OnChooseSecondWeapon();
 	virtual void OnReload();
+	virtual void OnVotedForRestart();
 
 	UFUNCTION()
 	void OnRep_HealthComponent(int32 NewHP);	

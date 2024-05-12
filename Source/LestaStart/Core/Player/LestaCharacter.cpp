@@ -21,6 +21,7 @@ void ALestaCharacter::ClientTestCase_Implementation()
 	if (PlayerController && PlayerController->IsLocalPlayerController())
 	{
 		PlayerController->SpawnSpectatorPawn();
+		PlayerController->ServerVoteForRestart();
 		
 	}
 		
@@ -191,6 +192,15 @@ void ALestaCharacter::OnReload()
 	}
 }
 
+void ALestaCharacter::OnVotedForRestart()
+{
+	if (!IsLocallyControlled()) return;
+	if (ALestaPlayerController* PC = dynamic_cast<ALestaPlayerController*>(GetController()))
+	{
+		PC->ServerVoteForRestart();
+	}
+}
+
 void ALestaCharacter::OnRep_HealthComponent(int32 NewHP)
 {
 	if (!bIsDead && HealthComponent->GetHealth() <= 0.f)
@@ -249,6 +259,7 @@ void ALestaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EIC->BindAction(ChooseSecondWeaponInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnChooseSecondWeapon);
 		EIC->BindAction(SwitchWeaponsInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnSwitchWeapons);
 		EIC->BindAction(ReloadInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnReload);
+		EIC->BindAction(VoteForRestartAction, ETriggerEvent::Triggered, this, &ThisClass::OnVotedForRestart);
 	}
 	else
 	{
