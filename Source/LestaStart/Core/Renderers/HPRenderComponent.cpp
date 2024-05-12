@@ -15,7 +15,7 @@ UHPRenderComponent::UHPRenderComponent()
 	// off to improve performance if you don't need them.
 	SetText( FText::FromString(MakeActualStringFromTemplate(0)));
 	SetIsReplicatedByDefault(true);
-	
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 FString UHPRenderComponent::MakeActualStringFromTemplate(const float NewHP) const
@@ -51,6 +51,8 @@ void UHPRenderComponent::BeginPlay()
 		if (HealthComponent)
 		{
 			HealthComponent->HealthChangedDelegate.AddUFunction(this, FName("OnHealthChanged"));
+			// A small hack to make every HP display correctly when a new player joins in 
+			SetText(FText::FromString(MakeActualStringFromTemplate(HealthComponent->GetHealth())));
 		}
 	}
 	// ...
@@ -62,7 +64,7 @@ void UHPRenderComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                            FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	
 	// ...
 }
 

@@ -75,7 +75,6 @@ void UHealthComponent::MulticastEnsureAllClientsKnowThatHealthChanged_Implementa
 
 void UHealthComponent::OnRep_HP(int32 NewHP)
 {
-	MulticastEnsureAllClientsKnowThatHealthChanged(NewHP);
 	return;
 }
 
