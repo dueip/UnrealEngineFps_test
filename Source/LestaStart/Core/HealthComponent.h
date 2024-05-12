@@ -28,14 +28,22 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION(BlueprintSetter)
-	void SetHealth(float NewHP);
+	//UFUNCTION(Server, Unreliable)
+	void SetHealth(int32 NewHP);
 	UFUNCTION(BlueprintGetter)
 	float GetHealth() const { return HealthPoints;};
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastEnsureAllClientsKnowThatHealthChanged(int32 NewHP);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetHealth(int32 NewHP);
 	
 	FHealthChangedDelegate HealthChangedDelegate;
 protected:
 	
-	UPROPERTY(EditAnywhere, Category="Health")
-	float HealthPoints; 
+	UPROPERTY(EditAnywhere, Category="Health", Replicated)
+	int32 HealthPoints;
 };

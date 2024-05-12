@@ -11,6 +11,7 @@ AGrenadeTurret::AGrenadeTurret()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
 }
 
 // Called when the game starts or when spawned
@@ -19,7 +20,7 @@ void AGrenadeTurret::BeginPlay()
 	Super::BeginPlay();
 	if (WeaponComponent)
 	{
-		WeaponComponent->StopShooting();
+		WeaponComponent->ServerStopShooting();
 	}
 	
 }
@@ -29,7 +30,7 @@ void AGrenadeTurret::OnShoot()
 	
 	if (WeaponComponent)
 	{
-		WeaponComponent->Shoot();
+		WeaponComponent->ServerShoot();
 	}
 }
 
@@ -37,31 +38,36 @@ void AGrenadeTurret::OnStopShooting()
 {
 	if (WeaponComponent)
 	{
-		WeaponComponent->StopShooting();
+		WeaponComponent->ServerStopShooting();
 	}
 	TimerBetweenShotsHandle.Invalidate();
-	Destroy();
+	
 }
 
 
 // Called every frame
 void AGrenadeTurret::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
 	
-	if (CurrentMode == Modes::Attacking)
+	
+	if (CurrentMode == Modes::Attacking || bHasBeenTriggered)
 	{
+		bHasBeenTriggered = true;
 		OnShoot();
-
-		
-		if (WeaponComponent->IsAtFullCapacity()) WeaponComponent->StopShooting();
-		
-		
-		if (WeaponComponent && !WeaponComponent->IsCurrentlyShooting())
+		if (WeaponComponent)
 		{
-			OnStopShooting();
-		} 
-		
+			WeaponComponent->MulticastDrawShooting();
+			if (WeaponComponent->IsAtFullCapacity())
+			{
+				WeaponComponent->ServerStopShooting();
+				ServerRequestDestroy();
+			}
+		}
 	}
+	if (!bHasBeenTriggered)
+	{
+		Super::Tick(DeltaTime);
+	}
+	
 }
 

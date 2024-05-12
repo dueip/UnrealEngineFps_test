@@ -4,6 +4,7 @@
 #include "LaserComponent.h"
 
 #include "Evaluation/IMovieSceneEvaluationHook.h"
+#include "Net/UnrealNetwork.h"
 
 
 // Sets default values for this component's properties
@@ -13,7 +14,9 @@ ULaserComponent::ULaserComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 	Thickness = 5.f;
+	SetIsReplicatedByDefault(true);
 	// ...
+	
 }
 
 
@@ -31,19 +34,27 @@ void ULaserComponent::BeginPlay()
 void ULaserComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	//MulticastDrawOnAllClients();
+	
+}
 
+void ULaserComponent::MulticastDrawOnAllClients_Implementation()
+{
+	OnDraw();
+}
+
+void ULaserComponent::OnDraw()
+{
 	const UWorld* const World =  GetWorld();
-	const AActor* Owner = GetOwner();
-	if (IsValid(World) && IsValid(Owner))
-	{
-		const FVector OwnerPosition = Owner->GetTransform().GetLocation();
-		DrawDebugLine(World, BeginPosition, EndPosition, Color,
-			false, 0, 0, Thickness);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("World or Owner is invalid"));
-	}
+    	if (IsValid(World))
+    	{
+    		DrawDebugLine(World, BeginPosition, EndPosition, Color,
+    			false, 0, 0, Thickness);
+    	}
+    	else
+    	{
+    		UE_LOG(LogTemp, Warning, TEXT("World is invalid"));
+    	}
 }
 
 void ULaserComponent::SetOrigin(const FVector& NewOrigin)
@@ -75,4 +86,13 @@ void ULaserComponent::Move(const FVector& MoveVector)
 {
 	BeginPosition += MoveVector;
 	EndPosition += MoveVector;
+}
+
+void ULaserComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ULaserComponent, BeginPosition);
+	DOREPLIFETIME(ULaserComponent, EndPosition);
+	DOREPLIFETIME(ULaserComponent, Color);
+	DOREPLIFETIME(ULaserComponent, Thickness);
 }

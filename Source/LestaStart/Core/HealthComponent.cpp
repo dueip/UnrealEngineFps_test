@@ -3,14 +3,21 @@
 
 #include "HealthComponent.h"
 
+#include "InterchangeResult.h"
+#include "GameFramework/GameSession.h"
+#include "Net/UnrealNetwork.h"
+#include "Settings/LevelEditorPlayNetworkEmulationSettings.h"
+
 
 // Sets default values for this component's properties
 UHealthComponent::UHealthComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
+	
 	PrimaryComponentTick.bCanEverTick = true;
-	SetHealth(0.f);
+	HealthPoints = 0.f;
+	SetIsReplicatedByDefault(true);
 	// ...
 }
 
@@ -32,13 +39,35 @@ void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// ...
 }
 
-void UHealthComponent::SetHealth(float NewHP)
+void UHealthComponent::SetHealth(int32 NewHP)
+{
+	HealthPoints = NewHP;
+	if (HealthChangedDelegate.IsBound())
+	{
+		HealthChangedDelegate.Broadcast(NewHP);
+	}
+	MulticastEnsureAllClientsKnowThatHealthChanged(NewHP);
+}
+
+
+void UHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UHealthComponent, HealthPoints);
+}
+
+void UHealthComponent::ServerSetHealth_Implementation(int32 NewHP)
+{
+	
+	HealthPoints = NewHP;
+	MulticastEnsureAllClientsKnowThatHealthChanged(NewHP);	
+}
+
+void UHealthComponent::MulticastEnsureAllClientsKnowThatHealthChanged_Implementation(int32 NewHP)
 {
 	if (HealthChangedDelegate.IsBound())
 	{
 		HealthChangedDelegate.Broadcast(NewHP);
 	}
-	HealthPoints = NewHP;
-	
 }
 

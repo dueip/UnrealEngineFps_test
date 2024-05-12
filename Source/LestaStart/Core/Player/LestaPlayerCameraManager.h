@@ -11,7 +11,7 @@ UCLASS()
 class LESTASTART_API ALestaPlayerCameraManager : public APlayerCameraManager
 {
 	GENERATED_BODY()
-
+	ALestaPlayerCameraManager();
 	// You can extend this class if required
 	// Blueprint PlayerCameraManager class is derived from the ALestaPlayerCameraManager
 };

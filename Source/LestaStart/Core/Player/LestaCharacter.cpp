@@ -3,14 +3,46 @@
 #include "LestaCharacter.h"
 
 #include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 #include "LestaPlayerController.h"
-#include "AssetTypeActions/AssetDefinition_SoundBase.h"
+#include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "LestaStart/Core/HealthComponent.h"
 #include "LestaStart/Core/Weapons/LaserWeaponComponent.h"
 #include "LestaStart/Core/Weapons/WeaponInterface.h"
 #include "LestaStart/Core/Weapons/WeaponInvenotryComponent.h"
+#include "Net/UnrealNetwork.h"
+
+void ALestaCharacter::ClientTestCase_Implementation()
+{
+	SetActorHiddenInGame(true);
+	SetActorTickEnabled(false);
+
+	ALestaPlayerController* PlayerController =  dynamic_cast<ALestaPlayerController*>(GetController());
+	if (PlayerController && PlayerController->IsLocalPlayerController())
+	{
+		PlayerController->SpawnSpectatorPawn();
+		PlayerController->ServerVoteForRestart();
+		
+	}
+		
+	
+}
+
+void ALestaCharacter::ReceiveDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	// Если мы можем закастить, то это значит, что наш красавец 
+	if (!CanRecieveDamageFromFriendlies() && dynamic_cast<ThisClass*>(DamageCauser))
+	{
+			return;
+	}
+	TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
+bool ALestaCharacter::CanRecieveDamageFromFriendlies() const
+{
+	return bCanFriendlyFire;
+}
 
 ALestaCharacter::ALestaCharacter()
 {
@@ -25,50 +57,41 @@ ALestaCharacter::ALestaCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("MainCamera"));
 	CameraComponent->bUsePawnControlRotation = true; // Camera rotation is synchronized with Player Controller rotation
 	CameraComponent->SetupAttachment(GetMesh());
+
+	//JustForTesting = CreateDefaultSubobject<ULaserComponent>(TEXT("Laser"));
+
+	bCanFriendlyFire = true;
+	bIsDead = false;
+	bReplicates = true;
 }
+
 
 void ALestaCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>())
-	{
-		// Assuming LaserWeapon and CameraComponent are valid and accessible
-		FVector CameraCenter = CameraComponent->GetComponentLocation();
-		FVector CameraForward = CameraComponent->GetForwardVector();
-
-		// Calculate the endpoint by extending the camera's forward direction by the laser's length
-		FVector DesiredEndPoint = CameraCenter + (CameraForward * LaserWeapon->GetLaserLength());
-		// Now set the DesiredEndPoint of the LaserWeapon
-		LaserWeapon->DesiredEndPoint = DesiredEndPoint;
-	}
 }
 
 void ALestaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	// Устанавливает кол-во хп в рантайме потому что В таком случае установится то, что показывается в блюпринтах
-	HealthComponent->SetHealth(MaxHP);
+	HealthComponent->HealthChangedDelegate.AddUFunction(this, "OnRep_HealthComponent");
+	if (HasAuthority())
+	{
+		HealthComponent->SetHealth(MaxHP);
+	}
 	CreateHUD();
 	
 }
 
 void ALestaCharacter::OnDead()
 {
-	OnShootingEnded();	
-	if (DeadPlayerToSpawn)
-	{
-		ADeadPlayer* DeadPlayer = GetWorld()->SpawnActor<ADeadPlayer>(DeadPlayerToSpawn,
-			GetActorLocation(), GetActorRotation());
-		GetController()->Possess(DeadPlayer);
-		DeadPlayer->AfterPossesed();
-		//DeadPlayer->SetupPlayerInputComponent(GetController()->InputComponent);
-	}
-	
-	SetActorHiddenInGame(true);
-	SetActorTickEnabled(false);
-	SetActorEnableCollision(false);
+
+	OnShootingEnded();
 	bIsDead = true;
+	Destroy();
+	
 }
 
 int32 ALestaCharacter::CycleWeaponsIndex(int32 Index) const
@@ -92,9 +115,22 @@ int32 ALestaCharacter::CycleWeaponsIndex(int32 Index) const
 	return std::abs(Index);
 }
 
-void ALestaCharacter::CreateHUD_Implementation()
+void ALestaCharacter::Server_DealDamage_Implementation(float DamageAmount, FDamageEvent const& DamageEvent,
+	AController* EventInstigator, AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Please implement"));
+	TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void ALestaCharacter::CreateHUD()
+{
+	if (!GetWorld()) return;
+	if (GEngine->GetNetMode(GetWorld()) == NM_DedicatedServer)
+	{
+		return;
+	}
+	WIDGET_ADD_TO_HUD(StatsWidget);
+	WIDGET_ADD_TO_HUD(WeaponInfoWidget);
+	WIDGET_ADD_TO_HUD(HudInfoWidget);
 }
 
 void ALestaCharacter::OnShootingEnded()
@@ -102,7 +138,7 @@ void ALestaCharacter::OnShootingEnded()
 	IWeaponInterface* const CurrentlyActiveWeapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
 	if (CurrentlyActiveWeapon)
 	{
-		CurrentlyActiveWeapon->StopShooting();
+			CurrentlyActiveWeapon->ServerStopShooting();
 	}
 	
 }
@@ -133,7 +169,7 @@ bool ALestaCharacter::IsReloading() const
 void ALestaCharacter::ReloadWeapon()
 {
 	IWeaponInterface* Weapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
-	Weapon->Reload();
+	Weapon->ServerReload();
 }
 
 
@@ -155,6 +191,41 @@ void ALestaCharacter::OnReload()
 		}
 	}
 }
+
+void ALestaCharacter::OnVotedForRestart()
+{
+	if (!IsLocallyControlled()) return;
+	if (ALestaPlayerController* PC = dynamic_cast<ALestaPlayerController*>(GetController()))
+	{
+		PC->ServerVoteForRestart();
+	}
+}
+
+void ALestaCharacter::OnRep_HealthComponent(int32 NewHP)
+{
+	if (!bIsDead && HealthComponent->GetHealth() <= 0.f)
+	{
+		if (HasAuthority())
+		{
+			ServerOnDead();
+		}
+	}
+	return;
+}
+
+void ALestaCharacter::ClientRemoveHUD_Implementation()
+{
+	if (!GetWorld()) return;
+	if (GEngine->GetNetMode(GetWorld()) == NM_DedicatedServer)
+	{
+		return;
+	}
+	WIDGET_REMOVE_FROM_HUD(WeaponInfoWidget);
+	WIDGET_REMOVE_FROM_HUD(StatsWidget);
+	WIDGET_REMOVE_FROM_HUD(HudInfoWidget);
+	CollectGarbage(RF_NoFlags);
+}
+
 
 void ALestaCharacter::OnSwitchWeapons(const FInputActionValue& InputActionValue)
 {
@@ -183,12 +254,21 @@ void ALestaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EIC->BindAction(ChooseSecondWeaponInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnChooseSecondWeapon);
 		EIC->BindAction(SwitchWeaponsInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnSwitchWeapons);
 		EIC->BindAction(ReloadInputAction, ETriggerEvent::Triggered, this, &ThisClass::OnReload);
+		EIC->BindAction(VoteForRestartAction, ETriggerEvent::Triggered, this, &ThisClass::OnVotedForRestart);
 	}
 	else
 	{
 		// Print error message into log
 		// You can read more here: https://dev.epicgames.com/documentation/en-us/unreal-engine/logging-in-unreal-engine
 			UE_LOG(LogInput, Error, TEXT("Unexpected input component class: %s"), *GetFullNameSafe(PlayerInputComponent))
+	}
+}
+
+void ALestaCharacter::MulticastDrawShootOnAllClients_Implementation(UObject* Weapon)
+{
+	if (IWeaponInterface* WeaponInt = dynamic_cast<IWeaponInterface*>(Weapon))
+	{
+		WeaponInt->DrawShooting();
 	}
 }
 
@@ -205,6 +285,7 @@ bool ALestaCharacter::CanHoldWeapon() const
 
 bool ALestaCharacter::SetWeapon(IWeaponInterface* Weapon)
 {
+	
 	WeaponInventory->PushWeapon(Weapon);
 	return (Weapon != nullptr);
 }
@@ -212,18 +293,31 @@ bool ALestaCharacter::SetWeapon(IWeaponInterface* Weapon)
 float ALestaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	AActor* DamageCauser)
 {
-	HealthComponent->SetHealth(HealthComponent->GetHealth() - DamageAmount);
-	if (HealthComponent->GetHealth() < 0.f)
+	if (!DamageCauser->HasAuthority())
 	{
-		OnDead();
+		return 0;
 	}
+	HealthComponent->ServerSetHealth(HealthComponent->GetHealth() - DamageAmount);
+	
 	return DamageAmount;
+}
+
+FString ALestaCharacter::GetHealthText() const
+{
+	return FString::FromInt(GetHealth());
 }
 
 int32 ALestaCharacter::GetHealth() const
 {
 	return (HealthComponent->GetHealth() < 0.f ? 0 : HealthComponent->GetHealth()) ;
 }
+
+void ALestaCharacter::ServerOnDead_Implementation()
+{
+	ClientTestCase();
+	OnDead();
+}
+
 
 FString ALestaCharacter::GetWeaponName() const
 {
@@ -256,6 +350,22 @@ float ALestaCharacter::CurrentWeaponAmmo() const
 	return CurrentDrainage <= 0.f ? 0 : CurrentDrainage;
 }
 
+void ALestaCharacter::RequestSpawnSpectator()
+{
+	
+}
+
+void ALestaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ALestaCharacter, MaxHP);
+	DOREPLIFETIME(ALestaCharacter, WeaponInventory);
+	DOREPLIFETIME(ALestaCharacter, CurrentlyActiveWeaponIndex);
+	DOREPLIFETIME(ALestaCharacter, HealthComponent);
+	DOREPLIFETIME(ALestaCharacter, bIsDead);
+}
+
+
 void ALestaCharacter::OnMoveInput(const FInputActionInstance& InputActionInstance)
 {
 	// Controller rotation Yaw determines which direction Character is facing
@@ -270,24 +380,65 @@ void ALestaCharacter::OnMoveInput(const FInputActionInstance& InputActionInstanc
 	AddMovementInput(ForwardDirection * Input2D.X + RightDirection * Input2D.Y);
 }
 
+
 void ALestaCharacter::OnLookInput(const FInputActionInstance& InputActionInstance)
 {
 	const FVector2D Input2D = InputActionInstance.GetValue().Get<FVector2D>();
+	if (Input2D.IsNearlyZero()) return;
 	AddControllerYawInput(Input2D.X);
-	AddControllerPitchInput(Input2D.Y);
+	const float Pitch = Input2D.Y;
+	AddControllerPitchInput(Pitch);
 	
 }
+
+FVector ALestaCharacter::CalculateDesiredEndPoint(ULaserWeaponComponent* LaserWeapon)
+{
+	// Assuming LaserWeapon and CameraComponent are valid and accessible
+	FVector CameraCenter = CameraComponent->GetComponentLocation();
+	FVector CameraForward = CameraComponent->GetForwardVector();
+
+	// Calculate the endpoint by extending the camera's forward direction by the laser's length
+	FVector DesiredEndPoint = CameraCenter + (CameraForward * LaserWeapon->GetLaserLength());
+	// Now set the DesiredEndPoint of the LaserWeapon
+	LaserWeapon->DesiredEndPoint = DesiredEndPoint;
+	return DesiredEndPoint;
+}
+
 
 void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstance)
 {
 	IWeaponInterface* const CurrentlyActiveWeapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
 	if (CurrentlyActiveWeapon)
 	{
-		if (IsReloading()) { CurrentlyActiveWeapon->StopShooting(); return;}
+		if (IsReloading())
+		{
+		 return;
+		}
+
+		if (CurrentlyActiveWeapon->IsDrained())
+		{
+			return;
+		}
+		
 		// Можем стрелялть только если оружие нам разрешает (т.е. в большинстве случаев у него есть патроны)
-		if (!CurrentlyActiveWeapon->IsDrained())
-			CurrentlyActiveWeapon->Shoot();
-		else
-			CurrentlyActiveWeapon->StopShooting();
+		ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>();
+		const bool bIsCurrentWeaponLaser = LaserWeapon && (CurrentlyActiveWeapon == LaserWeapon);
+
+		USceneComponent* WeaponComp = dynamic_cast<USceneComponent*>(CurrentlyActiveWeapon);
+		const FVector Origin = WeaponComp->GetSocketLocation(WeaponComp->GetAttachSocketName());
+		FVector EndPoint = Origin;
+
+		if (bIsCurrentWeaponLaser)
+		{
+			EndPoint = CalculateDesiredEndPoint(LaserWeapon);
+		}
+		
+		if (CurrentlyActiveWeapon->IsHitscan())
+		{
+			CurrentlyActiveWeapon->ServerShootAt(Origin, EndPoint);
+		} else
+		{
+			CurrentlyActiveWeapon->ServerShoot();	
+		}
 	}
 }

@@ -23,6 +23,9 @@ protected:
 	void OnShoot();
 	void OnStopShooting();
 
+
+	bool bHasBeenTriggered = false;
+
 	IWeaponInterface* WeaponComponent;
 public:
 	// Called every frame

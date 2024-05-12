@@ -15,6 +15,7 @@ ALaserTurret::ALaserTurret()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
 
 }
 
@@ -28,16 +29,21 @@ void ALaserTurret::BeginPlay()
 	}
 }
 
+void ALaserTurret::ServerOnShoot_Implementation()
+{
+	OnShoot();
+}
+
 void ALaserTurret::OnShoot()
 {
 	
 	if (WeaponComponent && !WeaponComponent->IsDrained())
 	{
-		WeaponComponent->Shoot();
+		WeaponComponent->ServerShoot();
 	}
 	else if (WeaponComponent->IsDrained())
 	{
-		OnStopShooting();
+		//OnStopShooting();
 		if (GetWorldTimerManager().IsTimerActive(ReloadTimerHandle))
 		{
 			return;
@@ -65,31 +71,31 @@ void ALaserTurret::OnStopShooting()
 void ALaserTurret::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	const APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+
+	if (!GetWorld()) { return; }
+	APlayerController* Player = GetWorld()->GetFirstPlayerController();
+	
 	if (CurrentMode == Modes::Attacking)
 	{
-		
-		
-		if (ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>())
+		ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>();
+		if (LaserWeapon)
 		{
 			LaserWeapon->DesiredEndPoint = LaserWeapon->CalculateDefaultEndPoint();
 		}
 
-		OnShoot();
 		
-		if (PlayerPawn && !CheckIfPawnIsInTheFOV(PlayerPawn))
+		if (HasAuthority())
 		{
-			OnStopShooting();
-			ChangeStateTo(Modes::Scouting);
+			ServerOnShoot();
 		}
 	}
 }
 
 void ALaserTurret::ReloadWeapon() const
 {
-	if (WeaponComponent)
+	if (WeaponComponent && HasAuthority())
 	{
-		WeaponComponent->Reload();
+		WeaponComponent->ServerReload();
 	}
 }
 

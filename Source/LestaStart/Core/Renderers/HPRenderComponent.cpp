@@ -9,11 +9,13 @@ class UHealthComponent;
 // Sets default values for this component's properties
 UHPRenderComponent::UHPRenderComponent()
 {
+	
 	PlaceholderForHP = FText::FromString("{HP}");
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	SetText( FText::FromString(MakeActualStringFromTemplate(0)));
-	
+	SetIsReplicatedByDefault(true);
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 FString UHPRenderComponent::MakeActualStringFromTemplate(const float NewHP) const
@@ -49,6 +51,8 @@ void UHPRenderComponent::BeginPlay()
 		if (HealthComponent)
 		{
 			HealthComponent->HealthChangedDelegate.AddUFunction(this, FName("OnHealthChanged"));
+			// A small hack to make every HP display correctly when a new player joins in 
+			SetText(FText::FromString(MakeActualStringFromTemplate(HealthComponent->GetHealth())));
 		}
 	}
 	// ...
@@ -60,7 +64,7 @@ void UHPRenderComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                            FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	
 	// ...
 }
 

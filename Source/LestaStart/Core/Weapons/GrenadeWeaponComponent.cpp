@@ -3,14 +3,21 @@
 
 #include "GrenadeWeaponComponent.h"
 
+#include "DamagableInterface.h"
 #include "WeaponHoldableInterface.h"
 #include "Chaos/SpatialAccelerationCollection.h"
 #include "Engine/DamageEvents.h"
+#include "LestaStart/Core/HealthComponent.h"
+#include "Net/UnrealNetwork.h"
 
 
 // Sets default values for this component's properties
 UGrenadeWeaponComponent::UGrenadeWeaponComponent()
 {
+	/*
+	 * Defaults
+	*/
+	
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
@@ -22,7 +29,9 @@ UGrenadeWeaponComponent::UGrenadeWeaponComponent()
 	bShouldIgnoreOuter = true;
 	MaxAmmo = 3;
 	ReloadTime = 1.f;
-	
+
+	// Networking
+	SetIsReplicatedByDefault(true);
 }
 
 
@@ -30,7 +39,7 @@ UGrenadeWeaponComponent::UGrenadeWeaponComponent()
 void UGrenadeWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	Reload();
+	ServerReload();
 	IWeaponHoldableInterface* Outer = dynamic_cast<IWeaponHoldableInterface*>(GetOuter());
 	if (Outer && Outer->CanHoldWeapon())
 	{
@@ -39,9 +48,53 @@ void UGrenadeWeaponComponent::BeginPlay()
 	
 }
 
+void UGrenadeWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UGrenadeWeaponComponent, MaximumCharge);
+	DOREPLIFETIME(UGrenadeWeaponComponent, ChargeGainPerSecond);
+	DOREPLIFETIME(UGrenadeWeaponComponent, MaximumRadius);
+	DOREPLIFETIME(UGrenadeWeaponComponent, MaximumDamage);
+	DOREPLIFETIME(UGrenadeWeaponComponent, MinimumDamage);
+	DOREPLIFETIME(UGrenadeWeaponComponent, bShouldIgnoreOuter);
+	DOREPLIFETIME(UGrenadeWeaponComponent, MaxAmmo);
+	DOREPLIFETIME(UGrenadeWeaponComponent, ReloadTime);
+	
+	DOREPLIFETIME(UGrenadeWeaponComponent, CurrentCharge);
+	DOREPLIFETIME(UGrenadeWeaponComponent, bIsGainingCharge);
+	DOREPLIFETIME(UGrenadeWeaponComponent, CurrentAmmoNumber);
+}
+
+void UGrenadeWeaponComponent::ServerShootAt_Implementation(const FVector& Origin, const FVector& EndPoint)
+{
+	Shoot(Origin);
+	DrawShooting(Origin);
+}
+
+void UGrenadeWeaponComponent::ServerStopShooting_Implementation()
+{
+	StopShooting();
+}
+
 void UGrenadeWeaponComponent::Shoot()
 {
 	bIsGainingCharge = true;
+}
+
+EWeaponType UGrenadeWeaponComponent::GetWeaponType() const
+{
+	return EWeaponType::AOE;
+}
+
+void UGrenadeWeaponComponent::Shoot(const FVector& Origin)
+{
+	
+}
+
+void UGrenadeWeaponComponent::ServerShoot_Implementation()
+{
+	Shoot();
+	DrawShooting();
 }
 
 TArray<FHitResult> UGrenadeWeaponComponent::SweepSphere(const ECollisionChannel TraceChannel) const
@@ -75,7 +128,7 @@ bool UGrenadeWeaponComponent::IsBlockedByOtherElement(const FVector& StartPoint,
 	return TraceHit.bBlockingHit && TraceHit.GetActor() != HitActor;
 }
 
-void UGrenadeWeaponComponent::DoDamage(const TArray<FHitResult>& Hits) const
+void UGrenadeWeaponComponent::DoDamage_Implementation(const TArray<FHitResult>& Hits) const
 {
 	for (const FHitResult& Hit : Hits)
 	{
@@ -86,15 +139,15 @@ void UGrenadeWeaponComponent::DoDamage(const TArray<FHitResult>& Hits) const
 			
 			
 			AActor* DamageCauser = dynamic_cast<AActor*>(GetOuter());
-			if (IsValid(Hit.GetActor()))
-			{
-				Hit.GetActor()->TakeDamage(CalculateCurrentDamageBasedOffCurrentCharge(),
+			if (IDamagableInterface* Damagable = dynamic_cast<IDamagableInterface*>(Hit.GetActor())) {
+				Damagable->ReceiveDamage(CalculateCurrentDamageBasedOffCurrentCharge(),
 					DamageEvent, nullptr, DamageCauser);
-			} 
+			}
+			
 		} 
 	}
 }
-
+	
 void UGrenadeWeaponComponent::StopShooting()
 {
 	if (bIsGainingCharge)
@@ -111,6 +164,24 @@ void UGrenadeWeaponComponent::StopShooting()
 bool UGrenadeWeaponComponent::IsAtFullCapacity()
 {
 	return (CurrentCharge >= MaximumCharge);
+}
+
+void UGrenadeWeaponComponent::DrawShooting()
+{
+	// Draw Outer Sphere
+	DrawSphere(MaximumRadius, FColor::Red);
+	
+	// Draw Inner Sphere
+	DrawSphere(CalculateRadiusBasedOffCurrentCharge(), FColor::Green);
+}
+
+void UGrenadeWeaponComponent::DrawShooting(const FVector& Origin)
+{
+	// Draw Outer Sphere
+	DrawSphere(MaximumRadius, FColor::Red, Origin);
+	
+	// Draw Inner Sphere
+	DrawSphere(CalculateRadiusBasedOffCurrentCharge(), FColor::Green, Origin);
 }
 
 bool UGrenadeWeaponComponent::IsDrained()
@@ -143,6 +214,21 @@ FName UGrenadeWeaponComponent::GetDisplayName() const
 	return "Grenade";
 }
 
+
+
+void UGrenadeWeaponComponent::ServerReload_Implementation()
+{
+	Reload();
+}
+
+void UGrenadeWeaponComponent::MulticastDrawShooting_Implementation()
+{
+	// Draw Outer Sphere
+	DrawSphere(MaximumRadius, FColor::Red);
+	
+	// Draw Inner Sphere
+	DrawSphere(CalculateRadiusBasedOffCurrentCharge(), FColor::Green);
+}
 
 float UGrenadeWeaponComponent::CalculateCurrentChargeBasedOffMaxCharge() const
 {
@@ -178,35 +264,37 @@ void UGrenadeWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	{
 		CurrentCharge += ChargeGainPerSecond * DeltaTime;
 	}
-
-	// Draw Outer Sphere
-	DrawDebugSphere(
-		GetWorld(),
-		GetSocketLocation(GetAttachSocketName()),
-		MaximumRadius,
-		32,
-		FColor::Red ,
-		false,
-		0,
-		0,
-		0
-	);
-	// Draw Inner Sphere
-	DrawDebugSphere(
-		GetWorld(),
-		GetSocketLocation(GetAttachSocketName()),
-		CalculateRadiusBasedOffCurrentCharge(),
-		32,
-		FColor::Green,
-		false,
-		0,
-		0,
-		0
-	);
+	
 }
 
 bool UGrenadeWeaponComponent::IsCurrentlyShooting()
 {
 	return bIsGainingCharge;
+}
+
+void UGrenadeWeaponComponent::Multicast_DrawCustomSphereOnAllClients_Implementation(const int32 Radius,
+	const FColor& Color)
+{
+	DrawSphere(Radius, Color);
+}
+
+void UGrenadeWeaponComponent::DrawSphere(const int32 Radius, const FColor& Color) const
+{
+	DrawSphere(Radius, Color, GetSocketLocation(GetAttachSocketName()));
+}
+
+void UGrenadeWeaponComponent::DrawSphere(const int32 Radius, const FColor& Color, const FVector& Origin) const
+{
+	DrawDebugSphere(
+		GetWorld(),
+		Origin,
+		Radius,
+		32,
+		Color,
+		false,
+		0,
+		0,
+		0
+	);
 }
 

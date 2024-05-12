@@ -5,12 +5,36 @@
 
 #include "IMessageTracer.h"
 #include "ScreenPass.h"
+#include "Components/SphereComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
+#include "GameFramework/GameSession.h"
+#include "LestaStart/Core/LestaGameMode.h"
+#include "Net/UnrealNetwork.h"
 
-	
 
+bool ATurret::CanRecieveDamageFromFriendlies() const
+{
+	return bCanFriendlyFire;
+}
+
+void ATurret::ReceiveDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	if (!CanRecieveDamageFromFriendlies() && dynamic_cast<ThisClass*>(DamageCauser))
+	{
+		return;
+	}
+	TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void ATurret::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ATurret, Health);
+	DOREPLIFETIME(ATurret, CurrentMode);
+}
 
 // Sets default values
 ATurret::ATurret()
@@ -20,28 +44,43 @@ ATurret::ATurret()
 	BeginningMode = Modes::None;
 	ViewRadius = 500.f;
 	FOV = 2 * UE_PI;
+	bCanFriendlyFire = false;
 	ScoutingRotationSpeed = 500.f;
 	RotationSpeedWhenAttacking = ScoutingRotationSpeed * 1.5f;
 	MaxHP = 0;
+	ActorLockedOnto = nullptr;
 
 	TimeBetweenShots = 1.f;
+	
+	SetReplicates(true);
+	SetReplicatingMovement(true);
 	
 	if (!Health)
 	{
 		Health = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
-		Health->SetHealth(MaxHP);
+		
 	}
 	Health->HealthChangedDelegate.AddUFunction(this, FName("OnHealthChanged"));
 
+	USceneComponent* Scene = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComponent"));
+	USphereComponent* Vision = CreateDefaultSubobject<USphereComponent>(TEXT("VisionRange"));
+	Vision->SetupAttachment(Scene);
+	Vision->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnEnteredView);
+	Vision->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnExitedView);
 	
-	//healthbar->Text = FText::FromString("Helloworld");
-	//healthbar->bAlwaysRenderAsText = false;
+	Vision->SetSphereRadius(ViewRadius);
+
+	VisionSphere = Vision;
+	
+	bReplicates = true;
+	
 }
 
 // Called when the game starts or when spawned
 void ATurret::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	// Set the mode to the current
 	Health->SetHealth(MaxHP);
 	CurrentMode = BeginningMode;
@@ -49,6 +88,7 @@ void ATurret::BeginPlay()
 	{
 		CurrentMode = Modes::Scouting;
 	}
+	bReplicates = true;
 }
 
 void ATurret::ChangeStateTo(const Modes Mode)
@@ -56,7 +96,7 @@ void ATurret::ChangeStateTo(const Modes Mode)
 	CurrentMode = Mode;
 }
 
-float ATurret::GetDistanceToPawn(FHitResult& InHitResult, const APawn* Pawn)
+float ATurret::GetDistanceToActor(FHitResult& InHitResult, const TObjectPtr<AActor> Actor)
 {
 	
 
@@ -64,26 +104,37 @@ float ATurret::GetDistanceToPawn(FHitResult& InHitResult, const APawn* Pawn)
 	return 0;
 }
 
-bool ATurret::CheckIfHitWasTheSameActor(const APawn* Pawn, const FHitResult& Hit)
+bool ATurret::CheckIfHitWasTheSameActor(const TObjectPtr<const AActor> Actor, const FHitResult& Hit)
 {
-	return Pawn == Hit.GetActor();
+	return Actor == Hit.GetActor();
 }
 
-bool ATurret::CheckIfPawnIsInTheFOV(const APawn* Pawn) const
+bool ATurret::CheckIfViewToActorIsBlocked(const TObjectPtr<AActor> Actor) const
 {
 	FHitResult Hit;
 	const FVector TurretLocation = GetActorLocation();
-	const FVector TraceEnd = Pawn->GetActorLocation();
+	const FVector TraceEnd = Actor->GetActorLocation();
 	bool bBlockHit = GetWorld()->LineTraceSingleByChannel(Hit, TurretLocation, TraceEnd, ECC_Pawn);
-	const float DistanceFromTheTurret = FVector::Distance(TurretLocation, TraceEnd);
-
-	return CheckIfHitWasTheSameActor(Pawn, Hit) && Hit.bBlockingHit && DistanceFromTheTurret <= ViewRadius;
+	return !(CheckIfHitWasTheSameActor(Actor, Hit) && Hit.bBlockingHit); 
 }
 
-FRotator ATurret::InterpolateToPawnsLocation(const APawn* Pawn, const float RotationSpeed) const
+bool ATurret::CheckIfActorIsInTheFOV(const TObjectPtr<AActor> Actor, bool bShouldIgnoreSelf) const
+{
+	FHitResult Hit;
+	const FVector TurretLocation = GetActorLocation();
+	const FVector TraceEnd = Actor->GetActorLocation();
+	bool bBlockHit = GetWorld()->LineTraceSingleByChannel(Hit, TurretLocation, TraceEnd, ECC_Pawn);
+	const float DistanceFromTheTurret = FVector::Distance(TurretLocation, TraceEnd);
+	bool bIsInTheFov = DistanceFromTheTurret <= VisionSphere->GetScaledSphereRadius();
+	bool bWasThereAHit = false;
+	bWasThereAHit =  CheckIfHitWasTheSameActor(Actor, Hit) && Hit.bBlockingHit; 
+	return bWasThereAHit && bIsInTheFov;
+}
+
+FRotator ATurret::InterpolateToActorsLocation(const FVector& ActorLocation, const float RotationSpeed) const
 {
 	// Расстояние между Турелью и Павном 
-	FVector DirectionVector = GetActorLocation() - Pawn->GetActorLocation();
+	FVector DirectionVector = GetActorLocation() - ActorLocation;
 	DirectionVector.Normalize();
 	
 	float Pitch = FMath::Atan2(DirectionVector.Z,
@@ -111,7 +162,7 @@ void ATurret::DrawFOV()
 	DrawDebugCircle(
 		GetWorld(),
 		GetActorLocation(),
-		ViewRadius,
+		VisionSphere->GetScaledSphereRadius(),
 		32,
 		DebugCircleColor,
 		false,
@@ -123,12 +174,24 @@ void ATurret::DrawFOV()
 		false);
 }
 
+void ATurret::ObjectLeftFOV()
+{
+	// TODO: Probably should do a better thing, but for now this also works; 
+	ActorCurrentlyBeingAttacked = nullptr;
+	ServerRequestChangeStateTo(Modes::Scouting);
+}
+
 // Called every frame
 void ATurret::Tick(float DeltaTime)
 {
 	
 	Super::Tick(DeltaTime);
-	const APawn* Pawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	
+
+	if (!GetWorld()) { return; }
+	//const TArray<ULocalPlayer*>& GamePlayers = GEngine->GetGamePlayers(GetWorld());
+	APlayerController* Player = GetWorld()->GetFirstPlayerController();
+	
 	
 	DrawFOV();	
 	
@@ -138,36 +201,61 @@ void ATurret::Tick(float DeltaTime)
 		{
 			FRotator DeltaRotator = FRotator(0, UE_PI / 2, 0) * DeltaTime * ScoutingRotationSpeed; 
 			AddActorWorldRotation(DeltaRotator);
-			if (Pawn)
+
+			if (!ActorCurrentlyBeingAttacked && ActorLockedOnto)
 			{
-				if (CheckIfPawnIsInTheFOV(Pawn))
+				bool bIsOverlapping = VisionSphere->IsOverlappingActor(ActorLockedOnto);
+				// Проверяемся на то, что мы "нашли" актора, но он уже вышел из-за стену уву!
+				if (bIsOverlapping && !CheckIfViewToActorIsBlocked(ActorLockedOnto))
 				{
+					ActorCurrentlyBeingAttacked = ActorLockedOnto;
 					ChangeStateTo(Modes::Activated);
 				}
+				
 			}
+			
 			break;
 		}
 	case Modes::Activated:
-		if (!AnimationTimerHandle.IsValid())
+		// Если актор не за стеной, то всё ок, начинаем анимацию
+		if (ActorCurrentlyBeingAttacked && !AnimationTimerHandle.IsValid())
 		{
-			GetWorldTimerManager().SetTimer(AnimationTimerHandle, this, &ThisClass::ChangeStateToAttack, 1.f);
+			GetWorldTimerManager().SetTimer(AnimationTimerHandle, this, &ThisClass::ServerRequestChangeStateToAttack, 1.f);
 		}
 		break;
 	case Modes::Attacking:
 		{
-			if (Pawn)
+			// Если турелька не видит актора, то что-то плохо :(
+			if (ActorCurrentlyBeingAttacked)
 			{
-				const FRotator NewRotation = InterpolateToPawnsLocation(Pawn, RotationSpeedWhenAttacking * DeltaTime);
+				const FRotator NewRotation = InterpolateToActorsLocation(ActorCurrentlyBeingAttacked->GetActorLocation(),
+					RotationSpeedWhenAttacking * DeltaTime);
 				SetActorRotation(NewRotation);
+				if (CheckIfViewToActorIsBlocked(ActorCurrentlyBeingAttacked))
+				{
+					ObjectLeftFOV();
+				}
 			}
 		}
 	}
 		
 }
 
+void ATurret::ServerRequestChangeStateToAttack_Implementation()
+{
+	if (ActorCurrentlyBeingAttacked)
+	{
+		ChangeStateTo(Modes::Attacking);
+	} else
+	{
+		ChangeStateTo(Modes::Scouting);
+	}
+	AnimationTimerHandle.Invalidate(); 
+}
+
 
 float ATurret::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-	AActor* DamageCauser)
+                          AActor* DamageCauser)
 {
 	
 	if (DamageCauser == this)
@@ -180,15 +268,55 @@ float ATurret::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, A
 	if (Health->GetHealth() <= 0.f)
 	{
 		SetActorScale3D(GetActorScale3D() / 2);
-		Destroy();
+		if (HasAuthority())
+		{
+			ServerRequestDestroy();
+		}
 	}
 	return DamageAmount;
+}
+
+void ATurret::ServerRequestDestroy_Implementation()
+{
+	Destroy();
+}
+
+void ATurret::ServerRequestChangeStateTo_Implementation(const Modes Mode)
+{
+	CurrentMode = Mode;
 }
 
 
 void ATurret::OnHealthChanged(float NewHealth)
 {
 	
-	//UE_LOG(LogTemp, Warning, TEXT("%s's new health is: %f"), GetName().GetCharArray().GetData(), NewHealth);
+}
+
+void ATurret::OnEnteredView(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+		if (!ActorCurrentlyBeingAttacked)
+		{
+			ActorLockedOnto = OtherActor;
+		}
+		if (ActorLockedOnto)
+		{
+			if (!CheckIfViewToActorIsBlocked(ActorLockedOnto))
+			{
+				ActorCurrentlyBeingAttacked = ActorLockedOnto;
+				ServerRequestChangeStateTo(Modes::Activated);
+			}
+		}
+}
+
+void ATurret::OnExitedView(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex)
+{
+	if (OtherActor == ActorLockedOnto || ActorLockedOnto == nullptr)
+	{
+		ActorLockedOnto = nullptr;
+		ActorCurrentlyBeingAttacked = nullptr;
+		ServerRequestChangeStateTo(Modes::Scouting);
+	}
 }
 

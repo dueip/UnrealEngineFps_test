@@ -3,10 +3,12 @@
 
 #include "LaserWeaponComponent.h"
 
+#include "DamagableInterface.h"
 #include "Engine/DamageEvents.h"
 #include "WeaponHoldableInterface.h"
 #include "LestaStart/Core/HealthComponent.h"
 #include "LestaStart/Core/Renderers/LaserComponent.h"
+#include "Net/UnrealNetwork.h"
 
 
 // Sets default values for this component's properties
@@ -24,10 +26,12 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 	DamageAmount = 1.f;
 
 	MaxDurability = 10;
-	DurabilityLossInOneSecond = 3;
+	DurabilityLossInOneClick = 0.5;
 	ReloadTime = 0.5f;
 	
 	HitCollisionChannel = ECC_Pawn;
+
+	SetIsReplicatedByDefault(true);
 	// ...
 }
 
@@ -35,15 +39,18 @@ ULaserWeaponComponent::ULaserWeaponComponent()
 // Called when the game starts
 void ULaserWeaponComponent::BeginPlay()
 {
+	
+	
+	SetIsReplicated(true);
 	Super::BeginPlay();
 	Laser->Deactivate();
 	BaseColor = Laser->GetColor();
 	Reload();
-	
 	IWeaponHoldableInterface* Outer = dynamic_cast<IWeaponHoldableInterface*>(GetOuter());
 	if (Outer && Outer->CanHoldWeapon())
 	{
 		Outer->SetWeapon(this);
+		
 	}
 	
 	// Safety checks:
@@ -56,6 +63,7 @@ void ULaserWeaponComponent::BeginPlay()
 
 void ULaserWeaponComponent::CalculateAnimationDurationAndSetTimer()
 {
+	
 	float TimerDuration = 0.f;
 	if (Laser->GetColor() != BaseColor)
 	{
@@ -69,9 +77,23 @@ void ULaserWeaponComponent::CalculateAnimationDurationAndSetTimer()
 	                                       &ThisClass::BlinckingAnimationCallback, TimerDuration, false);
 }
 
+
+void ULaserWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ULaserWeaponComponent, Laser)
+	DOREPLIFETIME(ULaserWeaponComponent, CurrentDurability);
+	DOREPLIFETIME(ULaserWeaponComponent, DesiredEndPoint);
+}
+
 float ULaserWeaponComponent::GetReloadTime()
 {
 	return ReloadTime;
+}
+
+void ULaserWeaponComponent::DrawShooting()
+{
+	Laser->OnDraw();
 }
 
 int32 ULaserWeaponComponent::GetMaxDrainage()
@@ -88,7 +110,7 @@ float ULaserWeaponComponent::GetCurrentDrainage()
 std::optional<FVector> ULaserWeaponComponent::DoHit(const FVector& SocketOrigin, const FVector& EndPoint, ECollisionChannel CollisionChannel) const
 {
 	FHitResult Hit;
-	bool bWasThereAHit = GetWorld()->LineTraceSingleByChannel(Hit, SocketOrigin, DesiredEndPoint, CollisionChannel);
+	bool bWasThereAHit = GetWorld()->LineTraceSingleByChannel(Hit, SocketOrigin, EndPoint, CollisionChannel);
 	FPointDamageEvent PointDamage;
 	PointDamage.Damage = DamageAmount;
 	PointDamage.HitInfo = Hit;
@@ -97,12 +119,11 @@ std::optional<FVector> ULaserWeaponComponent::DoHit(const FVector& SocketOrigin,
 	AActor* ActorThatDealtDamage = UECasts_Private::DynamicCast<AActor*>(GetOuter());
 	if (bWasThereAHit && Hit.bBlockingHit)
 	{
-		// Если есть компонент с ХП, то значит мы можем нанести урон
-		// Потом можно перенести в интерфейс
-		if (Hit.GetActor()->FindComponentByClass<UHealthComponent>())
+		if (IDamagableInterface* Damagable = dynamic_cast<IDamagableInterface*>(Hit.GetActor()))
 		{
-			Hit.GetActor()->TakeDamage(DamageAmount, PointDamage, nullptr, ActorThatDealtDamage);
+			Damagable->ReceiveDamage(DamageAmount, PointDamage, nullptr, ActorThatDealtDamage);
 		}
+		
 		return Hit.Location;
 	}
 	return std::nullopt;
@@ -119,25 +140,8 @@ void ULaserWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		return;
 	}
 
-	// It's fine to use GetSocketLocation in here since it will return the component's transform anyways
-	// See: https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/GetSocketLocation/
-
-	const FVector SocketOrigin = GetSocketLocation(GetAttachSocketName());
-	FVector EndPoint = DesiredEndPoint;
-	Laser->SetOrigin(SocketOrigin);
 	
 	
-	
-	const std::optional<FVector> HitPointAfterCollision = DoHit(SocketOrigin, EndPoint, HitCollisionChannel);
-	EndPoint = HitPointAfterCollision.value_or(EndPoint);
-	
-	if (IsValid(GetWorld()) && !BlinkAnimationTimer.IsValid())
-	{
-		CalculateAnimationDurationAndSetTimer();
-	}
-	Laser->SetEndPoint(EndPoint);
-
-	CurrentDurability -= DurabilityLossInOneSecond * DeltaTime;
 }
 
 void ULaserWeaponComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
@@ -154,12 +158,17 @@ void ULaserWeaponComponent::StopShooting()
 
 void ULaserWeaponComponent::Shoot()
 {
-	Laser->Activate();
+	OnShoot();
 }
 
 bool ULaserWeaponComponent::IsCurrentlyShooting()
 {
 	return Laser->IsActive();
+}
+
+EWeaponType ULaserWeaponComponent::GetWeaponType() const
+{
+	return EWeaponType::Hitscan;
 }
 
 FName ULaserWeaponComponent::GetDisplayName() const
@@ -197,6 +206,90 @@ bool ULaserWeaponComponent::IsDrained()
 void ULaserWeaponComponent::Reload()
 {
 	CurrentDurability = MaxDurability;
+	if (StartedReloadingDelegate.IsBound())
+	{
+		StartedReloadingDelegate.Broadcast(GetReloadTime(), GetMaxDrainage());
+	}
+}
+
+void ULaserWeaponComponent::ServerShootAt_Implementation(const FVector& Origin, const FVector& EndPoint)
+{
+	if (IsDrained()) return;
+	Laser->SetOrigin(Origin);
+	LastHitPointAfterCollision = DoHit(Origin, EndPoint, HitCollisionChannel);
+	Laser->SetEndPoint(LastHitPointAfterCollision.value_or(EndPoint));
+	Server_DrainAmmo(1);
+	MulticastDrawShooting();
+}
+
+void ULaserWeaponComponent::ServerStopShooting_Implementation()
+{
+	StopShooting();
+}
+
+void ULaserWeaponComponent::MulticastDrawShooting_Implementation()
+{
+	Laser->OnDraw();
+	//Laser->MulticastDrawOnAllClients();
+}
+
+void ULaserWeaponComponent::ServerReload_Implementation()
+{
+	Reload();
+}
+
+void ULaserWeaponComponent::ServerShoot_Implementation()
+{
+	Shoot();
+	MulticastDrawShooting();
+}
+
+
+void ULaserWeaponComponent::Multicast_DrawOnFire_Implementation()
+{
+	Laser->OnDraw();
+}
+
+void ULaserWeaponComponent::Server_DoHitWithoutOrigin_Implementation(const FVector& EndPoint,
+                                                                     ECollisionChannel DesiredHitCollisionChannel)
+{
+	Server_DoHit(GetSocketLocation(GetAttachSocketName()), EndPoint, DesiredHitCollisionChannel);
+}
+
+void ULaserWeaponComponent::Server_TryToUpdateDurability_Implementation(float NewDrainage)
+{
+	CurrentDurability = NewDrainage;
+}
+
+
+void ULaserWeaponComponent::CalculateLaserPosition(const FVector& EndPoint)
+{
+	// It's fine to use GetSocketLocation in here since it will return the component's transform anyways
+	// See: https://docs.unrealengine.com/4.27/en-US/API/Runtime/Engine/Components/USceneComponent/GetSocketLocation/
+	const FVector SocketOrigin = GetSocketLocation(GetAttachSocketName());
+	Laser->SetOrigin(SocketOrigin);
+	Laser->SetEndPoint(EndPoint);
+}
+
+void ULaserWeaponComponent::Server_DrainAmmo_Implementation(int32 NumberOfAmmo)
+{
+	CurrentDurability -= DurabilityLossInOneClick * NumberOfAmmo;
+}
+
+void ULaserWeaponComponent::Server_DoHit_Implementation(const FVector& OriginPoint, const FVector& EndPoint, ECollisionChannel DesiredHitCollisionChannel)
+{
+	if (IsDrained()) return;
+	LastHitPointAfterCollision = DoHit(OriginPoint, EndPoint, HitCollisionChannel);
+	Server_DrainAmmo(1);
+}
+
+void ULaserWeaponComponent::OnShoot()
+{
+	Laser->SetActive(true);
+	/* Actually do a hit */
+	Server_DoHit(GetSocketLocation(GetAttachSocketName()), DesiredEndPoint, HitCollisionChannel);
+	FVector BlockedEndPoint = LastHitPointAfterCollision.value_or(DesiredEndPoint);
+	CalculateLaserPosition(BlockedEndPoint);
 }
 
 void ULaserWeaponComponent::BlinckingAnimationCallback()
@@ -204,4 +297,6 @@ void ULaserWeaponComponent::BlinckingAnimationCallback()
 	Laser->SetColor(Laser->GetColor() == BaseColor ? BlinkColor : BaseColor);
 	BlinkAnimationTimer.Invalidate();
 }
+
+
 

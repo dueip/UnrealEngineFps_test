@@ -20,10 +20,30 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	
+	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerShoot() override;
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerShootAt(const FVector& Origin, const FVector& EndPoint) override;
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerReload() override;
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerStopShooting() override;
+	UFUNCTION(NetMulticast, Unreliable)
+	virtual void MulticastDrawShooting() override;
+	
 	virtual void Shoot() override;
+	virtual EWeaponType GetWeaponType() const override;
+	virtual bool IsHitscan() const override { return false; };
+	virtual void Shoot(const FVector& Origin);
 	virtual void StopShooting() override;
 	virtual bool IsAtFullCapacity() override;
+	virtual void DrawShooting() override;
+	virtual void DrawShooting(const FVector& Origin);
+	TArray<FHitResult> SweepSphere(const ECollisionChannel TraceChannel) const;
 
 	virtual bool IsDrained() override;
 	virtual void Reload() override;
@@ -32,29 +52,31 @@ protected:
 	virtual int32 GetMaxDrainage() override;
 
 	virtual FName GetDisplayName() const override;
-	TArray<FHitResult> SweepSphere(const ECollisionChannel TraceChannel) const;
+
 	float CalculateCurrentDamageBasedOffCurrentCharge() const;
 	bool IsBlockedByOtherElement(const FVector& StartPoint, const FVector& EndPoint,
 	ECollisionChannel CollisionChannel, const AActor* const HitActor) const;
+	UFUNCTION(Server, Unreliable)
 	void DoDamage(const TArray<FHitResult>& Hits) const;
 public:
-	UPROPERTY(EditAnywhere, Category="Charge")
+	UPROPERTY(EditAnywhere, Category="Charge", Replicated)
 	float MaximumCharge;
-	UPROPERTY(EditAnywhere, Category="Charge")
+	UPROPERTY(EditAnywhere, Category="Charge", Replicated)
 	float ChargeGainPerSecond;
-	UPROPERTY(EditAnywhere, Category="Charge")
+	UPROPERTY(EditAnywhere, Category="Charge", Replicated)
 	float MaximumRadius;
-	UPROPERTY(EditAnywhere, Category="Damage")
+	UPROPERTY(EditAnywhere, Category="Damage", Replicated)
 	float MaximumDamage;
-	UPROPERTY(EditAnywhere, Category="Damage")
+	UPROPERTY(EditAnywhere, Category="Damage", Replicated)
 	float MinimumDamage;
-	UPROPERTY(EditAnywhere, Category="Damage")
+	UPROPERTY(EditAnywhere, Category="Damage", Replicated)
 	bool bShouldIgnoreOuter;
-	UPROPERTY(EditAnywhere, Category="Ammo")
+	UPROPERTY(EditAnywhere, Category="Ammo", Replicated)
 	int32 MaxAmmo;
-	UPROPERTY(EditAnywhere, Category="Ammo")
+	UPROPERTY(EditAnywhere, Category="Ammo", Replicated)
 	float ReloadTime;
 
+	
 
 	UFUNCTION(BlueprintCallable)
 	float CalculateCurrentChargeBasedOffMaxCharge() const;
@@ -65,7 +87,17 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 	virtual bool IsCurrentlyShooting() override;
 private:
+	
+	UFUNCTION(NetMulticast, Unreliable)
+	void Multicast_DrawCustomSphereOnAllClients(const int32 Radius, const FColor& Color);
+	
+	void DrawSphere(const int32 Radius, const FColor& Color) const;
+	void DrawSphere(const int32 Radius, const FColor& Color, const FVector& Origin) const;
+	
+	UPROPERTY(Replicated)
 	float CurrentCharge = 0;
+	UPROPERTY(Replicated)
 	bool bIsGainingCharge = false;
+	UPROPERTY(Replicated)
 	int32 CurrentAmmoNumber;
 };

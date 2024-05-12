@@ -6,8 +6,8 @@
 #include "WeaponInterface.h"
 #include "LestaStart/Core/Renderers/LaserComponent.h"
 #include "optional"
+#include "Engine/NetDriver.h"
 #include "LaserWeaponComponent.generated.h"
-
 
 DECLARE_DELEGATE(FShootDelegate)
 
@@ -26,24 +26,29 @@ protected:
 	void CalculateAnimationDurationAndSetTimer();
 
 public:
+	//FVector CalculateDesiredEndPoint()
+	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
 	virtual float GetReloadTime() override;
 
+	virtual void DrawShooting() override;
+	
 	virtual int32 GetMaxDrainage() override;
 	virtual float GetCurrentDrainage() override;
 	// Returns a Hit Location if there was a hit.
 	std::optional<FVector> DoHit(const FVector& SocketOrigin, const FVector& EndPoint, ECollisionChannel CollisionChannel) const;
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+							   FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
 
 	virtual void StopShooting() override;
-	
 	virtual void Shoot() override;
-
 	virtual bool IsCurrentlyShooting() override;
-
+	virtual EWeaponType GetWeaponType() const override;
+	virtual bool IsHitscan() const override { return true; } ; 
 	virtual FName GetDisplayName() const override;
 	
 	UFUNCTION(BlueprintGetter)
@@ -57,12 +62,38 @@ public:
 	virtual bool IsDrained() override;
 
 	virtual void Reload() override;
+
 	
+	UPROPERTY(Replicated)
 	FVector DesiredEndPoint;
+
+
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void Multicast_DrawOnFire();
+	UFUNCTION(Server, Unreliable)
+	void Server_DoHitWithoutOrigin(const FVector& EndPoint, ECollisionChannel DesiredHitCollisionChannel);
+	UFUNCTION(Server, Unreliable)
+	void Server_DoHit(const FVector& OriginPoint, const FVector& EndPoint, ECollisionChannel DesiredHitCollisionChannel);
+
 	
-protected:
-	UPROPERTY(EditDefaultsOnly)
+
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerShoot() override;
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerShootAt(const FVector& Origin, const FVector& EndPoint) override;
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerReload() override;
+	UFUNCTION(NetMulticast, Unreliable)
+	virtual void MulticastDrawShooting() override;
+	UFUNCTION(Server, Unreliable)
+	virtual void ServerStopShooting() override;
+	UFUNCTION(Server, Unreliable)
+	void Server_DrainAmmo(int32 NumberOfAmmo);
+	
+	UPROPERTY(EditDefaultsOnly, Replicated)
 	TObjectPtr<ULaserComponent> Laser;
+protected:
 
 	FTimerHandle BlinkAnimationTimer;
 
@@ -81,7 +112,7 @@ protected:
 	int32 MaxDurability;
 
 	UPROPERTY(EditAnywhere, Category="Ammo")
-	int32 DurabilityLossInOneSecond;
+	int32 DurabilityLossInOneClick;
 
 	UPROPERTY(EditAnywhere, Category="Ammo")
 	float ReloadTime;
@@ -96,12 +127,39 @@ protected:
 	
 	FShootDelegate ShootDelegate;
 
-	
-	
+	UFUNCTION(Server, Reliable)
+	void Server_TryToUpdateDurability(float NewDrainage);
+
+
+	virtual FCompletelyDrainedDelegate* GetCompletelyDrainedDelegate() override
+	{
+		return &CompletelyDrainedDelegate;
+	}
+
+	virtual FStartedReloadingDelegate* GetStartedReloadingDelegate() override
+	{
+		return &StartedReloadingDelegate;
+	}
+
+	FCompletelyDrainedDelegate CompletelyDrainedDelegate;
+	FStartedReloadingDelegate StartedReloadingDelegate;
+
+
 private:
+	void CalculateLaserPosition(const FVector& EndPoint);
+
+
+	
+	UFUNCTION()
+	void OnShoot();
+
 	UFUNCTION()
 	void BlinckingAnimationCallback();
 
+
+	std::optional<FVector> LastHitPointAfterCollision;
+	
+	UPROPERTY(Replicated)
 	float CurrentDurability;
 };
 

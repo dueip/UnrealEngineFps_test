@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../HealthComponent.h"
+#include "Components/SphereComponent.h"
+#include "LestaStart/Core/Weapons/DamagableInterface.h"
 #include "Turret.generated.h"
 
 
@@ -20,17 +22,26 @@ enum class Modes
 };
 
 UCLASS()
-class LESTASTART_API ATurret : public AActor
+class LESTASTART_API ATurret : public AActor, public IDamagableInterface
 {
 	GENERATED_BODY()
 
 public:
 	//DECLARE_DELEGATE_RetVal(FCheckIfPawnIsInTheFOV);
+
+	virtual bool CanRecieveDamageFromFriendlies() const override;
+	virtual void ReceiveDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+		AController* EventInstigator, AActor* DamageCauser) override;
 	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	UPROPERTY(EditDefaultsOnly, Category="Mode")
 	Modes BeginningMode;
 	UPROPERTY(EditAnywhere, Category="Animation")
 	float RotationSpeedWhenAttacking;
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bCanFriendlyFire;
 	// Sets default values for this actor's properties
 	ATurret();
 
@@ -41,19 +52,26 @@ protected:
 public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(Server, Reliable)
+	void ServerRequestDestroy();
+	
+	UFUNCTION(Server, Reliable)
+	void ServerRequestChangeStateTo(const Modes Mode);
 	
 	UFUNCTION(BlueprintCallable)
 	void ChangeStateTo(const Modes Mode);
 	
-	float GetDistanceToPawn(FHitResult& InHitResult, const APawn* Pawn);
-	static bool CheckIfHitWasTheSameActor(const APawn* Pawn, const FHitResult& Hit);
+	float GetDistanceToActor(FHitResult& InHitResult, const TObjectPtr<AActor> Actor);
+	static bool CheckIfHitWasTheSameActor(const TObjectPtr<const AActor> Actor, const FHitResult& Hit);
 
-	UFUNCTION(BlueprintCallable)
-	bool CheckIfPawnIsInTheFOV(const APawn* Pawn) const;
+	bool CheckIfViewToActorIsBlocked(const TObjectPtr<AActor> ActorLocation) const;
+	
+	bool CheckIfActorIsInTheFOV(const TObjectPtr<AActor> ActorLocation, bool bShouldIgnoreSelf = false) const;
 
-	UFUNCTION(BlueprintCallable)
-	FRotator InterpolateToPawnsLocation(const APawn* Pawn, float RotationSpeed) const;
+	FRotator InterpolateToActorsLocation(const FVector& ActorLocation, float RotationSpeed) const;
 	void DrawFOV();
+	void ObjectLeftFOV();
 
 	UPROPERTY(EditAnywhere, Category="Vision")
 	float ViewRadius;
@@ -79,23 +97,43 @@ protected:
 	FTimerHandle AnimationTimerHandle;
 	FTimerHandle TimerBetweenShotsHandle;
 
-	void ChangeStateToAttack() {  ChangeStateTo(Modes::Attacking); AnimationTimerHandle.Invalidate(); } ;
+	UFUNCTION(Server, Reliable)
+	void ServerRequestChangeStateToAttack();
 	void destr()
 	{
 		Destroy();
 	}
 
+	UPROPERTY(Replicated)
 	Modes CurrentMode;
 
 	UPROPERTY(EditAnywhere, Category="Health")
 	float MaxHP;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Health")
+	UPROPERTY(EditDefaultsOnly, Category="Health", Replicated)
 	TObjectPtr<UHealthComponent> Health;
 
 	UPROPERTY(EditAnywhere, Category="Attack")
-	float TimeBetweenShots;	
+	float TimeBetweenShots;
 	
 	UFUNCTION(Blueprintable)
 	void OnHealthChanged(float NewHealth);
+	
+	UFUNCTION()
+	void OnEnteredView(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent*
+	OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnExitedView(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USphereComponent> VisionSphere;
+
+	UPROPERTY()
+	TObjectPtr<AActor> ActorCurrentlyBeingAttacked = nullptr;
+	
+	UPROPERTY()
+	TObjectPtr<AActor> ActorLockedOnto = nullptr;
+private:
 };
