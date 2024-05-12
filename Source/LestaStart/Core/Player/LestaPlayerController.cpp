@@ -8,6 +8,7 @@
 #include "EntitySystem/MovieSceneEntitySystemRunner.h"
 #include "GameFramework/PlayerState.h"
 #include "Kismet/GameplayStatics.h"
+#include "LestaStart/Core/LestaGameMode.h"
 #include "Net/UnrealNetwork.h"
 
 ALestaSpectator* ALestaPlayerController::SpawnSpectatorPawnDifferent()
@@ -99,28 +100,42 @@ void ALestaPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 void ALestaPlayerController::ServerVoteForRestart_Implementation()
 {
 	if (!GetWorld()) return;
-	if (GetWorldTimerManager().IsTimerActive(TravelTimer)) { return; }
+	
 	ALestaGameState* LestaGameState = dynamic_cast<ALestaGameState*>(GetWorld()->GetGameState());
-	if (LestaGameState)
+	ALestaGameMode* LestaGameMode = dynamic_cast<ALestaGameMode*>(GetWorld()->GetAuthGameMode());
+
+	// If we're travelling don't do anything!
+	if (GetWorldTimerManager().IsTimerActive(LestaGameMode->GetTravelTimerHandler()))
+	{
+		return;
+	}
+	
+	if (LestaGameState && LestaGameMode)
 	{
 		LestaGameState->Vote(EVoteType::RestartGame);
 		
-		if (LestaGameState->GetVotedOnRestart() == LestaGameState->GetHowManyPlayersNeedToVoteOnRestart())
+		if (LestaGameState->GetVotedOnRestart() == LestaGameMode->GetHowManyPlayersNeedToVoteOnRestart())
 		{
 			if (LestaGameState->VoteEndedDelegate.IsBound())
 			{
-				LestaGameState->VoteEndedDelegate.Broadcast(EVoteType::RestartGame,
-					LestaGameState->GetVotedOnRestart(), LestaGameState->GetHowManyPlayersNeedToVoteOnRestart());
+				LestaGameState->VoteEndedDelegate.Broadcast(
+					EVoteType::RestartGame,
+					LestaGameState->GetVotedOnRestart(),
+					LestaGameMode->GetHowManyPlayersNeedToVoteOnRestart()
+					);
 			}
+			
 			auto* World = GetWorld();
+			
 			GetWorldTimerManager().SetTimer(
-				TravelTimer,
+				LestaGameMode->GetTravelTimerHandler(),
 				[World]()
 				{
 					World->ServerTravel(World->GetMapName());
 				},
-				TimeForRestart,
-				false);
+				LestaGameMode->GetTimeForRestart(),
+				false
+				);
 			
 			
 		}

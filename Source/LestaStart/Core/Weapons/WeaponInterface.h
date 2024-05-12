@@ -12,6 +12,14 @@ DECLARE_MULTICAST_DELEGATE(FCompletelyDrainedDelegate);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FStartedReloadingDelegate, /* ReloadTime */ float,   /* MaxCapacity */ float);
 
 
+UENUM()
+enum class EWeaponType
+{
+	Hitscan,
+	AOE
+};
+
+
 UINTERFACE(MinimalAPI)
 class UWeaponInterface : public UInterface
 {
@@ -28,7 +36,9 @@ public:
 	virtual void StopShooting() PURE_VIRTUAL();
 	virtual bool IsCurrentlyShooting() { return false; };
 	virtual bool IsAtFullCapacity() { return false; }
-
+	virtual EWeaponType GetWeaponType() const { return EWeaponType::Hitscan; }
+	virtual bool IsHitscan() const { return true; }
+	
 	virtual bool IsDrained() { return true; }
 	virtual void Reload() {};
 	virtual float GetReloadTime() { return 0.f; }

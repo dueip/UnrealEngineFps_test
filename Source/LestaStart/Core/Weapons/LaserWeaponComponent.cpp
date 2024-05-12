@@ -167,6 +167,11 @@ bool ULaserWeaponComponent::IsCurrentlyShooting()
 	return Laser->IsActive();
 }
 
+EWeaponType ULaserWeaponComponent::GetWeaponType() const
+{
+	return EWeaponType::Hitscan;
+}
+
 FName ULaserWeaponComponent::GetDisplayName() const
 {
 	return "Laser";

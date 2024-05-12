@@ -40,16 +40,15 @@ public:
 	std::optional<FVector> DoHit(const FVector& SocketOrigin, const FVector& EndPoint, ECollisionChannel CollisionChannel) const;
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+							   FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
 
 	virtual void StopShooting() override;
-	
 	virtual void Shoot() override;
-
 	virtual bool IsCurrentlyShooting() override;
-
+	virtual EWeaponType GetWeaponType() const override;
+	virtual bool IsHitscan() const override { return true; } ; 
 	virtual FName GetDisplayName() const override;
 	
 	UFUNCTION(BlueprintGetter)

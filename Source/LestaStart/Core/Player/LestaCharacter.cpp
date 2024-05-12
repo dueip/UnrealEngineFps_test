@@ -447,7 +447,14 @@ void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstan
 			{
 				EndPoint = CalculateDesiredEndPoint(LaserWeapon);
 			}
-			CurrentlyActiveWeapon->ServerShootAt(Origin, EndPoint);
+			
+			if (CurrentlyActiveWeapon->IsHitscan())
+			{
+				CurrentlyActiveWeapon->ServerShootAt(Origin, EndPoint);
+			} else
+			{
+				CurrentlyActiveWeapon->ServerShoot();	
+			}
 		}
 		else
 			return;//CurrentlyActiveWeapon->StopShooting();

@@ -67,7 +67,8 @@ void UGrenadeWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 
 void UGrenadeWeaponComponent::ServerShootAt_Implementation(const FVector& Origin, const FVector& EndPoint)
 {
-return;	
+	Shoot(Origin);
+	DrawShooting(Origin);
 }
 
 void UGrenadeWeaponComponent::ServerStopShooting_Implementation()
@@ -78,6 +79,16 @@ void UGrenadeWeaponComponent::ServerStopShooting_Implementation()
 void UGrenadeWeaponComponent::Shoot()
 {
 	bIsGainingCharge = true;
+}
+
+EWeaponType UGrenadeWeaponComponent::GetWeaponType() const
+{
+	return EWeaponType::AOE;
+}
+
+void UGrenadeWeaponComponent::Shoot(const FVector& Origin)
+{
+	
 }
 
 void UGrenadeWeaponComponent::ServerShoot_Implementation()
@@ -162,6 +173,15 @@ void UGrenadeWeaponComponent::DrawShooting()
 	
 	// Draw Inner Sphere
 	DrawSphere(CalculateRadiusBasedOffCurrentCharge(), FColor::Green);
+}
+
+void UGrenadeWeaponComponent::DrawShooting(const FVector& Origin)
+{
+	// Draw Outer Sphere
+	DrawSphere(MaximumRadius, FColor::Red, Origin);
+	
+	// Draw Inner Sphere
+	DrawSphere(CalculateRadiusBasedOffCurrentCharge(), FColor::Green, Origin);
 }
 
 bool UGrenadeWeaponComponent::IsDrained()
@@ -260,9 +280,14 @@ void UGrenadeWeaponComponent::Multicast_DrawCustomSphereOnAllClients_Implementat
 
 void UGrenadeWeaponComponent::DrawSphere(const int32 Radius, const FColor& Color) const
 {
+	DrawSphere(Radius, Color, GetSocketLocation(GetAttachSocketName()));
+}
+
+void UGrenadeWeaponComponent::DrawSphere(const int32 Radius, const FColor& Color, const FVector& Origin) const
+{
 	DrawDebugSphere(
 		GetWorld(),
-		GetSocketLocation(GetAttachSocketName()),
+		Origin,
 		Radius,
 		32,
 		Color,

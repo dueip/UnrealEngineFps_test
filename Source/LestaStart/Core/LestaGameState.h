@@ -27,8 +27,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int32 GetVotedOnRestart() const { return VotedOnRestartCount; };
 
-	UFUNCTION(BlueprintCallable)
-	int32 GetHowManyPlayersNeedToVoteOnRestart() const { return PlayerArray.Num(); } 
+	
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	

@@ -23,5 +23,20 @@ public:
 	 * Используется массив, т.к. нам редко когда понадобится на самом деле удалять что-либо.
 	 */
 	UPROPERTY()
-	TArray<APlayerController*> JoinedPlayers;	
+	TArray<APlayerController*> JoinedPlayers;
+
+	UFUNCTION(BlueprintGetter)
+	float GetTimeForRestart() const { return TimeForRestart; };
+	
+	UFUNCTION(BlueprintGetter)
+	FTimerHandle& GetTravelTimerHandler() { return TravelTimer; }
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetHowManyPlayersNeedToVoteOnRestart() { return GetNumPlayers() + GetNumSpectators(); } 
+
+protected:
+	UPROPERTY(EditDefaultsOnly)
+	float TimeForRestart;
+	UPROPERTY()
+	FTimerHandle TravelTimer;
 };

@@ -36,9 +36,14 @@ protected:
 	virtual void MulticastDrawShooting() override;
 	
 	virtual void Shoot() override;
+	virtual EWeaponType GetWeaponType() const override;
+	virtual bool IsHitscan() const override { return false; };
+	virtual void Shoot(const FVector& Origin);
 	virtual void StopShooting() override;
 	virtual bool IsAtFullCapacity() override;
 	virtual void DrawShooting() override;
+	virtual void DrawShooting(const FVector& Origin);
+	TArray<FHitResult> SweepSphere(const ECollisionChannel TraceChannel) const;
 
 	virtual bool IsDrained() override;
 	virtual void Reload() override;
@@ -47,7 +52,7 @@ protected:
 	virtual int32 GetMaxDrainage() override;
 
 	virtual FName GetDisplayName() const override;
-	TArray<FHitResult> SweepSphere(const ECollisionChannel TraceChannel) const;
+
 	float CalculateCurrentDamageBasedOffCurrentCharge() const;
 	bool IsBlockedByOtherElement(const FVector& StartPoint, const FVector& EndPoint,
 	ECollisionChannel CollisionChannel, const AActor* const HitActor) const;
@@ -87,7 +92,8 @@ private:
 	void Multicast_DrawCustomSphereOnAllClients(const int32 Radius, const FColor& Color);
 	
 	void DrawSphere(const int32 Radius, const FColor& Color) const;
-
+	void DrawSphere(const int32 Radius, const FColor& Color, const FVector& Origin) const;
+	
 	UPROPERTY(Replicated)
 	float CurrentCharge = 0;
 	UPROPERTY(Replicated)
