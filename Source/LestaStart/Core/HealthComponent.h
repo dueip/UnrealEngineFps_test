@@ -48,5 +48,5 @@ protected:
 	int32 HealthPoints;
 
 	UFUNCTION()
-	void OnRep_HP();
+	void OnRep_HP(int32 NewHp);
 };
