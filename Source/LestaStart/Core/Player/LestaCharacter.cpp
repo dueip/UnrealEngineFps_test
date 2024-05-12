@@ -64,22 +64,11 @@ ALestaCharacter::ALestaCharacter()
 	bReplicates = true;
 }
 
-void ALestaCharacter::OnRep_DesiredPitchChanged(float NewPitch)
-{
-	//AddControllerPitchInput(NewPitch);
-	//AddActorLocalRotation({0, NewRotation.X, 0});
-	//AddActorLocalRotation({NewRotation.Y, 0, 0});
-}
-
 
 void ALestaCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-//	if (IsLocallyControlled() || HasAuthority()) {
-//		PitchAimOffset = GetControlRotation().Pitch;
-	//}
 
-//	AddControllerPitchInput( PitchAimOffset - GetActorRotation().Pitch); 
 }
 
 void ALestaCharacter::BeginPlay()
@@ -370,15 +359,10 @@ void ALestaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(ALestaCharacter, WeaponInventory);
 	DOREPLIFETIME(ALestaCharacter, CurrentlyActiveWeaponIndex);
 	DOREPLIFETIME(ALestaCharacter, HealthComponent);
-	DOREPLIFETIME_CONDITION(ALestaCharacter, PitchAimOffset, COND_SkipOwner);
 	DOREPLIFETIME(ALestaCharacter, bIsDead);
 	//DOREPLIFETIME(ALestaCharacter, JustForTesting);
 }
 
-void ALestaCharacter::ServerUpdateAimOffset_Implementation(float NewValue)
-{
-	PitchAimOffset = NewValue;	
-}
 
 void ALestaCharacter::OnMoveInput(const FInputActionInstance& InputActionInstance)
 {
@@ -400,8 +384,7 @@ void ALestaCharacter::OnLookInput(const FInputActionInstance& InputActionInstanc
 	const FVector2D Input2D = InputActionInstance.GetValue().Get<FVector2D>();
 	if (Input2D.IsNearlyZero()) return;
 	AddControllerYawInput(Input2D.X);
-	float Pitch = Input2D.Y;
-	
+	const float Pitch = Input2D.Y;
 	AddControllerPitchInput(Pitch);
 	
 }
@@ -425,31 +408,35 @@ void ALestaCharacter::OnShootInput(const FInputActionInstance& InputActionInstan
 	IWeaponInterface* const CurrentlyActiveWeapon = WeaponInventory->GetWeaponAt(CurrentlyActiveWeaponIndex);
 	if (CurrentlyActiveWeapon)
 	{
-		if (IsReloading()) { return;}
-		// Можем стрелялть только если оружие нам разрешает (т.е. в большинстве случаев у него есть патроны)
-		if (!CurrentlyActiveWeapon->IsDrained())
+		if (IsReloading())
 		{
-			ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>();
-			const bool bIsCurrentWeaponLaser = LaserWeapon && (CurrentlyActiveWeapon == LaserWeapon);
-			USceneComponent* WeaponComp = dynamic_cast<USceneComponent*>(CurrentlyActiveWeapon);
-
-			const FVector Origin = WeaponComp->GetSocketLocation(WeaponComp->GetAttachSocketName());
-			FVector EndPoint = Origin;
-
-			if (bIsCurrentWeaponLaser)
-			{
-				EndPoint = CalculateDesiredEndPoint(LaserWeapon);
-			}
-			
-			if (CurrentlyActiveWeapon->IsHitscan())
-			{
-				CurrentlyActiveWeapon->ServerShootAt(Origin, EndPoint);
-			} else
-			{
-				CurrentlyActiveWeapon->ServerShoot();	
-			}
+		 return;
 		}
-		else
-			return;//CurrentlyActiveWeapon->StopShooting();
+
+		if (CurrentlyActiveWeapon->IsDrained())
+		{
+			return;
+		}
+		
+		// Можем стрелялть только если оружие нам разрешает (т.е. в большинстве случаев у него есть патроны)
+		ULaserWeaponComponent* LaserWeapon = FindComponentByClass<ULaserWeaponComponent>();
+		const bool bIsCurrentWeaponLaser = LaserWeapon && (CurrentlyActiveWeapon == LaserWeapon);
+
+		USceneComponent* WeaponComp = dynamic_cast<USceneComponent*>(CurrentlyActiveWeapon);
+		const FVector Origin = WeaponComp->GetSocketLocation(WeaponComp->GetAttachSocketName());
+		FVector EndPoint = Origin;
+
+		if (bIsCurrentWeaponLaser)
+		{
+			EndPoint = CalculateDesiredEndPoint(LaserWeapon);
+		}
+		
+		if (CurrentlyActiveWeapon->IsHitscan())
+		{
+			CurrentlyActiveWeapon->ServerShootAt(Origin, EndPoint);
+		} else
+		{
+			CurrentlyActiveWeapon->ServerShoot();	
+		}
 	}
 }

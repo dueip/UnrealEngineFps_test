@@ -121,15 +121,6 @@ public:
 	void RequestSpawnSpectator();
 
 
-	UFUNCTION(BlueprintCallable)
-	float GetPitchAimOffset() const { return PitchAimOffset; }
-	
-	UFUNCTION()
-	void OnRep_DesiredPitchChanged(float NewPitch);
-	UPROPERTY(Replicated)
-	float PitchAimOffset;
-	
-
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCameraComponent> CameraComponent;
@@ -233,9 +224,6 @@ protected:
 	//ULaserComponent* JustForTesting;
 private:
 	FTimerHandle ReloadTimerHandle;
-
-	UFUNCTION(Server, Unreliable)
-	void ServerUpdateAimOffset(float NewPitch);
 
 
 	UPROPERTY(Replicated)
